@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_projected_flows"
+              name="Flujos Proyectados"
+              parent="account.menu_finance_reports"
+              action="action_projected_flows_report"
+              sequence="10"/>
+</odoo>

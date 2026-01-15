@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_projected_flow_report_search" model="ir.ui.view">
+        <field name="name">projected.flow.report.search</field>
+        <field name="model">projected.flow.report</field>
+        <field name="arch" type="xml">
+            <search string="Análisis de Flujos">
+                <field name="partner_id"/>
+                <field name="account_id"/>
+                <filter string="A Cobrar (Clientes)" name="receivable" domain="[('account_type', '=', 'asset_receivable')]"/>
+                <filter string="A Pagar (Proveedores)" name="payable" domain="[('account_type', '=', 'liability_payable')]"/>
+                <separator/>
+                <filter string="Vencido" name="overdue" domain="[('date_maturity', '&lt;', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Vence Hoy" name="today" domain="[('date_maturity', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Vence Futuro" name="future" domain="[('date_maturity', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
+                
+                <group expand="1" string="Agrupar Por">
+                    <filter string="Fecha Vencimiento: Mes" name="group_date_maturity" context="{'group_by': 'date_maturity:month'}"/>
+                    <filter string="Tipo (Cobrar/Pagar)" name="group_type" context="{'group_by': 'account_type'}"/>
+                    <filter string="Empresa" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_projected_flow_report_list" model="ir.ui.view">
+        <field name="name">projected.flow.report.list</field>
+        <field name="model">projected.flow.report</field>
+        <field name="arch" type="xml">
+            <list string="Flujos Proyectados" decoration-danger="date_maturity &lt; current_date" decoration-info="date_maturity &gt; current_date">
+                <field name="date" optional="hide"/>
+                <field name="date_maturity"/>
+                <field name="account_type" optional="show" widget="badge" 
+                       decoration-success="account_type == 'asset_receivable'" 
+                       decoration-warning="account_type == 'liability_payable'"/>
+                <field name="partner_id"/>
+                <field name="move_id" optional="show"/>
+                <field name="ref" optional="hide"/>
+                <field name="account_id" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_residual" sum="Total Pendiente" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_projected_flows_report" model="ir.actions.act_window">
+        <field name="name">Flujos Proyectados</field>
+        <field name="res_model">projected.flow.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="view_id" ref="view_projected_flow_report_list"/>
+        <field name="context">{'search_default_group_date_maturity': 1}</field>
+        <field name="search_view_id" ref="view_projected_flow_report_search"/>
+    </record>
+</odoo>
