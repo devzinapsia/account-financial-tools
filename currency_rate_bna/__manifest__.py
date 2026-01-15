@@ -16,12 +16,10 @@
     'website': 'https://www.zinapsia.com',
     'license': 'LGPL-3',
     'depends': [
-        'account',
+        'currency_rate_live',
     ],
     'data': [
         'security/ir.model.access.csv',
-        'data/ir_cron_data.xml',
-        'views/res_config_settings_views.xml',
     ],
     'external_dependencies': {
         'python': ['requests', 'bs4'],
