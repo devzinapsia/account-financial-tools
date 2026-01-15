@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_bna" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.bna</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='currency_rates']" position="inside">
+                <div class="text-muted" invisible="currency_rate_service != 'bna'">
+                    Obtiene la cotización de Divisas del Banco de la Nación Argentina (BNA).
+                    <br/>
+                    Se utiliza el valor de COMPRA del Dólar U.S.A.
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
