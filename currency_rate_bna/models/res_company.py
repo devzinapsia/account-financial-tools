@@ -35,9 +35,10 @@ class ResCompany(models.Model):
             for row in rows:
                 cells = row.find_all("td")
                 if cells and "Dolar U.S.A" in cells[0].text:
-                    compra = float(cells[1].text.strip().replace(',', '.'))
+                    # Obtener la cotización de venta es la celda 2. Si queres compra, usa cells[1]
+                    cotiz = float(cells[2].text.strip().replace(',', '.'))
                     if 'USD' in available_currency_names:
-                        rslt['USD'] = (1.0 / compra, fields.Date.today())
+                        rslt['USD'] = (1.0 / cotiz, fields.Date.today())
                     break
             
             # Agregar ARS como moneda base
