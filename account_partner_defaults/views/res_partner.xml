@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_partner_property_form_inherit_zinapsia" model="ir.ui.view">
+        <field name="name">res.partner.property.form.inherit.zinapsia</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form" />
+        <field name="arch" type="xml">
+            
+            <field name="property_account_receivable_id" position="after">
+                <field name="property_account_income" groups="account.group_account_invoice"/>
+                <field name="default_income_tax_ids" widget="many2many_tags" groups="account.group_account_invoice"/>
+                <field name="auto_update_account_income" groups="account.group_account_invoice"/>
+            </field>
+
+            <field name="property_account_payable_id" position="after">
+                <field name="property_account_expense" groups="account.group_account_invoice"/>
+                <field name="default_expense_tax_ids" widget="many2many_tags" groups="account.group_account_invoice"/>
+                <field name="auto_update_account_expense" groups="account.group_account_invoice"/>
+            </field>
+
+        </field>
+    </record>
+</odoo>

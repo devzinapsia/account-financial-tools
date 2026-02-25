@@ -1,0 +1,57 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_partner_defaults
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-25 19:41+0000\n"
+"PO-Revision-Date: 2026-02-25 19:41+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_partner_defaults
+#: model:ir.model,name:account_partner_defaults.model_res_partner
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: account_partner_defaults
+#: model:ir.model,name:account_partner_defaults.model_account_move_line
+msgid "Journal Item"
+msgstr "Apunte contable"
+
+#. module: account_partner_defaults
+#: model:ir.model.fields,field_description:account_partner_defaults.field_res_partner__default_income_tax_ids
+msgid "Impuestos de Ventas por Defecto"
+msgstr "Impuestos de Ventas por Defecto"
+
+#. module: account_partner_defaults
+#: model:ir.model.fields,field_description:account_partner_defaults.field_res_partner__default_expense_tax_ids
+msgid "Impuestos de Compras por Defecto"
+msgstr "Impuestos de Compras por Defecto"
+
+#. module: account_partner_defaults
+#: model:ir.model.fields,field_description:account_partner_defaults.field_res_partner__property_account_income
+msgid "Cuenta de Ingresos (Zinapsia)"
+msgstr "Cuenta de Ingresos (Zinapsia)"
+
+#. module: account_partner_defaults
+#: model:ir.model.fields,field_description:account_partner_defaults.field_res_partner__property_account_expense
+msgid "Cuenta de Gastos (Zinapsia)"
+msgstr "Cuenta de Gastos (Zinapsia)"
+
+#. module: account_partner_defaults
+#: model:ir.model.fields,field_description:account_partner_defaults.field_res_partner__auto_update_account_income
+msgid "Autoguardar desde factura"
+msgstr "Autoguardar desde factura"
+
+#. module: account_partner_defaults
+#: model:ir.model.fields,field_description:account_partner_defaults.field_res_partner__auto_update_account_expense
+msgid "Autoguardar desde factura"
+msgstr "Autoguardar desde factura"
