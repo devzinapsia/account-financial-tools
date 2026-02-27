@@ -5,14 +5,23 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     def action_draft(self):
+        """ Sobreescribimos la acción de pasar a borrador """
+        self._check_afip_auth_code()
+        return super(AccountMove, self).action_draft()
+
+    def button_draft(self):
+        """ Sobreescribimos el botón de la interfaz que llama al borrador """
+        self._check_afip_auth_code()
+        return super(AccountMove, self).button_draft()
+
+    def _check_afip_auth_code(self):
+        """ Método privado para validar la presencia de CAE """
         for rec in self:
-            # Filtramos por facturas y notas de crédito de cliente
+            # Verificamos solo en facturas y notas de crédito de clientes
             if rec.move_type in ['out_invoice', 'out_refund']:
-                # Verificamos si tiene CAE (afip_auth_code)
-                if rec.afip_auth_code:
+                # Usamos el nombre técnico exacto de tu captura: l10n_ar_afip_auth_code
+                if rec.l10n_ar_afip_auth_code:
                     raise ValidationError(_(
-                        "No se puede pasar a borrador la factura %s porque ya posee CAE (%s). "
-                        "Debe realizar una nota de crédito si desea anularla."
-                    ) % (rec.name, rec.afip_auth_code))
-        
-        return super().action_draft()
+                        "Seguridad Zinapsia: No se puede pasar a borrador la factura %s "
+                        "porque ya posee CAE de AFIP (%s). Debe anularse mediante Nota de Crédito."
+                    ) % (rec.name, rec.l10n_ar_afip_auth_code))
