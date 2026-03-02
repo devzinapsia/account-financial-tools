@@ -14,16 +14,22 @@ class ResPartner(models.Model):
         string="Cuenta de Gastos (Zinapsia)",
     )
     default_expense_tax_ids = fields.Many2many(
-        'account.tax', 
-        'partner_default_expense_tax_rel',
-        'partner_id', 'tax_id',
-        string="Impuestos de Compra por Defecto"
+        'account.tax',
+        'partner_expense_tax_rel',
+        'partner_id',
+        'tax_id',
+        string='Impuestos de Compras por Defecto',
+        # Filtramos para que solo muestre impuestos de compra
+        domain=[('type_tax_use', '=', 'purchase')]
     )
     default_income_tax_ids = fields.Many2many(
-        'account.tax', 
-        'partner_default_income_tax_rel',
-        'partner_id', 'tax_id',
-        string="Impuestos de Venta por Defecto"
+        'account.tax',
+        'partner_income_tax_rel',
+        'partner_id',
+        'tax_id',
+        string='Impuestos de Ventas por Defecto',
+        # Filtramos para que solo muestre impuestos de venta
+        domain=[('type_tax_use', '=', 'sale')]
     )
     auto_update_account_expense = fields.Boolean(
         string="Autoguardar cuenta de gastos",
