@@ -5,7 +5,7 @@
         Reporte financiero de flujos proyectados (Cash Flow) basado en 
         cuentas a cobrar y pagar.
     """,
-    'author': "DevZinapsia",
+    'author': "Zinapsia",
     'category': 'Accounting/Accounting',
     'version': '1.0',
     'depends': ['account'],

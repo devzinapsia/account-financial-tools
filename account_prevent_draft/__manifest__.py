@@ -1,6 +1,6 @@
 {
     'name': 'Prevent Draft on Electronic Invoices (AFIP)',
-    'version': '18.0.1.0.2',
+    'version': '19.0.1.0.2',
     'category': 'Accounting',
     'summary': 'Evita que facturas con CAE vuelvan a estado borrador',
     'author': 'Zinapsia',

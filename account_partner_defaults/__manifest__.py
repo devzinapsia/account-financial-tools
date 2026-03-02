@@ -5,7 +5,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 {
     "name": "Partner Financial Defaults",
-    "version": "18.0.1.1.1",
+    "version": "19.0.1.1.1",
     "summary": """
         Define cuentas, impuestos y glosas por defecto para partners.
         Optimizable para Odoo 18 y 19.
