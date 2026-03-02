@@ -17,7 +17,6 @@
     "category": "Accounting",
     "depends": [
         "account",
-        "l10n_ar",
         "base_address_extended", # Agregamos esto para asegurar que el campo exista
     ],
     "data": [
