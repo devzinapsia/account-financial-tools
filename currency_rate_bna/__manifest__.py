@@ -1,6 +1,6 @@
 {
     'name': 'Currency Rate BNA (Argentina)',
-    'version': '19.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Accounting/Localizations',
     'summary': 'Update currency rates from Banco Nación Argentina',
     'description': """
