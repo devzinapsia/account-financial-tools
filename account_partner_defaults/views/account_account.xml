@@ -1,15 +1,18 @@
-<record id="view_account_account_kanban_zinapsia" model="ir.ui.view">
-    <field name="name">account.account.form.zinapsia</field>
-    <field name="model">account.account</field>
-    <field name="inherit_id" ref="account.view_account_form"/>
-    <field name="arch" type="xml">
-        <xpath expr="//notebook" position="inside">
-            <page string="Zinapsia: Contactos Asociados" name="zinapsia_partners">
-                <group string="Resumen de Contactos">
-                    <field name="expense_partner_names" string="Nombres de Contactos (Gastos)"/>
-                    <field name="income_partner_names" string="Nombres de Contactos (Ingresos)"/>
-                </group>
-            </page>
-        </xpath>
-    </field>
-</record>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_account_form_zinapsia" model="ir.ui.view">
+        <field name="name">account.account.form.zinapsia</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Zinapsia: Associated Partners" name="zinapsia_partners">
+                    <group name="partner_summary">
+                        <field name="expense_partner_names" readonly="1"/>
+                        <field name="income_partner_names" readonly="1"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
