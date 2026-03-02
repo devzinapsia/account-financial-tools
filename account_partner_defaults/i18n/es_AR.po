@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-02 15:00+0000\n"
-"PO-Revision-Date: 2026-03-02 15:00+0000\n"
+"POT-Creation-Date: 2026-03-02 18:45+0000\n"
+"PO-Revision-Date: 2026-03-02 18:45+0000\n"
 "Last-Translator: Zinapsia\n"
 "Language-Team: \n"
 "Language: es_AR\n"
@@ -63,27 +63,25 @@ msgstr "Auto-actualizar Cuenta Ingresos"
 msgid "Auto-actualizar Cuenta Gastos"
 msgstr "Auto-actualizar Cuenta Gastos"
 
-# --- Campos en el ABM de Cuentas Contables (Account) ---
-
-#. module: account_partner_defaults
-#: model:ir.model.fields,field_description:account_partner_defaults.field_account_account__expense_partner_ids
-msgid "Contactos Asociados a Gastos"
-msgstr "Contactos Asociados a Gastos"
-
-#. module: account_partner_defaults
-#: model:ir.model.fields,field_description:account_partner_defaults.field_account_account__income_partner_ids
-msgid "Contactos Asociados a Ingresos"
-msgstr "Contactos Asociados a Ingresos"
+# --- Campos y Etiquetas en el ABM de Cuentas Contables (Plan de Cuentas) ---
 
 #. module: account_partner_defaults
 #: model:ir.model.fields,field_description:account_partner_defaults.field_account_account__expense_partner_names
-msgid "Nombres de Contactos (Gastos)"
-msgstr "Nombres de Contactos (Gastos)"
+msgid "Contactos (Gastos)"
+msgstr "Contactos (Gastos)"
 
 #. module: account_partner_defaults
 #: model:ir.model.fields,field_description:account_partner_defaults.field_account_account__income_partner_names
-msgid "Nombres de Contactos (Ingresos)"
-msgstr "Nombres de Contactos (Ingresos)"
+msgid "Contactos (Ingresos)"
+msgstr "Contactos (Ingresos)"
+
+#. module: account_partner_defaults
+msgid "Zinapsia: Associated Partners"
+msgstr "Zinapsia: Contactos Asociados"
+
+#. module: account_partner_defaults
+msgid "Partner Summary"
+msgstr "Resumen de Contactos"
 
 #. module: account_partner_defaults
 #: model:ir.model.fields,help:account_partner_defaults.field_account_account__expense_partner_ids
