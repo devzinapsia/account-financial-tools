@@ -1,8 +1,3 @@
-# Copyright 2012 Therp BV (<http://therp.nl>)
-# Copyright 2013-2018 BCIM SPRL (<http://www.bcim.be>)
-# Copyright 2022 Simone Rubino - TAKOBI
-# Copyright 2024-2025 Zinapsia (<https://github.com/devzinapsia>)
-# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 {
     "name": "Partner Financial Defaults",
     "version": "19.0.1.1.1",
@@ -22,6 +17,7 @@
     "category": "Accounting",
     "depends": [
         "account",
+        "l10n_ar",  # Para asegurar compatibilidad con localización argentina
         "base_address_extended", # Agregamos esto para asegurar que el campo exista
     ],
     "data": [
