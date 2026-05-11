@@ -92,3 +92,19 @@ msgstr "Contactos que tienen esta cuenta como su cuenta de gastos predeterminada
 #: model:ir.model.fields,help:account_partner_defaults.field_account_account__income_partner_ids
 msgid "Contactos que tienen esta cuenta como su cuenta de ingresos predeterminada"
 msgstr "Contactos que tienen esta cuenta como su cuenta de ingresos predeterminada"
+
+
+#. module: account_partner_defaults
+#: model:ir.model.fields,field_description:account_partner_defaults.field_res_partner__property_purchase_journal_id
+msgid "Diario de Compras por Defecto"
+msgstr "Diario de Compras por Defecto"
+
+#. module: account_partner_defaults
+#: model:ir.model.fields,help:account_partner_defaults.field_res_partner__property_purchase_journal_id
+msgid "Si se selecciona, este diario se usará por defecto al crear facturas de proveedor para este contacto."
+msgstr "Si se selecciona, este diario se usará por defecto al crear facturas de proveedor para este contacto."
+
+#. module: account_partner_defaults
+#: model:ir.model,name:account_partner_defaults.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"

@@ -39,3 +39,10 @@ class ResPartner(models.Model):
         string="Autoguardar cuenta de ingresos",
         default=False
     )
+    property_purchase_journal_id = fields.Many2one(
+        'account.journal',
+        company_dependent=True,
+        string="Diario de Compras por Defecto",
+        domain=[('type', '=', 'purchase')],
+        help="Si se selecciona, este diario se usará por defecto al crear facturas de proveedor para este contacto."
+    )
