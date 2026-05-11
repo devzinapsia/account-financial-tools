@@ -7,24 +7,15 @@
         <field name="arch" type="xml">
 
             <field name="property_account_receivable_id" position="after">
-                <field name="property_account_income" groups="account.group_account_invoice" />
-                <field name="default_income_tax_ids" widget="many2many_tags"
-                    groups="account.group_account_invoice" />
+                <field name="property_account_income" groups="account.group_account_invoice" string="Cuenta de Ingresos (Zinapsia)"/>
+                <field name="default_income_tax_ids" widget="many2many_tags" groups="account.group_account_invoice" />
                 <field name="auto_update_account_income" groups="account.group_account_invoice" />
             </field>
 
             <field name="property_account_payable_id" position="after">
-                <field name="property_account_expense" groups="account.group_account_invoice" />
-                <field name="default_expense_tax_ids" widget="many2many_tags"
-                    groups="account.group_account_invoice" />
-                <field name="auto_update_account_expense" groups="account.group_account_invoice" />
-            </field>
-
-            <field name="property_account_payable_id" position="after">
-                <field name="property_account_expense" groups="account.group_account_invoice" />
+                <field name="property_account_expense" groups="account.group_account_invoice" string="Cuenta de Gastos (Zinapsia)"/>
                 <field name="property_purchase_journal_id" groups="account.group_account_invoice" />
-                <field name="default_expense_tax_ids" widget="many2many_tags"
-                    groups="account.group_account_invoice" />
+                <field name="default_expense_tax_ids" widget="many2many_tags" groups="account.group_account_invoice" />
                 <field name="auto_update_account_expense" groups="account.group_account_invoice" />
             </field>
 

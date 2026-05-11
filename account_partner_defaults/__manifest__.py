@@ -1,6 +1,6 @@
 {
     "name": "Partner Financial Defaults",
-    "version": "18.0.1.1.5",
+    "version": "18.0.1.1.6",
     "summary": """
         Define cuentas, impuestos y glosas por defecto para partners.
         Optimizable para Odoo 18 y 19.
