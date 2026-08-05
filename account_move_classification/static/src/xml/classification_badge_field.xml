@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_move_classification.ClassificationBadgeField">
+        <!-- Readonly: render as a colored badge chip -->
+        <t t-if="props.readonly">
+            <span t-if="hasValue"
+                  class="o_tag o_badge badge rounded-pill"
+                  t-attf-class="o_tag_color_{{ colorIndex }}"
+                  t-esc="displayName"/>
+        </t>
+        <!-- Edit: delegate to the standard Many2OneField component -->
+        <Many2OneField t-else="" t-props="props"/>
+    </t>
+
+</templates>

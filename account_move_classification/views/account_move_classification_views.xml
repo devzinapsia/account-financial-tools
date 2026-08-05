@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List view (editable, with sequence handle and color picker) -->
+    <record id="account_move_classification_view_list" model="ir.ui.view">
+        <field name="name">account.move.classification.list</field>
+        <field name="model">account.move.classification</field>
+        <field name="arch" type="xml">
+            <list string="Invoice Classifications" editable="top">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="color" widget="color_picker"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="account_move_classification_view_form" model="ir.ui.view">
+        <field name="name">account.move.classification.form</field>
+        <field name="model">account.move.classification</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Classification">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="color" widget="color_picker"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="account_move_classification_view_search" model="ir.ui.view">
+        <field name="name">account.move.classification.search</field>
+        <field name="model">account.move.classification</field>
+        <field name="arch" type="xml">
+            <search string="Search Classifications">
+                <field name="name"/>
+                <field name="code"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Company" name="by_company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window action -->
+    <record id="action_account_move_classification" model="ir.actions.act_window">
+        <field name="name">Invoice Classifications</field>
+        <field name="res_model">account.move.classification</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="account_move_classification_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first invoice classification
+            </p>
+            <p>
+                Classifications allow you to tag invoices and journal entries
+                with a custom color label for reporting and filtering purposes.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item under Configuration > Invoicing -->
+    <menuitem
+        id="menu_account_move_classification"
+        name="Invoice Classifications"
+        parent="account.account_invoicing_menu"
+        action="action_account_move_classification"
+        sequence="50"
+        groups="account.group_account_manager"/>
+
+</odoo>
