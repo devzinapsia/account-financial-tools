@@ -1,0 +1,89 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_move_classification
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-05 00:00+0000\n"
+"PO-Revision-Date: 2026-08-05 00:00+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_move_classification
+#: model:ir.model,name:account_move_classification.model_account_move_classification
+msgid "Invoice Classification"
+msgstr "Clasificación de comprobante"
+
+#. module: account_move_classification
+#: model:ir.model.fields,field_description:account_move_classification.field_account_move_classification__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: account_move_classification
+#: model:ir.model.fields,field_description:account_move_classification.field_account_move_classification__code
+msgid "Code"
+msgstr "Código"
+
+#. module: account_move_classification
+#: model:ir.model.fields,field_description:account_move_classification.field_account_move_classification__color
+msgid "Color"
+msgstr "Color"
+
+#. module: account_move_classification
+#: model:ir.model.fields,field_description:account_move_classification.field_account_move_classification__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: account_move_classification
+#: model:ir.model.fields,field_description:account_move_classification.field_account_move_classification__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: account_move_classification
+#: model:ir.model.fields,field_description:account_move_classification.field_account_move_classification__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: account_move_classification
+#: model:ir.model.fields,help:account_move_classification.field_account_move_classification__company_id
+msgid "Leave empty to make this classification available in all companies."
+msgstr "Déjelo vacío para que la clasificación esté disponible en todas las compañías."
+
+#. module: account_move_classification
+#: model:ir.model.fields,field_description:account_move_classification.field_account_move__classification_id
+msgid "Classification"
+msgstr "Clasificación"
+
+#. module: account_move_classification
+#: model:ir.actions.act_window,name:account_move_classification.action_account_move_classification
+msgid "Invoice Classifications"
+msgstr "Clasificaciones de comprobante"
+
+#. module: account_move_classification
+#: model:ir.ui.menu,name:account_move_classification.menu_account_move_classification
+msgid "Invoice Classifications"
+msgstr "Clasificaciones de comprobante"
+
+#. module: account_move_classification
+#: model:ir.rule,name:account_move_classification.rule_account_move_classification_multicompany
+msgid "Account Move Classification: multi-company"
+msgstr "Clasificación de comprobante: multi-compañía"
+
+#. module: account_move_classification
+msgid "Classification name '%s' must be unique per company."
+msgstr "El nombre de clasificación '%s' debe ser único por compañía."
+
+#. module: account_move_classification
+msgid "Create your first invoice classification"
+msgstr "Cree su primera clasificación de comprobante"
+
+#. module: account_move_classification
+msgid "Classifications allow you to tag invoices and journal entries with a custom color label for reporting and filtering purposes."
+msgstr "Las clasificaciones permiten etiquetar facturas y asientos contables con una etiqueta de color personalizada para reportes y filtros."

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Multi-company record rule for account.move.classification.
+         Users see global classifications (company_id=False) and classifications
+         belonging to any company they have access to. -->
+    <record id="rule_account_move_classification_multicompany" model="ir.rule">
+        <field name="name">Account Move Classification: multi-company</field>
+        <field name="model_id" ref="model_account_move_classification"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+</odoo>

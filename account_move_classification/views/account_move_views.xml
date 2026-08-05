@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extend the main account.move form (shared by all move_types) -->
+    <record id="view_move_form_classification" model="ir.ui.view">
+        <field name="name">account.move.form.classification</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Insert classification field at the bottom of the right header group,
+                 after the journal/currency block. -->
+            <div name="journal_div" position="after">
+                <field name="classification_color" invisible="1"/>
+                <field name="classification_id"
+                       widget="classification_badge"
+                       string="Classification"
+                       options="{'no_open': True}"/>
+            </div>
+        </field>
+    </record>
+
+    <!-- Extend the generic account.move search (journal entries list) -->
+    <record id="view_account_move_filter_classification" model="ir.ui.view">
+        <field name="name">account.move.filter.classification</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="classification_id" string="Classification"/>
+            </field>
+            <group>
+                <filter string="Classification" name="group_by_classification"
+                        context="{'group_by': 'classification_id'}"/>
+            </group>
+        </field>
+    </record>
+
+    <!-- Extend the invoice-specific search (Customer Invoices + Vendor Bills) -->
+    <record id="view_account_invoice_filter_classification" model="ir.ui.view">
+        <field name="name">account.invoice.filter.classification</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="classification_id" string="Classification"/>
+            </field>
+            <group>
+                <filter string="Classification" name="group_by_classification"
+                        context="{'group_by': 'classification_id'}"/>
+            </group>
+        </field>
+    </record>
+
+</odoo>
