@@ -1,6 +1,6 @@
 {
     "name": "Account Invoice Estimated Payment Date",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "summary": "Track an estimated payment date on vendor bills, independent of the due date.",
     "author": "Zinapsia",
     "website": "https://github.com/devzinapsia/account-financial-tools",
