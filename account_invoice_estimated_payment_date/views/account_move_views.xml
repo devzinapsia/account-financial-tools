@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Add the field to the header of the shared account.move form,
+         next to the due date / payment terms block. Visible on vendor
+         bills and vendor credit notes only. -->
+    <record id="view_move_form_estimated_payment_date" model="ir.ui.view">
+        <field name="name">account.move.form.estimated.payment.date</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='due_date']" position="after">
+                <field name="estimated_payment_date"
+                       invisible="move_type not in ('in_invoice', 'in_refund')"
+                       readonly="state != 'draft'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add the field as an optional column to the vendor bills list view. -->
+    <record id="view_in_invoice_bill_tree_estimated_payment_date" model="ir.ui.view">
+        <field name="name">account.move.in.invoice.bill.list.estimated.payment.date</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_bill_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_date_due']" position="after">
+                <field name="estimated_payment_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add the field to the vendor bills search view: a searchable field
+         and a "Group By" filter, mirroring how Invoice Date behaves.
+         Neither is active by default. -->
+    <record id="view_account_bill_filter_estimated_payment_date" model="ir.ui.view">
+        <field name="name">account.move.bill.filter.estimated.payment.date</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_bill_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='next_payment_date']" position="after">
+                <field name="estimated_payment_date"/>
+            </xpath>
+            <xpath expr="//filter[@name='invoicedate']" position="after">
+                <filter string="Estimated Payment Date" name="group_by_estimated_payment_date"
+                        context="{'group_by': 'estimated_payment_date'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
