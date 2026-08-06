@@ -72,23 +72,23 @@ export class ClassificationBadgeField extends Component {
         ];
     }
 
-    getDomain() {
+    getDomain = () => {
         return Domain.and([
             getFieldDomain(this.props.record, this.props.name, this.props.domain),
         ]).toList(this.props.context || {});
-    }
+    };
 
-    async update(records) {
+    update = async (records) => {
         const record = records && records[0];
         if (record) {
             const name = record.display_name || record.name || "";
             await this.props.record.update({ [this.props.name]: [record.id, name] });
         }
-    }
+    };
 
-    async clearValue() {
+    clearValue = async () => {
         await this.props.record.update({ [this.props.name]: false });
-    }
+    };
 }
 
 registry.category("fields").add("classification_badge", {
