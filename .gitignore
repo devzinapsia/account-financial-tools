@@ -214,3 +214,7 @@ ENV/
 # Odoo.sh specific
 .odoo_sh/
 EOF
+# Local tools and test modules
+.antigrabity/
+.antigravitycli/
+account_financial_test/
