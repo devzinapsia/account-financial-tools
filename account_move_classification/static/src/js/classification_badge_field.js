@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { Component } from "@odoo/owl";
+import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { TagsList } from "@web/core/tags_list/tags_list";
@@ -35,6 +35,12 @@ export class ClassificationBadgeField extends Component {
         string: { type: String, optional: true },
     };
 
+    setup() {
+        // Tracks the color after an in-memory selection so the chip updates
+        // immediately without waiting for the non-stored related field to reload.
+        this.state = useState({ color: null });
+    }
+
     get relation() {
         return this.props.record.fields[this.props.name].relation;
     }
@@ -45,10 +51,17 @@ export class ClassificationBadgeField extends Component {
 
     get displayName() {
         const value = this.props.record.data[this.props.name];
-        return value ? value[1] : "";
+        if (!value) return "";
+        // Server loads as [id, display_name]; after record.update() it can be
+        // an object {id, display_name} — handle both.
+        if (Array.isArray(value)) return value[1] || "";
+        return value.display_name || "";
     }
 
     get colorIndex() {
+        // Prefer the locally tracked color (set after a client-side selection)
+        // so the chip updates immediately without saving.
+        if (this.state.color !== null) return this.state.color;
         return this.props.record.data["classification_color"] ?? 0;
     }
 
@@ -58,6 +71,12 @@ export class ClassificationBadgeField extends Component {
             createEdit: this.props.canCreateEdit ?? true,
             write: this.props.canWrite ?? true,
         };
+    }
+
+    // Ask Many2XAutocomplete to also fetch the color field so we can update
+    // the chip color immediately without a round-trip after save.
+    get specification() {
+        return { color: {} };
     }
 
     get tags() {
@@ -81,12 +100,17 @@ export class ClassificationBadgeField extends Component {
     update = async (records) => {
         const record = records && records[0];
         if (record) {
-            const name = record.display_name || record.name || "";
-            await this.props.record.update({ [this.props.name]: [record.id, name] });
+            // Cache the color locally so the chip updates before next save.
+            this.state.color = record.color ?? 0;
+            const display_name = record.display_name || record.name || "";
+            await this.props.record.update({
+                [this.props.name]: { id: record.id, display_name },
+            });
         }
     };
 
     clearValue = async () => {
+        this.state.color = null;
         await this.props.record.update({ [this.props.name]: false });
     };
 }

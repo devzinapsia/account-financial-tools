@@ -24,6 +24,7 @@
                     placeholder="props.placeholder"
                     searchThreshold="props.searchThreshold or 0"
                     nameCreateField="props.nameCreateField or 'name'"
+                    specification="specification"
                     autoSelect="true"
                 />
             </div>
