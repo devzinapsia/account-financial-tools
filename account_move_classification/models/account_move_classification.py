@@ -14,6 +14,7 @@ class AccountMoveClassification(models.Model):
     active = fields.Boolean(default=True)
     company_id = fields.Many2one(
         "res.company",
+        default=lambda self: self.env.company,
         help="Leave empty to make this classification available in all companies.",
     )
 
