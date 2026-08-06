@@ -13,9 +13,20 @@
                 <field name="classification_color" invisible="1"/>
                 <field name="classification_id"
                        widget="classification_badge"
-                       string="Classification"
                        options="{'no_open': True}"/>
             </div>
+        </field>
+    </record>
+
+    <!-- Extend the invoice list view (base for out/in invoice trees) -->
+    <record id="view_invoice_tree_classification" model="ir.ui.view">
+        <field name="name">account.invoice.list.classification</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <field name="activity_ids" position="after">
+                <field name="classification_id" optional="show" widget="classification_badge"/>
+            </field>
         </field>
     </record>
 
@@ -26,10 +37,10 @@
         <field name="inherit_id" ref="account.view_account_move_filter"/>
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
-                <field name="classification_id" string="Classification"/>
+                <field name="classification_id"/>
             </field>
             <group>
-                <filter string="Classification" name="group_by_classification"
+                <filter string="Clasificación" name="group_by_classification"
                         context="{'group_by': 'classification_id'}"/>
             </group>
         </field>
@@ -42,10 +53,10 @@
         <field name="inherit_id" ref="account.view_account_invoice_filter"/>
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
-                <field name="classification_id" string="Classification"/>
+                <field name="classification_id"/>
             </field>
             <group>
-                <filter string="Classification" name="group_by_classification"
+                <filter string="Clasificación" name="group_by_classification"
                         context="{'group_by': 'classification_id'}"/>
             </group>
         </field>

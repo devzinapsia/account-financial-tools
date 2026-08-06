@@ -2,15 +2,32 @@
 <templates xml:space="preserve">
 
     <t t-name="account_move_classification.ClassificationBadgeField">
-        <!-- Readonly: render as a colored badge chip -->
         <t t-if="props.readonly">
+            <!-- Readonly: colored badge chip, empty when no value -->
             <span t-if="hasValue"
                   class="o_tag o_badge badge rounded-pill"
                   t-attf-class="o_tag_color_{{ colorIndex }}"
                   t-esc="displayName"/>
         </t>
-        <!-- Edit: delegate to the standard Many2OneField component -->
-        <Many2OneField t-else="" t-props="props"/>
+        <t t-else="">
+            <!-- Edit: colored chip (with ×) when a value is set; autocomplete input when empty -->
+            <div class="o_field_many2many_tags d-flex flex-wrap align-items-center gap-1">
+                <TagsList tags="tags"/>
+                <Many2XAutocomplete
+                    t-if="!hasValue"
+                    resModel="relation"
+                    activeActions="activeActions"
+                    getDomain="() => getDomain()"
+                    fieldString="props.string or ''"
+                    update="(records) => update(records)"
+                    context="props.context or {}"
+                    placeholder="props.placeholder"
+                    searchThreshold="props.searchThreshold or 0"
+                    nameCreateField="props.nameCreateField or 'name'"
+                    autoSelect="true"
+                />
+            </div>
+        </t>
     </t>
 
 </templates>

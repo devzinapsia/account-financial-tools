@@ -3,24 +3,19 @@
 import { Component } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { TagsList } from "@web/core/tags_list/tags_list";
+import { Many2XAutocomplete } from "@web/views/fields/relational_utils";
+import { Domain } from "@web/core/domain";
+import { getFieldDomain } from "@web/model/relational_model/utils";
 import {
-    Many2OneField,
     extractM2OFieldProps,
     m2oSupportedOptions,
     m2oSupportedTypes,
 } from "@web/views/fields/many2one/many2one_field";
 
-/**
- * ClassificationBadgeField
- *
- * Renders account.move.classification as a colored chip in readonly mode
- * and falls back to the standard Many2One input in edit mode.
- * Reads the color index from the sibling field `classification_color` on
- * the same record (declared invisible="1" in the view).
- */
 export class ClassificationBadgeField extends Component {
     static template = "account_move_classification.ClassificationBadgeField";
-    static components = { Many2OneField };
+    static components = { TagsList, Many2XAutocomplete };
     static props = {
         ...standardFieldProps,
         canCreate: { type: Boolean, optional: true },
@@ -40,6 +35,10 @@ export class ClassificationBadgeField extends Component {
         string: { type: String, optional: true },
     };
 
+    get relation() {
+        return this.props.record.fields[this.props.name].relation;
+    }
+
     get hasValue() {
         return !!this.props.record.data[this.props.name];
     }
@@ -51,6 +50,44 @@ export class ClassificationBadgeField extends Component {
 
     get colorIndex() {
         return this.props.record.data["classification_color"] ?? 0;
+    }
+
+    get activeActions() {
+        return {
+            create: this.props.canCreate ?? true,
+            createEdit: this.props.canCreateEdit ?? true,
+            write: this.props.canWrite ?? true,
+        };
+    }
+
+    get tags() {
+        if (!this.hasValue) return [];
+        return [
+            {
+                id: "classification_tag",
+                text: this.displayName,
+                colorIndex: this.colorIndex,
+                onDelete: () => this.clearValue(),
+            },
+        ];
+    }
+
+    getDomain() {
+        return Domain.and([
+            getFieldDomain(this.props.record, this.props.name, this.props.domain),
+        ]).toList(this.props.context || {});
+    }
+
+    async update(records) {
+        const record = records && records[0];
+        if (record) {
+            const name = record.display_name || record.name || "";
+            await this.props.record.update({ [this.props.name]: [record.id, name] });
+        }
+    }
+
+    async clearValue() {
+        await this.props.record.update({ [this.props.name]: false });
     }
 }
 
