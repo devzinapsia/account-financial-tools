@@ -3,30 +3,30 @@
 
     <t t-name="account_move_classification.ClassificationBadgeField">
         <t t-if="props.readonly">
-            <!-- Readonly: colored badge chip, empty when no value -->
+            <!-- Readonly: colored badge chip -->
             <span t-if="hasValue"
                   class="o_tag o_badge badge rounded-pill"
                   t-attf-class="o_tag_color_{{ colorIndex }}"
                   t-esc="displayName"/>
         </t>
         <t t-else="">
-            <!-- Edit: colored chip (with ×) when a value is set; autocomplete input when empty -->
-            <div class="o_field_many2many_tags d-flex flex-wrap align-items-center gap-1">
-                <TagsList tags="tags"/>
-                <Many2XAutocomplete
-                    t-if="!hasValue"
-                    resModel="relation"
-                    activeActions="activeActions"
-                    getDomain="getDomain"
-                    fieldString="props.string or ''"
-                    update="update"
-                    context="props.context or {}"
-                    placeholder="props.placeholder"
-                    searchThreshold="props.searchThreshold or 0"
-                    nameCreateField="props.nameCreateField or 'name'"
-                    specification="specification"
-                    autoSelect="true"
-                />
+            <!-- Edit: chip overlay when a value is set, Many2OneField always handles interaction -->
+            <div class="o_classification_badge_edit d-flex align-items-center gap-1">
+                <t t-if="hasValue">
+                    <span class="o_tag o_badge badge rounded-pill"
+                          t-attf-class="o_tag_color_{{ colorIndex }}"
+                          t-esc="displayName"/>
+                    <a class="o_delete d-flex align-items-center opacity-75 opacity-100-hover ps-1"
+                       href="#"
+                       t-on-click.stop.prevent="clearValue"
+                       aria-label="Delete"
+                       data-tooltip="Delete">
+                        <i class="oi oi-close align-text-top"/>
+                    </a>
+                </t>
+                <t t-else="">
+                    <Many2OneField t-props="props"/>
+                </t>
             </div>
         </t>
     </t>
