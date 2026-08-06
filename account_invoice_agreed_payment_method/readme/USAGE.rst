@@ -7,8 +7,9 @@ The field is not shown on customer invoices or credit notes.
 
 **Lists and search**
 
-In the Vendor Bills list view, the **Method** column can be enabled through
-the optional-columns selector (the icon at the top-right of the list).
+In the Vendor Bills list view, the **Agreed payment method** column can be
+enabled through the optional-columns selector (the icon at the top-right of
+the list).
 
 In the Vendor Bills search view, you can filter by typing a payment method
 name in the search bar, or group results using **Group By ‣ Agreed payment

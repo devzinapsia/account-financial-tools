@@ -40,6 +40,7 @@ msgstr "Activo"
 #: model:ir.model.fields,field_description:account_invoice_agreed_payment_method.field_account_move__agreed_payment_method_id
 #: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.account_move_agreed_payment_method_view_form
 #: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.view_account_bill_filter_agreed_payment_method
+#: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.view_in_invoice_bill_tree_agreed_payment_method
 msgid "Agreed payment method"
 msgstr "Medio de pago acordado"
 
@@ -69,11 +70,6 @@ msgstr "Cree su primer medio de pago acordado"
 #: model_terms:ir.actions.act_window,help:account_invoice_agreed_payment_method.action_account_move_agreed_payment_method
 msgid "Agreed payment methods let you record the payment method agreed with the vendor on purchase documents."
 msgstr "Los medios de pago acordados permiten registrar el medio de pago acordado con el proveedor en los documentos de compra."
-
-#. module: account_invoice_agreed_payment_method
-#: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.view_in_invoice_bill_tree_agreed_payment_method
-msgid "Method"
-msgstr "Medio"
 
 #. module: account_invoice_agreed_payment_method
 #: model:ir.model.constraint,message:account_invoice_agreed_payment_method.constraint_account_move_agreed_payment_method_name_uniq

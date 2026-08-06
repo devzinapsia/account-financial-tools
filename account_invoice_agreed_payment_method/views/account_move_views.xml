@@ -24,7 +24,7 @@
         <field name="inherit_id" ref="account.view_in_invoice_bill_tree"/>
         <field name="arch" type="xml">
             <field name="invoice_date_due" position="after">
-                <field name="agreed_payment_method_id" string="Method" optional="hide"/>
+                <field name="agreed_payment_method_id" string="Agreed payment method" optional="hide"/>
             </field>
         </field>
     </record>
