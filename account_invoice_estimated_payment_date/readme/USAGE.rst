@@ -11,5 +11,7 @@ enabled through the optional-columns selector (the icon at the top-right of
 the list).
 
 In the Vendor Bills search view, you can filter by typing a date in the
-search bar, or group results using **Group By ‣ Estimated Payment Date**,
-next to the existing **Bill Date** grouping option.
+search bar, use **Filters ‣ Estimated Payment Date** (right below **Due
+Date**) to filter by a period, or group results using **Group By ‣
+Estimated Payment Date**, next to the existing **Bill Date** grouping
+option.

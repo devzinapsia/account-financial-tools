@@ -40,6 +40,10 @@
             <xpath expr="//field[@name='next_payment_date']" position="after">
                 <field name="estimated_payment_date"/>
             </xpath>
+            <xpath expr="//filter[@name='due_date']" position="after">
+                <filter string="Estimated Payment Date" name="filter_estimated_payment_date"
+                        date="estimated_payment_date"/>
+            </xpath>
             <xpath expr="//filter[@name='invoicedate']" position="after">
                 <filter string="Estimated Payment Date" name="group_by_estimated_payment_date"
                         context="{'group_by': 'estimated_payment_date'}"/>

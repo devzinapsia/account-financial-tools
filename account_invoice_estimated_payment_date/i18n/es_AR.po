@@ -18,8 +18,9 @@ msgstr ""
 
 #. module: account_invoice_estimated_payment_date
 #: model:ir.model.fields,field_description:account_invoice_estimated_payment_date.field_account_move__estimated_payment_date
+#: model_terms:ir.ui.view,arch_db:account_invoice_estimated_payment_date.view_account_bill_filter_estimated_payment_date
 msgid "Estimated Payment Date"
-msgstr "Fecha Estimada de Pago"
+msgstr "Fecha estimada de pago"
 
 #. module: account_invoice_estimated_payment_date
 #: model:ir.model.fields,help:account_invoice_estimated_payment_date.field_account_move__estimated_payment_date
