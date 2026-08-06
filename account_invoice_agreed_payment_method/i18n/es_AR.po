@@ -1,0 +1,81 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_invoice_agreed_payment_method
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-06 00:00+0000\n"
+"PO-Revision-Date: 2026-08-06 00:00+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_invoice_agreed_payment_method
+#: model:ir.model,name:account_invoice_agreed_payment_method.model_account_move_agreed_payment_method
+msgid "Agreed Payment Method"
+msgstr "Medio de pago acordado"
+
+#. module: account_invoice_agreed_payment_method
+#: model:ir.model.fields,field_description:account_invoice_agreed_payment_method.field_account_move_agreed_payment_method__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: account_invoice_agreed_payment_method
+#: model:ir.model.fields,field_description:account_invoice_agreed_payment_method.field_account_move_agreed_payment_method__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: account_invoice_agreed_payment_method
+#: model:ir.model.fields,field_description:account_invoice_agreed_payment_method.field_account_move_agreed_payment_method__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: account_invoice_agreed_payment_method
+#: model:ir.model.fields,field_description:account_invoice_agreed_payment_method.field_account_move__agreed_payment_method_id
+#: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.account_move_agreed_payment_method_view_form
+#: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.view_account_bill_filter_agreed_payment_method
+msgid "Agreed payment method"
+msgstr "Medio de pago acordado"
+
+#. module: account_invoice_agreed_payment_method
+#: model:ir.actions.act_window,name:account_invoice_agreed_payment_method.action_account_move_agreed_payment_method
+#: model:ir.ui.menu,name:account_invoice_agreed_payment_method.menu_account_move_agreed_payment_method
+#: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.account_move_agreed_payment_method_view_list
+msgid "Agreed payment methods"
+msgstr "Medios de pago acordados"
+
+#. module: account_invoice_agreed_payment_method
+#: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.account_move_agreed_payment_method_view_search
+msgid "Search agreed payment methods"
+msgstr "Buscar medios de pago acordados"
+
+#. module: account_invoice_agreed_payment_method
+#: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.account_move_agreed_payment_method_view_search
+msgid "Archived"
+msgstr "Archivado"
+
+#. module: account_invoice_agreed_payment_method
+#: model_terms:ir.actions.act_window,help:account_invoice_agreed_payment_method.action_account_move_agreed_payment_method
+msgid "Create your first agreed payment method"
+msgstr "Cree su primer medio de pago acordado"
+
+#. module: account_invoice_agreed_payment_method
+#: model_terms:ir.actions.act_window,help:account_invoice_agreed_payment_method.action_account_move_agreed_payment_method
+msgid "Agreed payment methods let you record the payment method agreed with the vendor on purchase documents."
+msgstr "Los medios de pago acordados permiten registrar el medio de pago acordado con el proveedor en los documentos de compra."
+
+#. module: account_invoice_agreed_payment_method
+#: model_terms:ir.ui.view,arch_db:account_invoice_agreed_payment_method.view_in_invoice_bill_tree_agreed_payment_method
+msgid "Method"
+msgstr "Medio"
+
+#. module: account_invoice_agreed_payment_method
+#: model:ir.model.constraint,message:account_invoice_agreed_payment_method.constraint_account_move_agreed_payment_method_name_uniq
+msgid "The agreed payment method name must be unique."
+msgstr "El nombre del medio de pago acordado debe ser único."

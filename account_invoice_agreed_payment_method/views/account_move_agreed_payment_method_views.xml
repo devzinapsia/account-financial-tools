@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List view (editable, with sequence handle) -->
+    <record id="account_move_agreed_payment_method_view_list" model="ir.ui.view">
+        <field name="name">account.move.agreed.payment.method.list</field>
+        <field name="model">account.move.agreed.payment.method</field>
+        <field name="arch" type="xml">
+            <list string="Agreed payment methods" editable="top">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="account_move_agreed_payment_method_view_form" model="ir.ui.view">
+        <field name="name">account.move.agreed.payment.method.form</field>
+        <field name="model">account.move.agreed.payment.method</field>
+        <field name="arch" type="xml">
+            <form string="Agreed payment method">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="account_move_agreed_payment_method_view_search" model="ir.ui.view">
+        <field name="name">account.move.agreed.payment.method.search</field>
+        <field name="model">account.move.agreed.payment.method</field>
+        <field name="arch" type="xml">
+            <search string="Search agreed payment methods">
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window action -->
+    <record id="action_account_move_agreed_payment_method" model="ir.actions.act_window">
+        <field name="name">Agreed payment methods</field>
+        <field name="res_model">account.move.agreed.payment.method</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="account_move_agreed_payment_method_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first agreed payment method
+            </p>
+            <p>
+                Agreed payment methods let you record the payment method agreed
+                with the vendor on purchase documents.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item under Configuration > Invoicing -->
+    <menuitem
+        id="menu_account_move_agreed_payment_method"
+        name="Agreed payment methods"
+        parent="account.account_invoicing_menu"
+        action="action_account_move_agreed_payment_method"
+        sequence="51"
+        groups="account.group_account_manager"/>
+
+</odoo>
