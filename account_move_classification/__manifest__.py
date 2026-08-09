@@ -1,6 +1,6 @@
 {
     "name": "Account Move Classification",
-    "version": "19.0.1.0.1",
+    "version": "19.0.1.0.2",
     "summary": "Classify invoices and journal entries with a color tag.",
     "author": "Zinapsia",
     "website": "https://github.com/devzinapsia/account-financial-tools",
@@ -21,5 +21,5 @@
     },
     "installable": True,
     "application": False,
-    "auto_install": False,
+    "auto_install": True,
 }
