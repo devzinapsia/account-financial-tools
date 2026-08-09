@@ -1,6 +1,6 @@
 {
     "name": "Account Invoice Agreed Payment Method",
-    "version": "19.0.1.0.3",
+    "version": "19.0.1.0.4",
     "summary": "Register the payment method agreed with the vendor on vendor bills.",
     "author": "Zinapsia",
     "website": "https://github.com/devzinapsia/account-financial-tools",

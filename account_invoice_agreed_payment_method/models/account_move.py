@@ -7,4 +7,5 @@ class AccountMove(models.Model):
     agreed_payment_method_id = fields.Many2one(
         "account.move.agreed.payment.method",
         string="Agreed payment method",
+        tracking=True,
     )
