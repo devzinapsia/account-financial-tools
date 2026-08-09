@@ -3,7 +3,7 @@
 
     <!-- Add the field to the header of the shared account.move form.
          Visible on vendor bills and vendor credit notes only, and
-         editable only while the document is in draft state. -->
+         editable regardless of the document's state (draft or posted). -->
     <record id="view_move_form_agreed_payment_method" model="ir.ui.view">
         <field name="name">account.move.form.agreed.payment.method</field>
         <field name="model">account.move</field>
@@ -11,8 +11,7 @@
         <field name="arch" type="xml">
             <div name="journal_div" position="after">
                 <field name="agreed_payment_method_id"
-                       invisible="move_type not in ('in_invoice', 'in_refund')"
-                       readonly="state != 'draft'"/>
+                       invisible="move_type not in ('in_invoice', 'in_refund')"/>
             </div>
         </field>
     </record>

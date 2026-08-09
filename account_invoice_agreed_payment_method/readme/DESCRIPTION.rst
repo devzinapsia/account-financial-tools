@@ -8,4 +8,5 @@ extended or edited without a code change. Seven common methods are loaded
 by default.
 
 The field only appears on purchase documents (vendor bills and refunds) and
-is editable only while the document is in draft state.
+stays editable regardless of the document's state, so it can be corrected
+after posting without resetting the document to draft.
