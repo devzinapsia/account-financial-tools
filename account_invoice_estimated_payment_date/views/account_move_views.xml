@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Add the field to the header of the shared account.move form,
-         next to the due date / payment terms block. Visible on vendor
-         bills and vendor credit notes only. -->
+    <!-- Add the field to the header of the shared account.move form, in the
+         left column (partner/reference block). Visible on vendor bills and
+         vendor credit notes only. -->
     <record id="view_move_form_estimated_payment_date" model="ir.ui.view">
         <field name="name">account.move.form.estimated.payment.date</field>
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[@name='due_date']" position="after">
+            <xpath expr="//field[@name='invoice_vendor_bill_id']" position="after">
                 <field name="estimated_payment_date"
-                       invisible="move_type not in ('in_invoice', 'in_refund')"
-                       readonly="state != 'draft'"/>
+                       invisible="move_type not in ('in_invoice', 'in_refund')"/>
             </xpath>
         </field>
     </record>

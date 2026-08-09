@@ -1,6 +1,7 @@
-Open a vendor bill or vendor credit note. While it is in draft state, the
-**Estimated Payment Date** field is available in the header, next to the due
-date / payment terms. It becomes read-only once the document is posted.
+Open a vendor bill or vendor credit note. The **Estimated Payment Date**
+field is available in the header, next to the due date / payment terms. It
+stays editable regardless of the document's status, so it can be updated
+without resetting a posted bill back to draft.
 
 The field is not shown on customer invoices or credit notes.
 

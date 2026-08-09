@@ -50,6 +50,17 @@ class TestAccountInvoiceEstimatedPaymentDate(AccountTestInvoicingCommon):
         invoice.estimated_payment_date = "2026-02-15"
         self.assertEqual(str(invoice.estimated_payment_date), "2026-02-15")
 
+    def test_set_estimated_payment_date_on_posted_vendor_bill(self):
+        """The estimated payment date can still be written after the bill is
+        posted, without resetting it to draft first."""
+        bill = self._make_move("in_invoice", invoice_date="2026-01-01")
+        bill.action_post()
+        self.assertEqual(bill.state, "posted")
+
+        bill.estimated_payment_date = "2026-02-15"
+        self.assertEqual(str(bill.estimated_payment_date), "2026-02-15")
+        self.assertEqual(bill.state, "posted")
+
     def test_search_by_estimated_payment_date(self):
         """account.move records can be searched by estimated_payment_date."""
         bill = self._make_move("in_invoice", invoice_date="2026-01-01")
