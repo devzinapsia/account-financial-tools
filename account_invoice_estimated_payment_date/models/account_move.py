@@ -8,4 +8,5 @@ class AccountMove(models.Model):
         string="Estimated Payment Date",
         help="Date on which the vendor bill is expected to be paid, "
         "independent of the due date.",
+        tracking=True,
     )
