@@ -1,0 +1,37 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_ar_invoice_service_dates_required
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-10 00:00+0000\n"
+"PO-Revision-Date: 2026-08-10 00:00+0000\n"
+"Last-Translator: Zinapsia SRL\n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: code:addons/l10n_ar_invoice_service_dates_required/models/account_move.py:0
+msgid "You must fill in the service billing period required by ARCA, in the Other Info tab."
+msgstr "Debe completar el período correspondiente a la facturación de servicios para ARCA dentro de la solapa OTRA INFORMACIÓN"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_dates_required
+msgid "Validate ARCA service period date entry"
+msgstr "Valida ingreso de fechas del período del servicio ARCA"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_dates_required
+msgid "When enabled, sales invoices posted through this journal with an ARCA concept of Services or Products and Services must have the service billing period (start/end dates) filled in."
+msgstr "Si está activo, las facturas de venta contabilizadas en este diario con un concepto ARCA de servicios o productos y servicios deben tener completado el período de facturación del servicio (fechas desde/hasta)."
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_dates_required
+msgid "ARCA service period dates required"
+msgstr "Fechas del período de servicio ARCA requeridas"
