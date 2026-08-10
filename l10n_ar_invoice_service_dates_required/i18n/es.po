@@ -17,6 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: l10n_ar_invoice_service_dates_required
+#. odoo-python
 #: code:addons/l10n_ar_invoice_service_dates_required/models/account_move.py:0
 msgid "You must fill in the service billing period required by ARCA, in the Other Info tab."
 msgstr "Debe completar el período correspondiente a la facturación de servicios para ARCA dentro de la solapa OTRA INFORMACIÓN"

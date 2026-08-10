@@ -70,11 +70,25 @@ class TestL10nArInvoiceServiceDatesRequired(TestArCommon):
 
     def test_post_raises_when_dates_empty(self):
         """All conditions met, dates empty: confirming (posting) the
-        invoice raises ValidationError."""
+        invoice raises ValidationError. Forces English so the assertion is
+        independent of the database's default language."""
         invoice = self._create_service_invoice(self.electronic_sale_journal)
         with self.assertRaisesRegex(ValidationError, "service billing period"):
-            invoice.action_post()
+            invoice.with_context(lang="en_US").action_post()
         self.assertEqual(invoice.state, "draft")
+
+    def test_post_error_message_is_translated_to_spanish(self):
+        """The validation error raised on post must be translated when the
+        user's language is Spanish (regression test: code-based
+        translations require the "#. odoo-python" comment marker in the .po
+        file next to the "#: code:addons/..." reference, otherwise Odoo
+        silently ignores the translation and always shows the English
+        source string)."""
+        self.env["res.lang"]._activate_lang("es_AR")
+        invoice = self._create_service_invoice(self.electronic_sale_journal)
+        with self.assertRaises(ValidationError) as capture:
+            invoice.with_context(lang="es_AR").action_post()
+        self.assertIn("OTRA INFORMACIÓN", str(capture.exception))
 
     def test_service_dates_required_saves_when_filled(self):
         """All conditions met, dates filled in: the invoice saves and posts without error."""
