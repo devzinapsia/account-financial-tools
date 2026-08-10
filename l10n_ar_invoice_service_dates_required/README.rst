@@ -10,9 +10,10 @@ invoice's concept is Services or Products and Services. Odoo's ``l10n_ar``
 module already provides the ``l10n_ar_afip_service_start`` and
 ``l10n_ar_afip_service_end`` fields, but does not require them.
 
-This module makes those two fields mandatory, both visually (in the form
-view) and at the data level (create/write), whenever all of the following
-conditions are met on a given ``account.move``:
+This module makes those two fields mandatory to confirm (post) an invoice,
+whenever all of the following conditions are met on a given
+``account.move``. The invoice can still be freely saved as a draft with
+the dates empty; the check only blocks the confirm/post action:
 
 - The invoice is a customer invoice or customer credit note
   (``move_type`` is ``out_invoice`` or ``out_refund``).
@@ -43,10 +44,12 @@ Usage
 =====
 
 Create or edit a customer invoice or credit note on a journal that has the
-validation enabled. When the invoice's ARCA concept is Services or Products
-and Services (i.e. it has service lines), the **Service Date** fields in
-the *Other Info* tab become required and must be filled in before the
-invoice can be saved.
+validation enabled. The invoice can be saved as a draft freely, even with
+the **Service Date** fields (in the *Other Info* tab) left empty. When the
+invoice's ARCA concept is Services or Products and Services (i.e. it has
+service lines), those two fields must be filled in before the invoice can
+be confirmed (posted); otherwise a validation error is raised at that
+point.
 
 Bug Tracker
 ===========
@@ -62,12 +65,12 @@ Credits
 Authors
 -------
 
-* Zinapsia SRL
+* Zinapsia
 
 Maintainers
 -----------
 
-This module is maintained by Zinapsia SRL.
+This module is maintained by Zinapsia.
 
 This module is part of the
 `account-financial-tools <https://github.com/devzinapsia/account-financial-tools>`_

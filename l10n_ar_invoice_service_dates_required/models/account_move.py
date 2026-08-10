@@ -32,9 +32,12 @@ class AccountMove(models.Model):
         """Whether the ARCA service billing period (start/end dates) is
         mandatory for this invoice.
 
-        This is the single source of truth for the condition, used both to
-        drive the required attribute in the form view (via the stored
-        compute field above) and the create/write constraint below.
+        This is the single source of truth for the condition, reused by the
+        stored compute field above and by the posting check below. Drafts
+        are never blocked by this: the dates are only required to confirm
+        (post) the invoice, mirroring how account.move._post() itself
+        collects "required only when posting" checks (e.g. partner, invoice
+        date) instead of enforcing them on every draft save.
         """
         self.ensure_one()
         journal = self.journal_id
@@ -47,14 +50,7 @@ class AccountMove(models.Model):
             and self.l10n_ar_afip_concept in L10N_AR_SERVICE_CONCEPTS
         )
 
-    @api.constrains(
-        "move_type",
-        "journal_id",
-        "invoice_line_ids",
-        "l10n_ar_afip_service_start",
-        "l10n_ar_afip_service_end",
-    )
-    def _check_l10n_ar_service_period_dates(self):
+    def _post(self, soft=True):
         for move in self:
             if move._l10n_ar_compute_service_period_dates_required() and not (
                 move.l10n_ar_afip_service_start and move.l10n_ar_afip_service_end
@@ -65,3 +61,4 @@ class AccountMove(models.Model):
                         "required by ARCA, in the Other Info tab."
                     )
                 )
+        return super()._post(soft=soft)

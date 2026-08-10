@@ -21,9 +21,9 @@
                     ARCA (formerly AFIP) requires the service billing period to be
                     informed on Argentinian invoices whose concept is Services or
                     Products and Services. This module makes the existing
-                    <code>l10n_ar</code> service period fields mandatory, both in
-                    the form view and at the data level, on electronic sales
-                    journals configured to enforce it.
+                    <code>l10n_ar</code> service period fields mandatory to confirm
+                    (post) an invoice, on electronic sales journals configured to
+                    enforce it.
                 </p>
             </div>
         </div>
@@ -35,9 +35,9 @@
                 <h3 class="oe_mt32" style="color: #714B67;">Key Features</h3>
                 <ul style="list-style-type: square; line-height: 2;">
                     <li><strong>Per-journal validation:</strong> Enable or disable the requirement on each electronic sales journal.</li>
-                    <li><strong>Visual and data-level enforcement:</strong> The Service Date fields become required in the form and on save.</li>
+                    <li><strong>Draft-friendly:</strong> Invoices can be saved as a draft freely; the dates are only required to confirm (post).</li>
                     <li><strong>Scoped to the right invoices:</strong> Only applies to customer invoices/credit notes with a Services or Products and Services concept.</li>
-                    <li><strong>Single source of truth:</strong> One shared method drives both the view requirement and the create/write validation.</li>
+                    <li><strong>Single source of truth:</strong> One shared method drives the posting validation.</li>
                 </ul>
             </div>
         </div>
@@ -47,7 +47,7 @@
         <div class="oe_row oe_spaced">
             <div class="oe_span12">
                 <p class="text-center" style="margin-top: 50px; font-style: italic;">
-                    Developed by <strong>Zinapsia SRL</strong> for Odoo 19.
+                    Developed by <strong>Zinapsia</strong> for Odoo 19.
                 </p>
             </div>
         </div>

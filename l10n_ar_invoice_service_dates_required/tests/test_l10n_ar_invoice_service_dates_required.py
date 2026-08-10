@@ -3,12 +3,13 @@ from odoo.tests import tagged
 
 from odoo.addons.l10n_ar.tests.common import TestArCommon
 
-# These tests only exercise local Odoo validation logic (view/model
-# constraints). Posting invoices on electronic ("FEERCEL"/"RLI_RLM"-style)
-# journals does not trigger any real ARCA/AFIP web service call in the
-# community l10n_ar module (that integration lives in the Enterprise
-# l10n_ar_edi module, not installed here), so no AFIP certificate or point
-# of sale credentials are required to exercise every scenario below.
+# These tests only exercise local Odoo validation logic (model constraints
+# and the _post() override). Posting invoices on electronic
+# ("FEERCEL"/"RLI_RLM"-style) journals does not trigger any real ARCA/AFIP
+# web service call in the community l10n_ar module (that integration lives
+# in the Enterprise l10n_ar_edi module, not installed here), so no AFIP
+# certificate or point of sale credentials are required to exercise every
+# scenario below.
 
 
 @tagged("post_install_l10n", "-at_install", "post_install")
@@ -57,10 +58,23 @@ class TestL10nArInvoiceServiceDatesRequired(TestArCommon):
         )
         self.assertFalse(journal.l10n_ar_service_period_dates_required)
 
-    def test_service_dates_required_raises_when_empty(self):
-        """All conditions met, dates empty: creating the invoice raises ValidationError."""
+    def test_draft_save_allowed_with_empty_dates(self):
+        """All conditions met, dates empty: the invoice can still be created
+        and kept as a draft without raising, since the check only applies
+        when confirming."""
+        invoice = self._create_service_invoice(self.electronic_sale_journal)
+        self.assertEqual(invoice.state, "draft")
+        self.assertTrue(invoice.l10n_ar_service_period_dates_required)
+        self.assertFalse(invoice.l10n_ar_afip_service_start)
+        self.assertFalse(invoice.l10n_ar_afip_service_end)
+
+    def test_post_raises_when_dates_empty(self):
+        """All conditions met, dates empty: confirming (posting) the
+        invoice raises ValidationError."""
+        invoice = self._create_service_invoice(self.electronic_sale_journal)
         with self.assertRaisesRegex(ValidationError, "service billing period"):
-            self._create_service_invoice(self.electronic_sale_journal)
+            invoice.action_post()
+        self.assertEqual(invoice.state, "draft")
 
     def test_service_dates_required_saves_when_filled(self):
         """All conditions met, dates filled in: the invoice saves and posts without error."""
@@ -74,13 +88,16 @@ class TestL10nArInvoiceServiceDatesRequired(TestArCommon):
         self.assertEqual(invoice.state, "posted")
 
     def test_not_required_when_journal_flag_disabled(self):
-        """Journal check disabled: dates are not required even if empty."""
+        """Journal check disabled: dates are not required, even to post."""
         self.electronic_sale_journal.l10n_ar_service_period_dates_required = False
         invoice = self._create_service_invoice(self.electronic_sale_journal)
         self.assertFalse(invoice.l10n_ar_service_period_dates_required)
+        self._post(invoice)
+        self.assertEqual(invoice.state, "posted")
 
     def test_not_required_when_concept_is_products_only(self):
-        """Concept is Products (not Services/Products and Services): dates not required even if empty."""
+        """Concept is Products (not Services/Products and Services): dates
+        are not required, even to post."""
         invoice = self._create_invoice_ar(
             journal_id=self.electronic_sale_journal,
             invoice_line_ids=[
@@ -89,6 +106,8 @@ class TestL10nArInvoiceServiceDatesRequired(TestArCommon):
         )
         self.assertEqual(invoice.l10n_ar_afip_concept, "1")
         self.assertFalse(invoice.l10n_ar_service_period_dates_required)
+        self._post(invoice)
+        self.assertEqual(invoice.state, "posted")
 
     def test_not_required_on_manual_preprinted_journal(self):
         """Pre-printed/manual journal (II_IM): dates not required even with
@@ -98,3 +117,5 @@ class TestL10nArInvoiceServiceDatesRequired(TestArCommon):
         )
         invoice = self._create_service_invoice(manual_journal)
         self.assertFalse(invoice.l10n_ar_service_period_dates_required)
+        self._post(invoice)
+        self.assertEqual(invoice.state, "posted")
