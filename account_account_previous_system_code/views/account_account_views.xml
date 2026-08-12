@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_form_previous_system_code" model="ir.ui.view">
+        <field name="name">account.account.form.previous.system.code</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('col-md-auto')]" position="after">
+                <div class="col col-md-auto">
+                    <label for="previous_system_account_code"/>
+                    <div>
+                        <field name="previous_system_account_code" class="oe_inline"/>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_list_previous_system_code" model="ir.ui.view">
+        <field name="name">account.account.list.previous.system.code</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="previous_system_account_code" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_search_previous_system_code" model="ir.ui.view">
+        <field name="name">account.account.search.previous.system.code</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="previous_system_account_code" string="Previous system account code"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
