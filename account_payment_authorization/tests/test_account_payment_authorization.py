@@ -60,14 +60,18 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         cls.scheme_classification = cls.env["account.payment.authorization.scheme"].create(
             {
                 "name": "Sensitive bills",
-                "classification_id": cls.classification_sensitive.id,
+                "domain": str(
+                    [("authorization_invoice_id.classification_id", "=", cls.classification_sensitive.id)]
+                ),
                 "authorized_user_ids": [Command.set([cls.user_authorizer.id])],
             }
         )
         cls.scheme_no_authorizers = cls.env["account.payment.authorization.scheme"].create(
             {
-                "name": "Blocked bills",
-                "classification_id": cls.classification_blocked.id,
+                "name": "Blocked bills (empty authorizers)",
+                "domain": str(
+                    [("authorization_invoice_id.classification_id", "=", cls.classification_blocked.id)]
+                ),
             }
         )
 
@@ -199,7 +203,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         scheme_amount = self.env["account.payment.authorization.scheme"].create(
             {
                 "name": "Large amounts",
-                "amount_min": 50.0,
+                "domain": str([("amount", ">=", 50.0)]),
                 "authorized_user_ids": [Command.set([self.user_authorizer_2.id])],
             }
         )
@@ -247,6 +251,56 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         # Confirmed straight away regardless of the account type behind the
         # outstanding account (some journal setups jump straight to 'paid').
         self.assertIn(payments.state, ("in_process", "paid"))
+
+    def test_block_payment_scheme_ignores_authorized_users(self):
+        # Deliberately give this "always block" scheme some authorized
+        # users: block_payment must still win, they must never be able to
+        # approve. This matches the example: no classification -> blocked.
+        scheme_block = self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "No classification -> never pay",
+                "domain": str([("authorization_invoice_id.classification_id", "=", False)]),
+                "block_payment": True,
+                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
+            }
+        )
+        bill = self._create_posted_bill()  # no classification set
+        payment = self._register_payment_blocked(bill, self.user_creator)
+
+        self.assertIn(scheme_block, payment.matched_scheme_ids)
+        self.assertFalse(payment.pending_authorizer_ids)
+        self.assertFalse(payment.activity_ids)
+
+        with self.assertRaises(AccessError):
+            payment.with_user(self.user_authorizer).action_authorize_payment()
+
+    def test_amount_tier_domain_schemes(self):
+        scheme_low = self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "0 to 1000",
+                "domain": str([("amount", ">=", 0), ("amount", "<", 1000)]),
+                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
+            }
+        )
+        scheme_high = self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "1000 and above",
+                "domain": str([("amount", ">=", 1000)]),
+                "authorized_user_ids": [Command.set([self.user_authorizer_2.id])],
+            }
+        )
+
+        low_bill = self._create_posted_bill(price=500.0)
+        low_payment = self._register_payment_blocked(low_bill, self.user_creator)
+        self.assertIn(scheme_low, low_payment.matched_scheme_ids)
+        self.assertNotIn(scheme_high, low_payment.matched_scheme_ids)
+        self.assertEqual(low_payment.pending_authorizer_ids, self.user_authorizer)
+
+        high_bill = self._create_posted_bill(price=1500.0)
+        high_payment = self._register_payment_blocked(high_bill, self.user_creator)
+        self.assertIn(scheme_high, high_payment.matched_scheme_ids)
+        self.assertNotIn(scheme_low, high_payment.matched_scheme_ids)
+        self.assertEqual(high_payment.pending_authorizer_ids, self.user_authorizer_2)
 
     def test_non_authorizer_cannot_approve_or_reject(self):
         bill = self._create_posted_bill(classification=self.classification_sensitive)

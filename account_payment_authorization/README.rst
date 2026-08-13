@@ -9,9 +9,11 @@ sensitive payment method, or payments for bills with a particular
 classification.
 
 This module adds configurable **payment authorization schemes**. Each
-scheme defines a set of conditions (invoice classification, vendor,
-payment method, minimum amount) and a list of users allowed to authorize
-a vendor payment matching those conditions. When a user tries to confirm
+scheme defines a domain condition on the payment (evaluated on
+``account.payment``, including the linked vendor bill) and a list of
+users allowed to authorize a vendor payment matching that condition, or
+is flagged to always block a matching payment outright. When a user tries
+to confirm
 a vendor payment that matches at least one scheme, and that user is not
 themselves listed as an authorizer on any matching scheme, the payment is
 held in a "To authorize" state instead of being confirmed, and an
@@ -32,30 +34,51 @@ Configuration
 =============
 
 Go to **Accounting ‣ Configuration ‣ Invoicing ‣ Payment Authorization
-Schemes** and create a scheme.
+Schemes** and create a scheme. Clicking a row opens its form.
 
-Every filter field on a scheme is optional. Leaving a field empty means
-that condition does not restrict the scheme -- a scheme with every field
-left empty matches any vendor payment (a catch-all scheme). A scheme
-matches a payment when **all** of its non-empty conditions are satisfied:
+A scheme has:
 
 * **Company**: leave empty to apply the scheme to every company.
-* **Invoice classification**: requires the ``account_move_classification``
-  module. Matches payments for a vendor bill with this classification.
-* **Vendors**: matches payments to any of the selected vendors.
-* **Payment method**: matches payments using this payment method.
-* **Minimum amount**: matches payments whose amount is greater than or
-  equal to this value.
+* **Conditions**: a domain built with Odoo's standard filter editor,
+  evaluated against the vendor payment (``account.payment``). An empty
+  domain matches any vendor payment (a catch-all scheme). Any field on the
+  payment can be used, including the linked vendor bill through
+  ``authorization_invoice_id``, e.g.:
+
+  * ``authorization_invoice_id.classification_id`` -- requires the
+    ``account_move_classification`` module; matches bills with (or
+    without) a given classification. To match bills that have *no*
+    classification at all, filter on "Classification" "is not set".
+  * ``partner_id`` -- matches payments to specific vendors.
+  * ``payment_method_line_id`` -- matches payments using a specific
+    payment method.
+  * ``amount`` -- matches payments by amount. Combine several schemes with
+    ``amount`` conditions to build tiers, e.g. one scheme for
+    ``0 <= amount < 1000`` authorized by user A, another for
+    ``1000 <= amount < 2000`` authorized by users B and C, and another for
+    ``amount >= 2000`` authorized by user D.
+
+* **Always block**: if checked, any payment matching this scheme's
+  conditions can never be approved by anyone, regardless of the
+  Authorized users field (which is then ignored and hidden). Use this to
+  explicitly and permanently deny a category of payments -- e.g. a scheme
+  with the condition "classification is not set" and Always block checked
+  means vendor bills without a classification can never be paid.
 * **Authorized users**: the users allowed to approve a payment matching
-  this scheme. If a scheme matches a payment but has no authorized users
-  configured, that payment can never be approved by anyone -- this is
-  intentional, not a bug: it is a way to permanently block a category of
-  payments until someone is added to the scheme.
+  this scheme (ignored if Always block is checked). If a scheme matches a
+  payment but has no authorized users configured and Always block is not
+  checked, that payment can also never be approved by anyone -- same
+  practical effect as Always block, but it usually means the field was
+  left empty by mistake rather than on purpose. Prefer checking Always
+  block when that is the actual intent, so the scheme documents itself.
 
 If a payment matches more than one scheme at the same time, it is enough
 for the payment to be approved by **any** authorized user from **any** of
-the matching schemes (the set of allowed approvers is the union across
-all matching schemes, not their intersection).
+the matching (non-blocking) schemes (the set of allowed approvers is the
+union across all matching schemes, not their intersection) -- unless at
+least one of the matching schemes has Always block checked, in which case
+the payment can never be approved regardless of what the other matching
+schemes allow.
 
 Usage
 =====

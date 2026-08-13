@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- List view -->
+    <!-- List view: no inline editing, clicking a row opens the form -->
     <record id="account_payment_authorization_scheme_view_list" model="ir.ui.view">
         <field name="name">account.payment.authorization.scheme.list</field>
         <field name="model">account.payment.authorization.scheme</field>
         <field name="arch" type="xml">
-            <list string="Payment authorization schemes" editable="top">
+            <list string="Payment authorization schemes">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="company_id" groups="base.group_multi_company"/>
-                <field name="classification_id"/>
-                <field name="partner_ids" widget="many2many_tags" optional="hide"/>
-                <field name="payment_method_line_id" optional="hide"/>
-                <field name="amount_min" optional="hide"/>
+                <field name="domain" optional="hide"/>
+                <field name="block_payment"/>
                 <field name="authorized_user_ids" widget="many2many_tags"/>
                 <field name="active" column_invisible="True"/>
             </list>
@@ -34,16 +32,18 @@
                             <field name="active"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
-                        <group>
-                            <field name="classification_id"/>
-                            <field name="partner_ids" widget="many2many_tags"/>
-                            <field name="payment_method_line_id"/>
-                            <field name="currency_id" invisible="1"/>
-                            <field name="amount_min"/>
-                        </group>
                     </group>
-                    <group string="Authorized users">
-                        <field name="authorized_user_ids" nolabel="1" widget="many2many_tags"/>
+                    <group string="Conditions">
+                        <field name="domain" nolabel="1" colspan="2"
+                               widget="domain" options="{'model': 'account.payment'}"/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="block_payment"/>
+                        </group>
+                        <group string="Authorized users" invisible="block_payment">
+                            <field name="authorized_user_ids" nolabel="1" widget="many2many_tags"/>
+                        </group>
                     </group>
                 </sheet>
             </form>
@@ -57,12 +57,10 @@
         <field name="arch" type="xml">
             <search string="Search payment authorization schemes">
                 <field name="name"/>
-                <field name="classification_id"/>
-                <field name="partner_ids"/>
                 <field name="authorized_user_ids"/>
+                <filter string="Always block" name="block_payment" domain="[('block_payment', '=', True)]"/>
                 <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
                 <group>
-                    <filter string="Classification" name="by_classification" context="{'group_by': 'classification_id'}"/>
                     <filter string="Company" name="by_company" context="{'group_by': 'company_id'}"
                             groups="base.group_multi_company"/>
                 </group>
@@ -81,10 +79,10 @@
                 Create your first payment authorization scheme
             </p>
             <p>
-                Authorization schemes define, based on conditions such as
-                the vendor bill classification, vendor, payment method or
-                amount, which users must authorize a vendor payment before
-                it can be confirmed.
+                Authorization schemes define, through a domain condition on
+                the payment (including its linked vendor bill), which users
+                must authorize a vendor payment before it can be confirmed,
+                or whether it must always be blocked.
             </p>
         </field>
     </record>

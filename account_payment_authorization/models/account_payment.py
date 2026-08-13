@@ -72,9 +72,25 @@ class AccountPayment(models.Model):
         "partner_id",
         "payment_method_line_id",
         "amount",
+        "date",
+        "journal_id",
+        "currency_id",
+        "authorization_invoice_id",
         "authorization_invoice_id.classification_id",
+        "authorization_invoice_id.partner_id",
+        "authorization_invoice_id.invoice_date",
     )
     def _compute_matched_scheme_ids(self):
+        # Schemes match through an arbitrary, admin-configured domain (see
+        # account.payment.authorization.scheme.domain), so the exact set of
+        # fields it can reference isn't known here -- the @api.depends above
+        # is a best-effort list of the fields most likely to be used in a
+        # condition, not an exhaustive one. This only affects how fresh the
+        # *stored/displayed* value is on an untouched draft payment: every
+        # authorization-sensitive decision (action_post / authorize /
+        # reject) calls _refresh_authorization_state() first, which forces a
+        # fully fresh evaluation regardless of whether this compute would
+        # have been triggered automatically.
         scheme_model = self.env["account.payment.authorization.scheme"]
         for payment in self:
             if payment.payment_type != "outbound" or payment.partner_type != "supplier":
@@ -91,10 +107,15 @@ class AccountPayment(models.Model):
                 lambda scheme, payment=payment: scheme._matches_payment(payment)
             )
 
-    @api.depends("matched_scheme_ids.authorized_user_ids")
+    @api.depends("matched_scheme_ids.authorized_user_ids", "matched_scheme_ids.block_payment")
     def _compute_pending_authorizer_ids(self):
         for payment in self:
-            payment.pending_authorizer_ids = payment.matched_scheme_ids.authorized_user_ids
+            # A scheme with "Always block" checked never contributes
+            # approvers, regardless of what's in its authorized_user_ids --
+            # that field is meant to be ignored in that case (see the field's
+            # help text).
+            open_schemes = payment.matched_scheme_ids.filtered(lambda s: not s.block_payment)
+            payment.pending_authorizer_ids = open_schemes.authorized_user_ids
 
     def _refresh_authorization_state(self):
         """Force a fresh recompute of the matching fields against the
@@ -131,6 +152,17 @@ class AccountPayment(models.Model):
                     body=_(
                         "Authorization requested from: %s",
                         ", ".join(payment.pending_authorizer_ids.mapped("display_name")),
+                    )
+                )
+                continue
+
+            blocking_schemes = payment.matched_scheme_ids.filtered("block_payment")
+            if blocking_schemes:
+                payment.message_post(
+                    body=_(
+                        "This payment is permanently blocked by the following "
+                        "scheme(s): %s.",
+                        ", ".join(blocking_schemes.mapped("name")),
                     )
                 )
             else:
