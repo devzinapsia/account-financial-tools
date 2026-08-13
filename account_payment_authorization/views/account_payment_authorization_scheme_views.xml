@@ -38,12 +38,11 @@
                                widget="domain" options="{'model': 'account.payment'}"/>
                     </group>
                     <group>
-                        <group>
-                            <field name="block_payment"/>
-                        </group>
-                        <group string="Authorized users" invisible="block_payment">
-                            <field name="authorized_user_ids" nolabel="1" widget="many2many_tags"/>
-                        </group>
+                        <field name="block_payment"/>
+                    </group>
+                    <group string="Authorized users" invisible="block_payment">
+                        <field name="authorized_user_ids" nolabel="1" colspan="2"
+                               widget="many2many_tags" placeholder="Enter users..."/>
                     </group>
                 </sheet>
             </form>

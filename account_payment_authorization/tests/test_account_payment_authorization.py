@@ -61,7 +61,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
             {
                 "name": "Sensitive bills",
                 "domain": str(
-                    [("authorization_invoice_id.classification_id", "=", cls.classification_sensitive.id)]
+                    [("invoice_ids.classification_id", "=", cls.classification_sensitive.id)]
                 ),
                 "authorized_user_ids": [Command.set([cls.user_authorizer.id])],
             }
@@ -70,7 +70,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
             {
                 "name": "Blocked bills (empty authorizers)",
                 "domain": str(
-                    [("authorization_invoice_id.classification_id", "=", cls.classification_blocked.id)]
+                    [("invoice_ids.classification_id", "=", cls.classification_blocked.id)]
                 ),
             }
         )
@@ -259,7 +259,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         scheme_block = self.env["account.payment.authorization.scheme"].create(
             {
                 "name": "No classification -> never pay",
-                "domain": str([("authorization_invoice_id.classification_id", "=", False)]),
+                "domain": str([("invoice_ids.classification_id", "=", False)]),
                 "block_payment": True,
                 "authorized_user_ids": [Command.set([self.user_authorizer.id])],
             }

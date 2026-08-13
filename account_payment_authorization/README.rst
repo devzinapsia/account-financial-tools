@@ -43,9 +43,10 @@ A scheme has:
   evaluated against the vendor payment (``account.payment``). An empty
   domain matches any vendor payment (a catch-all scheme). Any field on the
   payment can be used, including the linked vendor bill through
-  ``authorization_invoice_id``, e.g.:
+  "Invoices" (``invoice_ids``, the field shown as "Facturas" in the
+  filter editor when Spanish is active), e.g.:
 
-  * ``authorization_invoice_id.classification_id`` -- requires the
+  * ``invoice_ids.classification_id`` -- requires the
     ``account_move_classification`` module; matches bills with (or
     without) a given classification. To match bills that have *no*
     classification at all, filter on "Classification" "is not set".

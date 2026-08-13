@@ -19,10 +19,10 @@ class AccountPaymentAuthorizationScheme(models.Model):
         default="[]",
         help="Conditions a payment must meet (logical AND) to match this "
         "scheme, evaluated against account.payment fields -- including the "
-        "linked vendor bill via authorization_invoice_id, e.g. "
-        "authorization_invoice_id.classification_id, and the amount, e.g. "
-        "to build amount tiers with several schemes. An empty domain "
-        "matches any vendor payment (catch-all scheme).",
+        "linked vendor bill via Invoices, e.g. "
+        "invoice_ids.classification_id, and the amount, e.g. to build "
+        "amount tiers with several schemes. An empty domain matches any "
+        "vendor payment (catch-all scheme).",
     )
     block_payment = fields.Boolean(
         string="Always block",

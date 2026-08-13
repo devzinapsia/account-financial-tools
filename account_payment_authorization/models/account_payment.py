@@ -7,28 +7,6 @@ ACTIVITY_TYPE_XMLID = "mail.mail_activity_data_todo"
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
-    # Technical field: the single vendor bill this payment was created to
-    # pay, set by the account.payment.register override (see
-    # wizards/account_payment_register.py) right after the payment is
-    # created, before it gets posted or reconciled.
-    #
-    # It cannot be derived from the core `reconciled_invoice_ids` /
-    # `invoice_ids` fields at authorization time: `reconciled_invoice_ids`
-    # is only populated after reconciliation, which the register wizard
-    # performs *after* calling `action_post()` (see
-    # `account.payment.register._create_payments()`); and `invoice_ids` is
-    # only written to by the online/portal payment flow (`account_payment`
-    # module), never by the internal Register Payment wizard used here.
-    #
-    # A payment created directly (not through the wizard) and reconciled
-    # with an invoice afterwards will never have this field set, so no
-    # authorization scheme condition based on classification will match
-    # for it.
-    authorization_invoice_id = fields.Many2one(
-        "account.move",
-        string="Authorization source bill",
-        copy=False,
-    )
     authorization_state = fields.Selection(
         selection=[
             ("not_required", "Not required"),
@@ -75,10 +53,10 @@ class AccountPayment(models.Model):
         "date",
         "journal_id",
         "currency_id",
-        "authorization_invoice_id",
-        "authorization_invoice_id.classification_id",
-        "authorization_invoice_id.partner_id",
-        "authorization_invoice_id.invoice_date",
+        "invoice_ids",
+        "invoice_ids.classification_id",
+        "invoice_ids.partner_id",
+        "invoice_ids.invoice_date",
     )
     def _compute_matched_scheme_ids(self):
         # Schemes match through an arbitrary, admin-configured domain (see
