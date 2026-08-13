@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Multi-company record rule for account.payment.authorization.scheme.
+         Users see global schemes (company_id=False) and schemes belonging
+         to any company they have access to. -->
+    <record id="rule_account_payment_authorization_scheme_multicompany" model="ir.rule">
+        <field name="name">Account Payment Authorization Scheme: multi-company</field>
+        <field name="model_id" ref="model_account_payment_authorization_scheme"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+</odoo>

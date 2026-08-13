@@ -1,0 +1,431 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_authorization
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-13 00:00+0000\n"
+"PO-Revision-Date: 2026-08-13 00:00+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/wizards/account_payment_authorization_reject_wizard.py:0
+msgid ""
+"%(approver)s rejected the authorization request for payment "
+"%(payment)s.<br/>Reason: %(reason)s"
+msgstr ""
+"%(approver)s rechazó la solicitud de autorización del pago "
+"%(payment)s.<br/>Motivo: %(reason)s"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid ""
+"%(requester)s requested your authorization to confirm payment %(payment)s "
+"(%(amount)s %(currency)s) to %(partner)s."
+msgstr ""
+"%(requester)s solicitó su autorización para confirmar el pago %(payment)s "
+"(%(amount)s %(currency)s) a %(partner)s."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.view_account_payment_form_authorization
+msgid "Approve"
+msgstr "Aprobar"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_search
+msgid "Archived"
+msgstr "Archivado"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.view_account_payment_form_authorization
+msgid "Authorization"
+msgstr "Autorización"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "Authorization requested from: %s"
+msgstr "Autorización solicitada a: %s"
+
+#. module: account_payment_authorization
+#: model_terms:ir.actions.act_window,help:account_payment_authorization.action_account_payment_authorization_scheme
+msgid ""
+"Authorization schemes define, based on conditions such as\n"
+"                the vendor bill classification, vendor, payment method or\n"
+"                amount, which users must authorize a vendor payment before\n"
+"                it can be confirmed."
+msgstr ""
+"Los esquemas de autorización definen, en base a condiciones como la\n"
+"                clasificación de la factura de proveedor, el proveedor, el\n"
+"                método de pago o el importe, qué usuarios deben autorizar\n"
+"                un pago a proveedor antes de que pueda confirmarse."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__authorization_invoice_id
+msgid "Authorization source bill"
+msgstr "Factura de origen de la autorización"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__authorization_state
+msgid "Authorization status"
+msgstr "Estado de autorización"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields.selection,name:account_payment_authorization.selection__account_payment__authorization_state__authorized
+msgid "Authorized"
+msgstr "Autorizado"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__authorized_by_id
+msgid "Authorized by"
+msgstr "Autorizado por"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__authorized_user_ids
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_form
+msgid "Authorized users"
+msgstr "Usuarios autorizados"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_reject_wizard_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_search
+msgid "Classification"
+msgstr "Clasificación"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__company_id
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_search
+msgid "Company"
+msgstr "Compañía"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_reject_wizard_view_form
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: account_payment_authorization
+#: model_terms:ir.actions.act_window,help:account_payment_authorization.action_account_payment_authorization_scheme
+msgid "Create your first payment authorization scheme"
+msgstr "Cree su primer esquema de autorización de pagos"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__create_uid
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__create_date
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__display_name
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__display_name
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_register__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_reject_wizard_view_form
+msgid "Explain why this payment is rejected..."
+msgstr "Explique por qué se rechaza este pago..."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__id
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__id
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__id
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_register__id
+msgid "ID"
+msgstr "ID"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__classification_id
+msgid "Invoice classification"
+msgstr "Clasificación de factura"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__write_uid
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__write_date
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__company_id
+msgid "Leave empty to make this scheme apply to all companies."
+msgstr "Déjelo vacío para que este esquema aplique a todas las compañías."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__classification_id
+msgid "Leave empty to match any classification (or none at all)."
+msgstr "Déjelo vacío para que coincida con cualquier clasificación (o ninguna)."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__payment_method_line_id
+msgid "Leave empty to match any payment method."
+msgstr "Déjelo vacío para que coincida con cualquier método de pago."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__partner_ids
+msgid "Leave empty to match any vendor."
+msgstr "Déjelo vacío para que coincida con cualquier proveedor."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__amount_min
+msgid ""
+"Leave empty to not filter by amount. When set, the scheme matches payments "
+"whose amount is greater than or equal to this value."
+msgstr ""
+"Déjelo vacío para no filtrar por importe. Si se completa, el esquema "
+"coincide con pagos cuyo importe sea mayor o igual a este valor."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__matched_scheme_ids
+msgid "Matched authorization schemes"
+msgstr "Esquemas de autorización coincidentes"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__amount_min
+msgid "Minimum amount"
+msgstr "Importe mínimo"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields.selection,name:account_payment_authorization.selection__account_payment__authorization_state__not_required
+msgid "Not required"
+msgstr "No requerida"
+
+#. module: account_payment_authorization
+#: model:ir.model,name:account_payment_authorization.model_account_payment_register
+msgid "Pay"
+msgstr "Pagar"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__payment_id
+msgid "Payment"
+msgstr "Pago"
+
+#. module: account_payment_authorization
+#: model:ir.model,name:account_payment_authorization.model_account_payment_authorization_scheme
+msgid "Payment Authorization Scheme"
+msgstr "Esquema de autorización de pago"
+
+#. module: account_payment_authorization
+#: model:ir.actions.act_window,name:account_payment_authorization.action_account_payment_authorization_scheme
+#: model:ir.ui.menu,name:account_payment_authorization.menu_account_payment_authorization_scheme
+msgid "Payment Authorization Schemes"
+msgstr "Esquemas de autorización de pago"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/wizards/account_payment_authorization_reject_wizard.py:0
+msgid "Payment authorization rejected"
+msgstr "Autorización de pago rechazada"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "Payment authorization requested"
+msgstr "Autorización de pago solicitada"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_form
+msgid "Payment authorization scheme"
+msgstr "Esquema de autorización de pago"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_list
+msgid "Payment authorization schemes"
+msgstr "Esquemas de autorización de pago"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "Payment authorized by %s."
+msgstr "Pago autorizado por %s."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__payment_method_line_id
+msgid "Payment method"
+msgstr "Método de pago"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/wizards/account_payment_authorization_reject_wizard.py:0
+msgid ""
+"Payment rejected by %(user)s.\n"
+"Reason: %(reason)s"
+msgstr ""
+"Pago rechazado por %(user)s.\n"
+"Motivo: %(reason)s"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/wizards/account_payment_authorization_reject_wizard.py:0
+msgid "Payment rejected by %(user)s.<br/>Reason: %(reason)s"
+msgstr "Pago rechazado por %(user)s.<br/>Motivo: %(reason)s"
+
+#. module: account_payment_authorization
+#: model:ir.model,name:account_payment_authorization.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__pending_authorizer_ids
+msgid "Pending authorizers"
+msgstr "Autorizantes pendientes"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__reason
+msgid "Reason"
+msgstr "Motivo"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.view_account_payment_form_authorization
+msgid "Reject"
+msgstr "Rechazar"
+
+#. module: account_payment_authorization
+#: model:ir.model,name:account_payment_authorization.model_account_payment_authorization_reject_wizard
+msgid "Reject Payment Authorization"
+msgstr "Rechazar autorización de pago"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_reject_wizard_view_form
+msgid "Reject payment"
+msgstr "Rechazar pago"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields.selection,name:account_payment_authorization.selection__account_payment__authorization_state__rejected
+msgid "Rejected"
+msgstr "Rechazado"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__authorization_reject_reason
+msgid "Rejection reason"
+msgstr "Motivo de rechazo"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_search
+msgid "Search payment authorization schemes"
+msgstr "Buscar esquemas de autorización de pago"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid ""
+"These payments require authorization before they can be confirmed: %s. An "
+"activity has been assigned to the authorized user(s) of each."
+msgstr ""
+"Estos pagos requieren autorización antes de poder confirmarse: %s. Se "
+"asignó una actividad a los usuarios autorizados de cada uno."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+#: code:addons/account_payment_authorization/wizards/account_payment_authorization_reject_wizard.py:0
+msgid "This payment is not pending authorization."
+msgstr "Este pago no está pendiente de autorización."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid ""
+"This payment matches an authorization scheme with no authorized users "
+"configured. It cannot be approved until a user is added to that scheme."
+msgstr ""
+"Este pago coincide con un esquema de autorización sin usuarios autorizados "
+"configurados. No podrá aprobarse hasta que se agregue un usuario a ese "
+"esquema."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid ""
+"This payment requires authorization before it can be confirmed. An activity "
+"has been assigned to the authorized user(s)."
+msgstr ""
+"Este pago requiere autorización antes de poder confirmarse. Se asignó una "
+"actividad a los usuarios autorizados."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields.selection,name:account_payment_authorization.selection__account_payment__authorization_state__to_authorize
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.view_account_payment_search_authorization
+msgid "To authorize"
+msgstr "A autorizar"
+
+#. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.view_account_payment_search_authorization
+msgid "To authorize by me"
+msgstr "A autorizar por mí"
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__authorized_user_ids
+msgid ""
+"Users allowed to approve a payment matching this scheme. If left empty, any "
+"payment matching this scheme can never be approved."
+msgstr ""
+"Usuarios habilitados para aprobar un pago que coincida con este esquema. Si "
+"se deja vacío, ningún pago que coincida con este esquema podrá aprobarse "
+"nunca."
+
+#. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__partner_ids
+msgid "Vendors"
+msgstr "Proveedores"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "You are not allowed to authorize this payment."
+msgstr "No tiene permiso para autorizar este pago."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+#: code:addons/account_payment_authorization/wizards/account_payment_authorization_reject_wizard.py:0
+msgid "You are not allowed to reject this payment."
+msgstr "No tiene permiso para rechazar este pago."

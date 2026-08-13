@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List view -->
+    <record id="account_payment_authorization_scheme_view_list" model="ir.ui.view">
+        <field name="name">account.payment.authorization.scheme.list</field>
+        <field name="model">account.payment.authorization.scheme</field>
+        <field name="arch" type="xml">
+            <list string="Payment authorization schemes" editable="top">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="classification_id"/>
+                <field name="partner_ids" widget="many2many_tags" optional="hide"/>
+                <field name="payment_method_line_id" optional="hide"/>
+                <field name="amount_min" optional="hide"/>
+                <field name="authorized_user_ids" widget="many2many_tags"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="account_payment_authorization_scheme_view_form" model="ir.ui.view">
+        <field name="name">account.payment.authorization.scheme.form</field>
+        <field name="model">account.payment.authorization.scheme</field>
+        <field name="arch" type="xml">
+            <form string="Payment authorization scheme">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="classification_id"/>
+                            <field name="partner_ids" widget="many2many_tags"/>
+                            <field name="payment_method_line_id"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount_min"/>
+                        </group>
+                    </group>
+                    <group string="Authorized users">
+                        <field name="authorized_user_ids" nolabel="1" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="account_payment_authorization_scheme_view_search" model="ir.ui.view">
+        <field name="name">account.payment.authorization.scheme.search</field>
+        <field name="model">account.payment.authorization.scheme</field>
+        <field name="arch" type="xml">
+            <search string="Search payment authorization schemes">
+                <field name="name"/>
+                <field name="classification_id"/>
+                <field name="partner_ids"/>
+                <field name="authorized_user_ids"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Classification" name="by_classification" context="{'group_by': 'classification_id'}"/>
+                    <filter string="Company" name="by_company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window action -->
+    <record id="action_account_payment_authorization_scheme" model="ir.actions.act_window">
+        <field name="name">Payment Authorization Schemes</field>
+        <field name="res_model">account.payment.authorization.scheme</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="account_payment_authorization_scheme_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first payment authorization scheme
+            </p>
+            <p>
+                Authorization schemes define, based on conditions such as
+                the vendor bill classification, vendor, payment method or
+                amount, which users must authorize a vendor payment before
+                it can be confirmed.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item under Configuration > Invoicing, next to Invoice Classifications -->
+    <menuitem
+        id="menu_account_payment_authorization_scheme"
+        name="Payment Authorization Schemes"
+        parent="account.account_invoicing_menu"
+        action="action_account_payment_authorization_scheme"
+        sequence="55"
+        groups="account.group_account_manager"/>
+
+</odoo>
