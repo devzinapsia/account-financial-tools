@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- account_payment_authorization inserts the "Authorization" page into
+         the core, empty payment_notebook: the standard placement for a
+         vanilla Odoo deployment. But l10n_latam_check (a hard dependency of
+         account_payment_pro) builds its own separate, unnamed notebook for
+         "Checks", which account_payment_pro then extends with
+         "Debts"/"Paid" and (when l10n_ar_tax is also installed)
+         "Withholdings", all inside that second notebook, not
+         payment_notebook. Left alone, "Authorization" renders as its own
+         second tab strip below that one instead of sitting next to it.
+
+         Move it into that second notebook instead, as its last page. High
+         priority so this applies after any other module's insertions into
+         it (e.g. l10n_ar_tax's "Withholdings" tab, priority 30).
+
+         Assumes exactly one other notebook exists on the form besides
+         payment_notebook (true for this combination of modules); if a third
+         one is ever added by another module, this xpath would match it too
+         and duplicate the page into both. -->
+    <record id="view_account_payment_form_move_authorization_tab" model="ir.ui.view">
+        <field name="name">account.payment.form.move.authorization.tab</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="priority" eval="999"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook[not(@name='payment_notebook')]" position="inside">
+                <xpath expr="//page[@name='authorization']" position="move"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
