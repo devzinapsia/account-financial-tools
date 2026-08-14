@@ -42,6 +42,25 @@ class AccountPayment(models.Model):
         string="Rejection reason",
         copy=False,
     )
+    is_pending_confirmation = fields.Boolean(
+        string="Pending confirmation",
+        compute="_compute_is_pending_confirmation",
+        store=True,
+        help="True while this payment has not actually been confirmed yet. "
+        "Prefer this over the payment's own Status field when building a "
+        "scheme condition meant to only match payments still awaiting "
+        "confirmation: the Register Payment wizard can set Status to "
+        "'In process' before the payment is actually confirmed, so a "
+        "condition on Status = Draft can fail to match a payment that is "
+        "genuinely still pending.",
+    )
+
+    @api.depends("state", "move_id.state")
+    def _compute_is_pending_confirmation(self):
+        for payment in self:
+            payment.is_pending_confirmation = (
+                payment.move_id.state == "draft" if payment.move_id else payment.state == "draft"
+            )
 
     @api.depends(
         "payment_type",
@@ -109,6 +128,7 @@ class AccountPayment(models.Model):
         # could otherwise be invisible to those filters even though it
         # already matches a scheme.
         payments.pending_authorizer_ids
+        payments.is_pending_confirmation
         return payments
 
     def write(self, vals):
@@ -119,6 +139,7 @@ class AccountPayment(models.Model):
         # the draft), so force the recompute to happen -- and be
         # search-able -- right away rather than lazily.
         self.pending_authorizer_ids
+        self.is_pending_confirmation
         return result
 
     def _refresh_authorization_state(self):

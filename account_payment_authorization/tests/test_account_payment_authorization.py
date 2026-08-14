@@ -501,3 +501,53 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         self.assertIn(payment_pending, results)
         self.assertNotIn(payment_authorized, results)
         self.assertNotIn(payment_rejected, results)
+
+    def test_new_scheme_defaults_to_current_company(self):
+        scheme = (
+            self.env["account.payment.authorization.scheme"]
+            .with_user(self.user_manager)
+            .create({"name": "Company default test"})
+        )
+        self.assertEqual(scheme.company_id, self.env.company)
+
+    def test_new_scheme_domain_defaults_to_pending_vendor_payments(self):
+        scheme = self.env["account.payment.authorization.scheme"].create(
+            {"name": "Domain default test"}
+        )
+        domain = safe_eval(scheme.domain)
+        self.assertIn(("payment_type", "=", "outbound"), domain)
+        self.assertIn(("partner_type", "=", "supplier"), domain)
+        self.assertIn(("is_pending_confirmation", "=", True), domain)
+
+    def test_is_pending_confirmation_survives_wizard_premature_state_flip(self):
+        """The Register Payment wizard sets payment.state to 'in_process'
+        before action_post() ever runs (see the note in action_post()),
+        while the underlying journal entry is still draft. A scheme
+        condition using is_pending_confirmation (based on move_id.state,
+        not the payment's own state) must still correctly match and block
+        the payment despite that premature flip -- unlike a condition
+        using the payment's own Status field would.
+        """
+        scheme = self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "Pending confirmation scheme",
+                "domain": str(
+                    [
+                        ("invoice_ids.classification_id", "=", self.classification_sensitive.id),
+                        ("is_pending_confirmation", "=", True),
+                    ]
+                ),
+                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
+            }
+        )
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+
+        self.assertIn(scheme, payment.matched_scheme_ids)
+        self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
+
+    def test_is_pending_confirmation_false_once_actually_confirmed(self):
+        bill = self._create_posted_bill()
+        payment = self._register_payment(bill, self.user_creator)
+        self.assertEqual(payment.state, "in_process")
+        self.assertFalse(payment.is_pending_confirmation)

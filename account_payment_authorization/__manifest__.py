@@ -1,6 +1,6 @@
 {
     "name": "Account Payment Authorization",
-    "version": "19.0.1.0.6",
+    "version": "19.0.1.0.7",
     "summary": "Require authorization from configured users before confirming "
     "vendor payments that match configurable schemes.",
     "author": "Zinapsia",

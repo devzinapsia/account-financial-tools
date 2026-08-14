@@ -325,6 +325,11 @@ msgid "Payments"
 msgstr "Pagos"
 
 #. module: account_payment_authorization
+#: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__is_pending_confirmation
+msgid "Pending confirmation"
+msgstr "Pendiente de confirmación"
+
+#. module: account_payment_authorization
 #: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__pending_authorizer_ids
 msgid "Pending authorizers"
 msgstr "Autorizantes pendientes"

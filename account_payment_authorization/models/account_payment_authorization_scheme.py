@@ -12,17 +12,31 @@ class AccountPaymentAuthorizationScheme(models.Model):
     active = fields.Boolean(default=True)
     company_id = fields.Many2one(
         "res.company",
+        default=lambda self: self.env.company,
         help="Leave empty to make this scheme apply to all companies.",
     )
     domain = fields.Char(
         string="Conditions",
-        default="[]",
+        default=lambda self: str(
+            [
+                ("payment_type", "=", "outbound"),
+                ("partner_type", "=", "supplier"),
+                ("is_pending_confirmation", "=", True),
+            ]
+        ),
         help="Conditions a payment must meet (logical AND) to match this "
         "scheme, evaluated against account.payment fields -- including the "
         "linked vendor bill via Invoices, e.g. "
         "invoice_ids.classification_id, and the amount, e.g. to build "
         "amount tiers with several schemes. An empty domain matches any "
-        "vendor payment (catch-all scheme).",
+        "vendor payment (catch-all scheme). The Payment type and Recipient "
+        "type conditions match what this module only ever actually "
+        "evaluates against (outbound vendor payments), so they keep the "
+        "record count shown while editing this domain accurate -- remove "
+        "them if you really want to build a domain that reads as broader "
+        "than that. Prefer the Pending confirmation field over the "
+        "payment's own Status when a condition needs to target payments "
+        "still awaiting confirmation; see that field's own help text.",
     )
     block_payment = fields.Boolean(
         string="Always block",
