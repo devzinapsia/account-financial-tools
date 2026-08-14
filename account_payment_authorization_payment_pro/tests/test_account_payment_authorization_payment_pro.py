@@ -102,6 +102,35 @@ class TestAccountPaymentAuthorizationPaymentPro(AccountTestInvoicingCommon):
         self.assertEqual(payment.invoice_ids, bill)
         self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
 
+    def test_payment_pro_invoice_ids_tracks_current_selection_not_history(self):
+        """Switching which bill `to_pay_move_line_ids` points to (or
+        clearing it) must update `invoice_ids` to match exactly -- not
+        accumulate every bill ever selected. A stale leftover here would
+        also leak into l10n_ar_payment_bundle.button_open_invoices() and
+        core's reconciled_bill_ids stat button count, both of which read
+        `invoice_ids` directly.
+        """
+        bill_a = self._create_posted_bill(price=100.0)
+        bill_b = self._create_posted_bill(price=200.0)
+        payment = self._create_ppro_draft_payment(bill_a)
+        # Reading matched_scheme_ids (not invoice_ids directly) is what
+        # triggers the sync -- see test_payment_pro_draft_syncs_invoice_ids_
+        # and_matches_scheme for why.
+        payment.matched_scheme_ids
+        self.assertEqual(payment.invoice_ids, bill_a)
+
+        payable_line_b = bill_b.line_ids.filtered(
+            lambda l: l.account_id.account_type == "liability_payable"
+        )
+        payment.to_pay_move_line_ids = [Command.set(payable_line_b.ids)]
+        payment.matched_scheme_ids
+        self.assertEqual(payment.invoice_ids, bill_b)
+        self.assertNotIn(bill_a, payment.invoice_ids)
+
+        payment.to_pay_move_line_ids = [Command.clear()]
+        payment.matched_scheme_ids
+        self.assertFalse(payment.invoice_ids)
+
     def test_payment_pro_flow_blocks_unauthorized_confirmation(self):
         bill = self._create_posted_bill()
         payment = self._create_ppro_draft_payment(bill)

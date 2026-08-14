@@ -21,6 +21,18 @@ class AccountPayment(models.Model):
         account_payment_authorization scheme conditions are meant to
         reference -- so conditions work the same regardless of which flow
         created the payment.
+
+        Uses `Command.set` (replace), not `Command.link` (add): the user
+        can change `to_pay_move_line_ids` after picking it once (swap the
+        bill, add a second one, clear it), and `invoice_ids` must track
+        that current selection exactly, not accumulate every bill ever
+        selected. A stale extra entry here wouldn't just make our own
+        scheme matching wrong -- `invoice_ids` is also read directly by
+        `l10n_ar_payment_bundle.button_open_invoices()` and by core's own
+        `reconciled_bill_ids` stat button count
+        (`_compute_stat_buttons_from_reconciliation` starts from
+        `payment.invoice_ids` before adding the actual reconciliation
+        query), so leaving old links behind would leak into those too.
         """
         for payment in self:
             if payment.payment_type != "outbound" or payment.partner_type != "supplier":
@@ -28,8 +40,13 @@ class AccountPayment(models.Model):
             bills = payment.to_pay_move_line_ids.move_id.filtered(
                 lambda move: move.move_type in VENDOR_BILL_TYPES
             )
-            if len(bills) == 1 and bills not in payment.invoice_ids:
-                payment.invoice_ids = [Command.link(bills.id)]
+            # Scope stays "a single identifiable bill": if to_pay_move_line_ids
+            # currently spans zero or several bills, invoice_ids is cleared
+            # rather than guessing -- matching account_payment_authorization's
+            # documented "one bill per payment" scope.
+            target_ids = bills.ids if len(bills) == 1 else []
+            if set(target_ids) != set(payment.invoice_ids.ids):
+                payment.invoice_ids = [Command.set(target_ids)]
 
     @api.depends("to_pay_move_line_ids", "to_pay_move_line_ids.move_id.classification_id")
     def _compute_matched_scheme_ids(self):
