@@ -24,10 +24,16 @@ single vendor bill from the Vendor Bills list and use the same action).
 Authorizing or rejecting a pending payment
 =============================================
 
-Open the payment (it will be in the *To authorize* state). If you are one
-of the users authorized to act on it, you will see an **Authorize**
-button next to **Confirm** in the header, and a **Reject** button in the
-**Authorization** tab.
+Open the payment. If you are one of the users authorized to act on it,
+you will see an **Authorize** button next to **Confirm** in the header,
+and a **Reject** button in the **Authorization** tab -- available as soon
+as the payment is a draft that matches a scheme you can act on, even if
+nobody has attempted to confirm it yet. It is not necessary to wait for
+someone else to first try **Confirm** and be blocked from it (which is
+what sets the **Authorization status** to *To authorize*): this matters
+because, in practice, the person who registers the payment is often not
+themselves an authorized user, so they could never be the one to trigger
+that state.
 
 * **Authorize**: does *not* confirm the payment. It only sets the
   **Authorization status** to *Authorized* and the **Authorized by**

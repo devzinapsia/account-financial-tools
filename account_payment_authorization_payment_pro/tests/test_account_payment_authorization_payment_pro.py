@@ -152,6 +152,25 @@ class TestAccountPaymentAuthorizationPaymentPro(AccountTestInvoicingCommon):
         self.assertEqual(payment.authorized_by_id, self.user_authorizer)
         self.assertNotEqual(payment.state, "draft")
 
+    def test_payment_pro_authorizer_authorizes_untouched_draft(self):
+        """The real-world reported scenario: account_payment_pro drafts the
+        payment directly (to_pay_move_line_ids), and nobody has attempted
+        to confirm it yet, so authorization_state is still its default
+        "not_required". The authorizer must still be able to click
+        Authorize straight away, without anyone first attempting (and
+        being blocked from) confirming it.
+        """
+        bill = self._create_posted_bill()
+        payment = self._create_ppro_draft_payment(bill)
+        self.assertEqual(payment.authorization_state, "not_required")
+        self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
+
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+
+        self.assertEqual(payment.authorization_state, "authorized")
+        self.assertEqual(payment.authorized_by_id, self.user_authorizer)
+        self.assertEqual(payment.state, "draft")
+
     def test_payment_pro_flow_non_authorizer_cannot_approve(self):
         bill = self._create_posted_bill()
         payment = self._create_ppro_draft_payment(bill)

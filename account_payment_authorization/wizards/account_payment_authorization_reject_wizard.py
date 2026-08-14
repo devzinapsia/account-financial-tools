@@ -19,7 +19,10 @@ class AccountPaymentAuthorizationRejectWizard(models.TransientModel):
         self.ensure_one()
         payment = self.payment_id
         payment._refresh_authorization_state()
-        if payment.authorization_state != "to_authorize":
+        if payment.state != "draft" or payment.authorization_state in (
+            "authorized",
+            "rejected",
+        ):
             raise UserError(_("This payment is not pending authorization."))
         if self.env.user not in payment.pending_authorizer_ids:
             raise AccessError(_("You are not allowed to reject this payment."))

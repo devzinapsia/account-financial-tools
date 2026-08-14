@@ -249,15 +249,22 @@ class AccountPayment(models.Model):
         return True
 
     def action_authorize_payment(self):
-        """Authorize a pending payment without confirming it. Confirming is
-        a deliberately separate step (the regular "Confirm" button): once
-        authorization_state is 'authorized', action_post() lets anyone
-        confirm it, not just an authorized user -- so a different person
-        can be the one to actually execute/post the payment.
+        """Authorize a payment without confirming it. This can be done
+        proactively on a draft payment that matches a scheme, without
+        anyone having to attempt (and be blocked from) confirming it
+        first -- the authorized user only needs to already appear in
+        pending_authorizer_ids. Confirming is a deliberately separate step
+        (the regular "Confirm" button): once authorization_state is
+        'authorized', action_post() lets anyone confirm it, not just an
+        authorized user -- so a different person can be the one to
+        actually execute/post the payment.
         """
         self._refresh_authorization_state()
         for payment in self:
-            if payment.authorization_state != "to_authorize":
+            if payment.state != "draft" or payment.authorization_state in (
+                "authorized",
+                "rejected",
+            ):
                 raise UserError(_("This payment is not pending authorization."))
             if self.env.user not in payment.pending_authorizer_ids:
                 raise AccessError(_("You are not allowed to authorize this payment."))
@@ -282,7 +289,10 @@ class AccountPayment(models.Model):
     def action_reject_payment(self):
         self.ensure_one()
         self._refresh_authorization_state()
-        if self.authorization_state != "to_authorize":
+        if self.state != "draft" or self.authorization_state in (
+            "authorized",
+            "rejected",
+        ):
             raise UserError(_("This payment is not pending authorization."))
         if self.env.user not in self.pending_authorizer_ids:
             raise AccessError(_("You are not allowed to reject this payment."))

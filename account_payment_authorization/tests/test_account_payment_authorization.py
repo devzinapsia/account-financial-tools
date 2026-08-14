@@ -106,6 +106,32 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         )
         return wizard._create_payments()
 
+    def _create_draft_payment(self, bill, user):
+        """Create a draft vendor payment directly on the model, without
+        ever calling action_post() -- this is what a payment looks like
+        right after a third-party module (e.g. ingadhoc's
+        account_payment_pro) drafts it directly, bypassing the standard
+        "Register Payment" wizard entirely, before anyone has attempted to
+        confirm it. authorization_state stays at its default
+        ("not_required") until action_post() actually runs.
+        """
+        return (
+            self.env["account.payment"]
+            .with_user(user)
+            .create(
+                {
+                    "payment_type": "outbound",
+                    "partner_type": "supplier",
+                    "partner_id": bill.partner_id.id,
+                    "amount": bill.amount_total,
+                    "date": bill.invoice_date,
+                    "journal_id": self.company_data["default_journal_bank"].id,
+                    "payment_method_line_id": self.outbound_payment_method_line.id,
+                    "invoice_ids": [Command.set(bill.ids)],
+                }
+            )
+        )
+
     def _register_payment_blocked(self, bill, user):
         """Register a payment expected to be blocked pending authorization.
         Returns the created (still draft) account.payment.
@@ -174,6 +200,49 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
                 for activity in payment.activity_ids
             )
         )
+
+    def test_authorizer_authorizes_untouched_draft_before_any_confirm_attempt(self):
+        """An authorized user can authorize a payment that is still in
+        authorization_state "not_required" (its default) because nobody
+        has attempted to confirm it yet -- they don't need to wait for a
+        first confirm attempt to fail and flip it to "to_authorize".
+        """
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._create_draft_payment(bill, self.user_creator)
+        self.assertEqual(payment.authorization_state, "not_required")
+        self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
+
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+
+        self.assertEqual(payment.authorization_state, "authorized")
+        self.assertEqual(payment.authorized_by_id, self.user_authorizer)
+        self.assertEqual(payment.state, "draft")
+
+    def test_authorizer_rejects_untouched_draft_before_any_confirm_attempt(self):
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._create_draft_payment(bill, self.user_creator)
+        self.assertEqual(payment.authorization_state, "not_required")
+
+        wizard = (
+            self.env["account.payment.authorization.reject.wizard"]
+            .with_user(self.user_authorizer)
+            .create({"payment_id": payment.id, "reason": "Wrong vendor"})
+        )
+        wizard.action_confirm()
+
+        self.assertEqual(payment.authorization_state, "rejected")
+        self.assertEqual(payment.state, "draft")
+
+    def test_cannot_reauthorize_or_reject_once_already_authorized(self):
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+
+        with self.assertRaises(UserError):
+            payment.with_user(self.user_authorizer).action_authorize_payment()
+
+        with self.assertRaises(UserError):
+            payment.with_user(self.user_authorizer).action_reject_payment()
 
     def test_any_user_can_confirm_once_authorized(self):
         """Once authorized (but not yet confirmed), anyone -- not just an
