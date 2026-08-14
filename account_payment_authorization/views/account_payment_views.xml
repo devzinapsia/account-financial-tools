@@ -79,10 +79,22 @@
         <field name="inherit_id" ref="account.view_account_payment_search"/>
         <field name="arch" type="xml">
             <filter name="state_in_process" position="after">
+                <!-- Both filters target payments that are actually
+                     actionable right now: a draft that still has a
+                     pending authorizer, and hasn't already been
+                     authorized or rejected. This matches exactly what
+                     makes the "Authorize" / "Reject" buttons visible on
+                     the form (see account_payment_views.xml), including
+                     drafts nobody has attempted to confirm yet, not only
+                     ones already blocked into "to_authorize". -->
                 <filter string="To authorize" name="authorization_to_authorize"
-                        domain="[('authorization_state', '=', 'to_authorize')]"/>
+                        domain="[('state', '=', 'draft'),
+                                 ('pending_authorizer_ids', '!=', False),
+                                 ('authorization_state', 'not in', ['authorized', 'rejected'])]"/>
                 <filter string="To authorize by me" name="authorization_to_authorize_by_me"
-                        domain="[('pending_authorizer_ids', 'in', [uid])]"/>
+                        domain="[('state', '=', 'draft'),
+                                 ('pending_authorizer_ids', 'in', [uid]),
+                                 ('authorization_state', 'not in', ['authorized', 'rejected'])]"/>
             </filter>
         </field>
     </record>

@@ -1,6 +1,6 @@
 {
     "name": "Account Payment Authorization - Payment Pro",
-    "version": "19.0.1.1.1",
+    "version": "19.0.1.1.2",
     "summary": "Bridge account_payment_authorization with ingadhoc's account_payment_pro, "
     "so authorization schemes see the vendor bill a payment_pro draft payment is "
     "meant to settle.",

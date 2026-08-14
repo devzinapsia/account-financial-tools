@@ -95,6 +95,32 @@ class AccountPayment(models.Model):
             open_schemes = payment.matched_scheme_ids.filtered(lambda s: not s.block_payment)
             payment.pending_authorizer_ids = open_schemes.authorized_user_ids
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        payments = super().create(vals_list)
+        # Force matched_scheme_ids/pending_authorizer_ids to be computed
+        # and flushed to the database right away, instead of leaving them
+        # lazily "to compute" until something happens to read them (e.g.
+        # opening the payment's form). Search domains on these fields
+        # (the "To authorize" / "To authorize by me" filters) are not
+        # guaranteed to trigger that lazy computation themselves, so a
+        # payment nobody has looked at yet -- e.g. one drafted directly by
+        # a third-party module like ingadhoc's account_payment_pro --
+        # could otherwise be invisible to those filters even though it
+        # already matches a scheme.
+        payments.pending_authorizer_ids
+        return payments
+
+    def write(self, vals):
+        result = super().write(vals)
+        # Same reasoning as create() above: a write can change which
+        # scheme(s) match (e.g. ingadhoc's account_payment_pro setting
+        # to_pay_move_line_ids in a separate write right after creating
+        # the draft), so force the recompute to happen -- and be
+        # search-able -- right away rather than lazily.
+        self.pending_authorizer_ids
+        return result
+
     def _refresh_authorization_state(self):
         """Force a fresh recompute of the matching fields against the
         current scheme configuration and invoice state, instead of trusting

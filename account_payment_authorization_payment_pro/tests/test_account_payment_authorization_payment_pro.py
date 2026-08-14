@@ -1,6 +1,9 @@
+from lxml import etree
+
 from odoo import Command
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import tagged
+from odoo.tools.safe_eval import safe_eval
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -72,6 +75,12 @@ class TestAccountPaymentAuthorizationPaymentPro(AccountTestInvoicingCommon):
         )
         payment.to_pay_move_line_ids = [Command.set(payable_line.ids)]
         return payment
+
+    def _search_filter_domain(self, filter_name, user):
+        view = self.env["account.payment"].with_user(user).get_view(view_type="search")
+        arch = etree.fromstring(view["arch"])
+        node = arch.find(f".//filter[@name='{filter_name}']")
+        return safe_eval(node.get("domain"), {"uid": user.id})
 
     def _action_post_expect_blocked(self, payment):
         """Call action_post() expecting it to raise UserError, without using
@@ -170,6 +179,25 @@ class TestAccountPaymentAuthorizationPaymentPro(AccountTestInvoicingCommon):
         self.assertEqual(payment.authorization_state, "authorized")
         self.assertEqual(payment.authorized_by_id, self.user_authorizer)
         self.assertEqual(payment.state, "draft")
+
+    def test_payment_pro_draft_is_immediately_searchable_to_authorize_by_me(self):
+        """The real-world reported scenario: to_pay_move_line_ids is set
+        via a separate write() right after create() (exactly what
+        _create_ppro_draft_payment does), and nobody has read
+        pending_authorizer_ids on the payment since. The "To authorize by
+        me" search filter must still find it immediately -- it must not
+        depend on some other code path having already forced the
+        matched_scheme_ids/pending_authorizer_ids compute to run.
+        """
+        bill = self._create_posted_bill()
+        payment = self._create_ppro_draft_payment(bill)
+
+        domain = self._search_filter_domain(
+            "authorization_to_authorize_by_me", self.user_authorizer
+        )
+        results = self.env["account.payment"].with_user(self.user_authorizer).search(domain)
+
+        self.assertIn(payment, results)
 
     def test_payment_pro_flow_non_authorizer_cannot_approve(self):
         bill = self._create_posted_bill()

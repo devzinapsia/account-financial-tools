@@ -1,6 +1,9 @@
+from lxml import etree
+
 from odoo import Command
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import tagged
+from odoo.tools.safe_eval import safe_eval
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -131,6 +134,18 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
                 }
             )
         )
+
+    def _search_filter_domain(self, filter_name, user):
+        """Evaluate one of the "To authorize" / "To authorize by me" search
+        filters exactly as the web client would, reading the real,
+        currently-resolved search view arch instead of duplicating the
+        domain by hand -- so this test breaks if the view's domain
+        actually changes, instead of silently drifting from it.
+        """
+        view = self.env["account.payment"].with_user(user).get_view(view_type="search")
+        arch = etree.fromstring(view["arch"])
+        node = arch.find(f".//filter[@name='{filter_name}']")
+        return safe_eval(node.get("domain"), {"uid": user.id})
 
     def _register_payment_blocked(self, bill, user):
         """Register a payment expected to be blocked pending authorization.
@@ -429,3 +444,60 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
             self.env["account.payment.authorization.reject.wizard"].with_user(
                 self.user_creator
             ).create({"payment_id": payment.id, "reason": "Not allowed"}).action_confirm()
+
+    def test_search_filter_to_authorize_by_me_excludes_already_authorized(self):
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_pending = self._register_payment_blocked(bill, self.user_creator)
+
+        bill_2 = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_authorized = self._register_payment_blocked(bill_2, self.user_creator)
+        payment_authorized.with_user(self.user_authorizer).action_authorize_payment()
+
+        domain = self._search_filter_domain(
+            "authorization_to_authorize_by_me", self.user_authorizer
+        )
+        results = self.env["account.payment"].with_user(self.user_authorizer).search(domain)
+
+        self.assertIn(payment_pending, results)
+        self.assertNotIn(
+            payment_authorized,
+            results,
+            "A payment already authorized by me should drop off my "
+            "'To authorize by me' filter, since pending_authorizer_ids "
+            "alone doesn't change once a payment is authorized.",
+        )
+
+    def test_search_filter_to_authorize_by_me_includes_untouched_draft(self):
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._create_draft_payment(bill, self.user_creator)
+        self.assertEqual(payment.authorization_state, "not_required")
+
+        domain = self._search_filter_domain(
+            "authorization_to_authorize_by_me", self.user_authorizer
+        )
+        results = self.env["account.payment"].with_user(self.user_authorizer).search(domain)
+
+        self.assertIn(payment, results)
+
+    def test_search_filter_to_authorize_excludes_authorized_and_rejected(self):
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_pending = self._register_payment_blocked(bill, self.user_creator)
+
+        bill_2 = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_authorized = self._register_payment_blocked(bill_2, self.user_creator)
+        payment_authorized.with_user(self.user_authorizer).action_authorize_payment()
+
+        bill_3 = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_rejected = self._register_payment_blocked(bill_3, self.user_creator)
+        self.env["account.payment.authorization.reject.wizard"].with_user(
+            self.user_authorizer
+        ).create(
+            {"payment_id": payment_rejected.id, "reason": "Not needed"}
+        ).action_confirm()
+
+        domain = self._search_filter_domain("authorization_to_authorize", self.user_manager)
+        results = self.env["account.payment"].search(domain)
+
+        self.assertIn(payment_pending, results)
+        self.assertNotIn(payment_authorized, results)
+        self.assertNotIn(payment_rejected, results)
