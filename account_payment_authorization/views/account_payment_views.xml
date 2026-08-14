@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Form view: new "Authorization" page + Approve/Reject buttons -->
+    <!-- Form view: new "Authorization" page + Approve/Reject buttons.
+         High priority so this page is appended after any other module's
+         pages inside the same notebook (e.g. ingadhoc's "Debts" /
+         "Withholdings" tabs), keeping "Authorization" last regardless of
+         module load order. -->
     <record id="view_account_payment_form_authorization" model="ir.ui.view">
         <field name="name">account.payment.form.authorization</field>
         <field name="model">account.payment</field>
         <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="priority" eval="999"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook[@name='payment_notebook']" position="inside">
                 <page name="authorization" string="Authorization"
