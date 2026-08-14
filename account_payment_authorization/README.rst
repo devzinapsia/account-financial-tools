@@ -107,15 +107,30 @@ single vendor bill from the Vendor Bills list and use the same action).
   * The user who tried to confirm the payment gets an error message
     explaining that the payment is now pending authorization.
 
-Approving or rejecting a pending payment
-------------------------------------------
+Authorizing or rejecting a pending payment
+----------------------------------------------
 
-Open the payment (it will be in the *To authorize* state) and go to its
-**Authorization** tab. If you are one of the users authorized to approve
-it, you will see **Approve** and **Reject** buttons there.
+Open the payment (it will be in the *To authorize* state). If you are one
+of the users authorized to act on it, you will see an **Authorize**
+button next to **Confirm** in the header, and a **Reject** button in the
+**Authorization** tab.
 
-* **Approve**: confirms the payment right away, sets the **Authorized
-  by** field to you, and marks the pending activities as done.
+* **Authorize**: does *not* confirm the payment. It only sets the
+  **Authorization status** to *Authorized* and the **Authorized by**
+  field to you, marks the pending activities as done, and logs it on the
+  chatter. The payment stays in *Draft*.
+
+  Once a payment is authorized this way, **anyone** with the normal
+  permission to confirm payments can click the regular **Confirm**
+  button to actually post it -- it no longer needs to be an authorized
+  user, since the authorization already happened. This lets the person
+  who signs off on a payment be different from the person who actually
+  executes it.
+
+  As a shortcut, if the user confirming the payment is themselves an
+  authorized user for a matching scheme, clicking **Confirm** directly
+  (without using **Authorize** first) still authorizes and confirms it
+  in one step, exactly as before.
 * **Reject**: opens a small window asking for a reason. Once confirmed,
   the payment's **Authorization status** becomes *Rejected*, the reason
   is stored on the payment, the pending activities are marked done, and
@@ -123,8 +138,10 @@ it, you will see **Approve** and **Reject** buttons there.
   payment, informing them of the rejection and the reason.
 
 Only users who are actually listed as authorizers on a matching scheme
-can approve or reject a payment -- this is enforced on the server, not
-just by hiding the buttons.
+can authorize or reject a payment -- this is enforced on the server, not
+just by hiding the buttons. Every authorization event (who authorized,
+who confirmed, who rejected and why) is logged on the payment's chatter,
+timestamped.
 
 Finding pending payments
 --------------------------

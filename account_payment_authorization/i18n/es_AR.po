@@ -49,8 +49,8 @@ msgstr "Siempre bloquear"
 
 #. module: account_payment_authorization
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.view_account_payment_form_authorization
-msgid "Approve"
-msgstr "Aprobar"
+msgid "Authorize"
+msgstr "Autorizar"
 
 #. module: account_payment_authorization
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_search
@@ -275,8 +275,33 @@ msgstr "Esquemas de autorización de pago"
 #. module: account_payment_authorization
 #. odoo-python
 #: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid ""
+"Payment authorized and confirmed directly by %s (already an authorized user "
+"for a matching scheme)."
+msgstr ""
+"Pago autorizado y confirmado directamente por %s (ya es un usuario "
+"autorizado para un esquema coincidente)."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
 msgid "Payment authorized by %s."
 msgstr "Pago autorizado por %s."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "Payment authorized by %s. Awaiting confirmation."
+msgstr "Pago autorizado por %s. Pendiente de confirmación."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid ""
+"Payment confirmed by %(user)s (authorized earlier by %(authorized_by)s)."
+msgstr ""
+"Pago confirmado por %(user)s (autorizado previamente por "
+"%(authorized_by)s)."
 
 #. module: account_payment_authorization
 #. odoo-python

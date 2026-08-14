@@ -173,6 +173,23 @@ class AccountPayment(models.Model):
                 to_confirm += payment
                 continue
 
+            if payment.authorization_state == "authorized":
+                # Already explicitly authorized earlier via
+                # action_authorize_payment() (the "Authorize" button),
+                # without confirming at that time. That decision stands --
+                # anyone can now confirm, no need to be an authorizer
+                # themselves or to re-evaluate matched_scheme_ids.
+                payment.message_post(
+                    body=_(
+                        "Payment confirmed by %(user)s (authorized earlier "
+                        "by %(authorized_by)s).",
+                        user=self.env.user.display_name,
+                        authorized_by=payment.authorized_by_id.display_name,
+                    )
+                )
+                to_confirm += payment
+                continue
+
             if payment.payment_type != "outbound" or payment.partner_type != "supplier":
                 payment.authorization_state = "not_required"
                 to_confirm += payment
@@ -184,6 +201,13 @@ class AccountPayment(models.Model):
             elif self.env.user in payment.pending_authorizer_ids:
                 payment.authorization_state = "authorized"
                 payment.authorized_by_id = self.env.user
+                payment.message_post(
+                    body=_(
+                        "Payment authorized and confirmed directly by %s "
+                        "(already an authorized user for a matching scheme).",
+                        self.env.user.display_name,
+                    )
+                )
                 to_confirm += payment
             else:
                 payment.authorization_state = "to_authorize"
@@ -225,6 +249,12 @@ class AccountPayment(models.Model):
         return True
 
     def action_authorize_payment(self):
+        """Authorize a pending payment without confirming it. Confirming is
+        a deliberately separate step (the regular "Confirm" button): once
+        authorization_state is 'authorized', action_post() lets anyone
+        confirm it, not just an authorized user -- so a different person
+        can be the one to actually execute/post the payment.
+        """
         self._refresh_authorization_state()
         for payment in self:
             if payment.authorization_state != "to_authorize":
@@ -242,10 +272,11 @@ class AccountPayment(models.Model):
                 feedback=_("Payment authorized by %s.", self.env.user.display_name)
             )
             payment.message_post(
-                body=_("Payment authorized by %s.", self.env.user.display_name)
+                body=_(
+                    "Payment authorized by %s. Awaiting confirmation.",
+                    self.env.user.display_name,
+                )
             )
-
-        super(AccountPayment, self).action_post()
         return True
 
     def action_reject_payment(self):

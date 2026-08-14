@@ -139,6 +139,11 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         self.assertEqual(payment.authorization_state, "authorized")
         self.assertEqual(payment.authorized_by_id, self.user_authorizer)
         self.assertEqual(payment.state, "in_process")
+        messages = payment.message_ids.mapped("body")
+        self.assertTrue(
+            any("authorized" in (m or "").lower() for m in messages),
+            "Expected a chatter message logging the one-step authorize+confirm.",
+        )
 
     def test_scheme_matches_unauthorized_user_blocks_payment(self):
         bill = self._create_posted_bill(classification=self.classification_sensitive)
@@ -151,7 +156,10 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         )
         self.assertTrue(activity)
 
-    def test_authorizer_approves_payment_gets_confirmed(self):
+    def test_authorizer_authorizes_without_confirming(self):
+        """The "Authorize" action only sets authorization_state -- it does
+        not post the payment. Confirming is a deliberately separate step.
+        """
         bill = self._create_posted_bill(classification=self.classification_sensitive)
         payment = self._register_payment_blocked(bill, self.user_creator)
 
@@ -159,12 +167,48 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
 
         self.assertEqual(payment.authorization_state, "authorized")
         self.assertEqual(payment.authorized_by_id, self.user_authorizer)
-        self.assertEqual(payment.state, "in_process")
+        self.assertEqual(payment.state, "draft")
         self.assertTrue(
             all(
                 activity.state == "done" or not activity.exists()
                 for activity in payment.activity_ids
             )
+        )
+
+    def test_any_user_can_confirm_once_authorized(self):
+        """Once authorized (but not yet confirmed), anyone -- not just an
+        authorized user -- can finish confirming it with the regular
+        Confirm button.
+        """
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+        self.assertEqual(payment.state, "draft")
+
+        # user_creator is not an authorized user for this scheme, but the
+        # payment is already authorized, so they can still confirm it.
+        payment.with_user(self.user_creator).action_post()
+
+        self.assertEqual(payment.state, "in_process")
+        self.assertEqual(payment.authorization_state, "authorized")
+        self.assertEqual(payment.authorized_by_id, self.user_authorizer)
+
+    def test_authorization_events_are_logged_in_chatter(self):
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+        messages = payment.message_ids.mapped("body")
+        self.assertTrue(
+            any("authorized" in (m or "").lower() for m in messages),
+            "Expected a chatter message logging who authorized the payment.",
+        )
+
+        payment.with_user(self.user_creator).action_post()
+        messages = payment.message_ids.mapped("body")
+        self.assertTrue(
+            any("confirmed" in (m or "").lower() for m in messages),
+            "Expected a chatter message logging who confirmed the payment.",
         )
 
     def test_authorizer_rejects_payment_with_reason(self):
