@@ -25,6 +25,13 @@
                 <button name="action_authorize_payment" string="Authorize" type="object"
                         invisible="state != 'draft' or authorization_state in ('authorized', 'rejected') or uid not in pending_authorizer_ids"
                         data-hotkey="z"/>
+                <!-- Undoes a mistaken Authorize click: only shown once the
+                     payment is authorized but not yet confirmed, so it can
+                     go back to "to_authorize" and be authorized again,
+                     possibly by someone else. See
+                     account_payment.py action_unauthorize_payment(). -->
+                <button name="action_unauthorize_payment" string="Unauthorize" type="object"
+                        invisible="state != 'draft' or authorization_state != 'authorized' or uid not in pending_authorizer_ids"/>
             </button>
             <xpath expr="//notebook[@name='payment_notebook']" position="inside">
                 <page name="authorization" string="Authorization"

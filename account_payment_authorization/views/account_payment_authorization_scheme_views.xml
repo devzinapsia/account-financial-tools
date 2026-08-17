@@ -6,8 +6,8 @@
         <field name="name">account.payment.authorization.scheme.list</field>
         <field name="model">account.payment.authorization.scheme</field>
         <field name="arch" type="xml">
-            <list string="Payment authorization schemes">
-                <field name="sequence" widget="handle"/>
+            <list string="Payment authorization policies">
+                <field name="sequence" widget="handle" column_invisible="True"/>
                 <field name="name"/>
                 <field name="company_id" groups="base.group_multi_company"/>
                 <field name="domain" optional="hide"/>
@@ -23,12 +23,12 @@
         <field name="name">account.payment.authorization.scheme.form</field>
         <field name="model">account.payment.authorization.scheme</field>
         <field name="arch" type="xml">
-            <form string="Payment authorization scheme">
+            <form string="Payment authorization policy">
                 <sheet>
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="sequence"/>
+                            <field name="sequence" invisible="1"/>
                             <field name="active"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
@@ -40,7 +40,7 @@
                     <group>
                         <field name="block_payment"/>
                     </group>
-                    <group string="Authorized users" invisible="block_payment">
+                    <group string="Authorizers" invisible="block_payment">
                         <field name="authorized_user_ids" nolabel="1" colspan="2"
                                widget="many2many_tags" placeholder="Enter users..."/>
                     </group>
@@ -54,7 +54,7 @@
         <field name="name">account.payment.authorization.scheme.search</field>
         <field name="model">account.payment.authorization.scheme</field>
         <field name="arch" type="xml">
-            <search string="Search payment authorization schemes">
+            <search string="Search payment authorization policies">
                 <field name="name"/>
                 <field name="authorized_user_ids"/>
                 <filter string="Always block" name="block_payment" domain="[('block_payment', '=', True)]"/>
@@ -69,16 +69,16 @@
 
     <!-- Window action -->
     <record id="action_account_payment_authorization_scheme" model="ir.actions.act_window">
-        <field name="name">Payment Authorization Schemes</field>
+        <field name="name">Payment Authorization Policies</field>
         <field name="res_model">account.payment.authorization.scheme</field>
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="account_payment_authorization_scheme_view_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Create your first payment authorization scheme
+                Create your first payment authorization policy
             </p>
             <p>
-                Authorization schemes define, through a domain condition on
+                Authorization policies define, through a domain condition on
                 the payment (including its linked vendor bill), which users
                 must authorize a vendor payment before it can be confirmed,
                 or whether it must always be blocked.
@@ -89,7 +89,7 @@
     <!-- Menu item under Configuration > Invoicing, next to Invoice Classifications -->
     <menuitem
         id="menu_account_payment_authorization_scheme"
-        name="Payment Authorization Schemes"
+        name="Payment Authorization Policies"
         parent="account.account_invoicing_menu"
         action="action_account_payment_authorization_scheme"
         sequence="55"

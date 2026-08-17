@@ -12,7 +12,7 @@ payment is confirmed.
 This bridge module keeps both flows working the same way: it mirrors the
 vendor bill from ``to_pay_move_line_ids`` into ``invoice_ids`` whenever
 ``account_payment_pro`` is the one driving payment creation, so
-authorization scheme conditions referencing ``invoice_ids`` (e.g.
+authorization policy conditions referencing ``invoice_ids`` (e.g.
 ``invoice_ids.classification_id``) match correctly regardless of which
 module created the payment.
 

@@ -22,7 +22,7 @@ class AccountPayment(models.Model):
     )
     matched_scheme_ids = fields.Many2many(
         "account.payment.authorization.scheme",
-        string="Matched authorization schemes",
+        string="Matched authorization policies",
         compute="_compute_matched_scheme_ids",
         store=True,
     )
@@ -48,7 +48,7 @@ class AccountPayment(models.Model):
         store=True,
         help="True while this payment has not actually been confirmed yet. "
         "Prefer this over the payment's own Status field when building a "
-        "scheme condition meant to only match payments still awaiting "
+        "policy condition meant to only match payments still awaiting "
         "confirmation: the Register Payment wizard can set Status to "
         "'In process' before the payment is actually confirmed, so a "
         "condition on Status = Draft can fail to match a payment that is "
@@ -186,16 +186,16 @@ class AccountPayment(models.Model):
                 payment.message_post(
                     body=_(
                         "This payment is permanently blocked by the following "
-                        "scheme(s): %s.",
+                        "policy/policies: %s.",
                         ", ".join(blocking_schemes.mapped("name")),
                     )
                 )
             else:
                 payment.message_post(
                     body=_(
-                        "This payment matches an authorization scheme with no "
+                        "This payment matches an authorization policy with no "
                         "authorized users configured. It cannot be approved "
-                        "until a user is added to that scheme."
+                        "until a user is added to that policy."
                     )
                 )
 
@@ -251,7 +251,7 @@ class AccountPayment(models.Model):
                 payment.message_post(
                     body=_(
                         "Payment authorized and confirmed directly by %s "
-                        "(already an authorized user for a matching scheme).",
+                        "(already an authorized user for a matching policy).",
                         self.env.user.display_name,
                     )
                 )
@@ -331,6 +331,44 @@ class AccountPayment(models.Model):
                     self.env.user.display_name,
                 )
             )
+        return True
+
+    def action_unauthorize_payment(self):
+        """Revert an authorized-but-not-yet-confirmed payment back to
+        "to_authorize", undoing a mistaken Authorize click. The payment can
+        be authorized again afterwards -- by the same or a different
+        authorizer -- with no restriction.
+        """
+        self._refresh_authorization_state()
+        for payment in self:
+            if payment.state != "draft" or payment.authorization_state != "authorized":
+                raise UserError(_("This payment is not currently authorized."))
+            if self.env.user not in payment.pending_authorizer_ids:
+                raise AccessError(_("You are not allowed to unauthorize this payment."))
+
+        for payment in self:
+            previous_authorizer = payment.authorized_by_id
+            payment.authorization_state = "to_authorize"
+            payment.authorized_by_id = False
+            payment.message_post(
+                body=_(
+                    "Authorization revoked by %s. Awaiting authorization again.",
+                    self.env.user.display_name,
+                )
+            )
+            if payment.create_uid:
+                payment.activity_schedule(
+                    ACTIVITY_TYPE_XMLID,
+                    summary=_("Payment authorization revoked"),
+                    note=_(
+                        "%(revoker)s revoked the authorization for payment "
+                        "%(payment)s, previously authorized by %(previous)s.",
+                        revoker=self.env.user.display_name,
+                        payment=payment.display_name,
+                        previous=previous_authorizer.display_name or _("an authorizer"),
+                    ),
+                    user_id=payment.create_uid.id,
+                )
         return True
 
     def action_reject_payment(self):

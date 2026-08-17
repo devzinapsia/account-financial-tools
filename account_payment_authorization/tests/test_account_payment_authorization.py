@@ -259,6 +259,59 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         with self.assertRaises(UserError):
             payment.with_user(self.user_authorizer).action_reject_payment()
 
+    def test_authorizer_unauthorizes_and_can_reauthorize(self):
+        """An authorizer can undo a mistaken Authorize click: the payment
+        goes back to "to_authorize" (still a draft), and can be authorized
+        again afterwards -- by the same or a different authorizer.
+        """
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+        self.assertEqual(payment.authorization_state, "authorized")
+
+        payment.with_user(self.user_authorizer).action_unauthorize_payment()
+
+        self.assertEqual(payment.authorization_state, "to_authorize")
+        self.assertFalse(payment.authorized_by_id)
+        self.assertEqual(payment.state, "draft")
+        messages = payment.message_ids.mapped("body")
+        self.assertTrue(
+            any("revoked" in (m or "").lower() for m in messages),
+            "Expected a chatter message logging the revoked authorization.",
+        )
+        activity = payment.activity_ids.filtered(lambda a: a.user_id == self.user_creator)
+        self.assertTrue(
+            activity, "Expected an activity notifying the payment's creator."
+        )
+
+        # Can be authorized again afterwards, with no restriction.
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+        self.assertEqual(payment.authorization_state, "authorized")
+
+    def test_unauthorize_button_only_available_while_draft_and_authorized(self):
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+
+        # Not yet authorized: nothing to unauthorize.
+        with self.assertRaises(UserError):
+            payment.with_user(self.user_authorizer).action_unauthorize_payment()
+
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+        payment.with_user(self.user_creator).action_post()
+        self.assertEqual(payment.state, "in_process")
+
+        # Already confirmed: no longer a draft, so it can't be undone.
+        with self.assertRaises(UserError):
+            payment.with_user(self.user_authorizer).action_unauthorize_payment()
+
+    def test_non_authorizer_cannot_unauthorize(self):
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+
+        with self.assertRaises(AccessError):
+            payment.with_user(self.user_creator).action_unauthorize_payment()
+
     def test_any_user_can_confirm_once_authorized(self):
         """Once authorized (but not yet confirmed), anyone -- not just an
         authorized user -- can finish confirming it with the regular

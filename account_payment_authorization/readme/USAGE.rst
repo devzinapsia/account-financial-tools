@@ -4,17 +4,17 @@ Registering a payment
 Open a vendor bill and click **Register Payment** as usual (or select a
 single vendor bill from the Vendor Bills list and use the same action).
 
-* If the payment does not match any authorization scheme, or the user
-  registering it is already an authorized user on every matching scheme,
+* If the payment does not match any authorization policy, or the user
+  registering it is already an authorized user on every matching policy,
   the payment is confirmed immediately, exactly as before this module was
   installed.
-* If the payment matches at least one scheme and the user registering it
-  is **not** an authorized user on any matching scheme, the payment is
+* If the payment matches at least one policy and the user registering it
+  is **not** an authorized user on any matching policy, the payment is
   **not** confirmed. Instead:
 
   * Its **Authorization status** is set to *To authorize*.
   * An activity is assigned to every authorized user of every matching
-    scheme, so it shows up in their **My Activities** and triggers an
+    policy, so it shows up in their **My Activities** and triggers an
     email according to their own notification preferences.
   * A message is logged on the payment's chatter noting that
     authorization was requested and from whom.
@@ -27,7 +27,7 @@ Authorizing or rejecting a pending payment
 Open the payment. If you are one of the users authorized to act on it,
 you will see an **Authorize** button next to **Confirm** in the header,
 and a **Reject** button in the **Authorization** tab -- available as soon
-as the payment is a draft that matches a scheme you can act on, even if
+as the payment is a draft that matches a policy you can act on, even if
 nobody has attempted to confirm it yet. It is not necessary to wait for
 someone else to first try **Confirm** and be blocked from it (which is
 what sets the **Authorization status** to *To authorize*): this matters
@@ -48,16 +48,24 @@ that state.
   executes it.
 
   As a shortcut, if the user confirming the payment is themselves an
-  authorized user for a matching scheme, clicking **Confirm** directly
+  authorized user for a matching policy, clicking **Confirm** directly
   (without using **Authorize** first) still authorizes and confirms it
   in one step, exactly as before.
+
+  Authorized by mistake? While the payment is still a draft (i.e. not
+  confirmed yet), an **Unauthorize** button appears next to **Confirm**.
+  It reverts the **Authorization status** back to *To authorize*, clears
+  **Authorized by**, logs it on the chatter, and notifies the user who
+  originally registered the payment. The payment can be authorized again
+  afterwards, by the same or a different authorizer, with no
+  restriction.
 * **Reject**: opens a small window asking for a reason. Once confirmed,
   the payment's **Authorization status** becomes *Rejected*, the reason
   is stored on the payment, the pending activities are marked done, and
   an activity is created for the user who originally registered the
   payment, informing them of the rejection and the reason.
 
-Only users who are actually listed as authorizers on a matching scheme
+Only users who are actually listed as authorizers on a matching policy
 can authorize or reject a payment -- this is enforced on the server, not
 just by hiding the buttons. Every authorization event (who authorized,
 who confirmed, who rejected and why) is logged on the payment's chatter,

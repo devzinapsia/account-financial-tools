@@ -53,6 +53,11 @@ msgid "Authorize"
 msgstr "Autorizar"
 
 #. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.view_account_payment_form_authorization
+msgid "Unauthorize"
+msgstr "Desautorizar"
+
+#. module: account_payment_authorization
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_search
 msgid "Archived"
 msgstr "Archivado"
@@ -99,8 +104,8 @@ msgstr "Autorizado por"
 #. module: account_payment_authorization
 #: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__authorized_user_ids
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_form
-msgid "Authorized users"
-msgstr "Usuarios autorizados"
+msgid "Authorizers"
+msgstr "Autorizantes"
 
 #. module: account_payment_authorization
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_reject_wizard_view_form
@@ -122,18 +127,31 @@ msgstr "Condiciones"
 #. module: account_payment_authorization
 #: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__domain
 msgid ""
-"Conditions a payment must meet (logical AND) to match this scheme, evaluated"
+"Conditions a payment must meet (logical AND) to match this policy, evaluated"
 " against account.payment fields -- including the linked vendor bill via "
 "Invoices, e.g. invoice_ids.classification_id, and the amount, e.g. to build "
-"amount tiers with several schemes. An empty domain matches any vendor "
-"payment (catch-all scheme)."
+"amount tiers with several policies. An empty domain matches any vendor "
+"payment (catch-all policy). The Payment type and Recipient type conditions "
+"match what this module only ever actually evaluates against (outbound vendor"
+" payments), so they keep the record count shown while editing this domain "
+"accurate -- remove them if you really want to build a domain that reads as "
+"broader than that. Prefer the Pending confirmation field over the payment's "
+"own Status when a condition needs to target payments still awaiting "
+"confirmation; see that field's own help text."
 msgstr ""
-"Condiciones que un pago debe cumplir (AND lógico) para coincidir con este "
-"esquema, evaluadas sobre los campos de account.payment -- incluyendo la "
+"Condiciones que un pago debe cumplir (AND lógico) para coincidir con esta "
+"política, evaluadas sobre los campos de account.payment -- incluyendo la "
 "factura de proveedor vinculada a través de Facturas, por ejemplo "
 "invoice_ids.classification_id, y el importe, por ejemplo para armar "
-"escalas de importe con varios esquemas. Un domain vacío coincide con "
-"cualquier pago a proveedor (esquema comodín)."
+"escalas de importe con varias políticas. Un domain vacío coincide con "
+"cualquier pago a proveedor (política comodín). Las condiciones Tipo de "
+"pago y Tipo de destinatario coinciden con lo único que este módulo "
+"realmente evalúa (pagos salientes a proveedores), por lo que mantienen "
+"preciso el conteo de registros que se muestra al editar este dominio -- "
+"elimínelas si realmente querés armar un dominio que se lea más amplio que "
+"eso. Preferí el campo Pendiente de confirmación en lugar del Estado del "
+"pago cuando una condición deba apuntar a pagos que todavía están "
+"esperando confirmación; mirá el texto de ayuda de ese campo."
 
 #. module: account_payment_authorization
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_reject_wizard_view_form
@@ -142,8 +160,8 @@ msgstr "Confirmar"
 
 #. module: account_payment_authorization
 #: model_terms:ir.actions.act_window,help:account_payment_authorization.action_account_payment_authorization_scheme
-msgid "Create your first payment authorization scheme"
-msgstr "Creá tu primer esquema de autorización de pagos"
+msgid "Create your first payment authorization policy"
+msgstr "Creá tu primera política de autorización de pagos"
 
 #. module: account_payment_authorization
 #: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__create_uid
@@ -186,16 +204,15 @@ msgstr "ID"
 #. module: account_payment_authorization
 #: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__block_payment
 msgid ""
-"If checked, a payment matching this scheme can never be approved by anyone, "
-"regardless of the Authorized users field (which is ignored in that case). "
-"Use this to explicitly and permanently deny a category of payments, e.g. "
-"vendor bills without a classification."
+"If checked, a payment matching this policy can never be approved by anyone, "
+"regardless of the Authorizers field (which is ignored in that case). Use "
+"this to explicitly and permanently deny a category of payments, e.g. vendor "
+"bills without a classification."
 msgstr ""
-"Si se marca, un pago que coincida con este esquema nunca podrá ser "
-"aprobado por nadie, sin importar el campo Usuarios autorizados (que se "
-"ignora en ese caso). Usalo para denegar de forma explícita y permanente "
-"una categoría de pagos, por ejemplo facturas de proveedor sin "
-"clasificación."
+"Si se marca, un pago que coincida con esta política nunca podrá ser "
+"aprobado por nadie, sin importar el campo Autorizantes (que se ignora en "
+"ese caso). Usalo para denegar de forma explícita y permanente una "
+"categoría de pagos, por ejemplo facturas de proveedor sin clasificación."
 
 #. module: account_payment_authorization
 #: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_reject_wizard__write_uid
@@ -211,13 +228,13 @@ msgstr "Última actualización el"
 
 #. module: account_payment_authorization
 #: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__company_id
-msgid "Leave empty to make this scheme apply to all companies."
-msgstr "Dejalo vacío para que este esquema aplique a todas las empresas."
+msgid "Leave empty to make this policy apply to all companies."
+msgstr "Dejalo vacío para que esta política aplique a todas las empresas."
 
 #. module: account_payment_authorization
 #: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__matched_scheme_ids
-msgid "Matched authorization schemes"
-msgstr "Esquemas de autorización coincidentes"
+msgid "Matched authorization policies"
+msgstr "Políticas de autorización coincidentes"
 
 #. module: account_payment_authorization
 #: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__name
@@ -241,14 +258,14 @@ msgstr "Pago"
 
 #. module: account_payment_authorization
 #: model:ir.model,name:account_payment_authorization.model_account_payment_authorization_scheme
-msgid "Payment Authorization Scheme"
-msgstr "Esquema de autorización de pago"
+msgid "Payment Authorization Policy"
+msgstr "Política de autorización de pago"
 
 #. module: account_payment_authorization
 #: model:ir.actions.act_window,name:account_payment_authorization.action_account_payment_authorization_scheme
 #: model:ir.ui.menu,name:account_payment_authorization.menu_account_payment_authorization_scheme
-msgid "Payment Authorization Schemes"
-msgstr "Esquemas de autorización de pago"
+msgid "Payment Authorization Policies"
+msgstr "Políticas de autorización de pago"
 
 #. module: account_payment_authorization
 #. odoo-python
@@ -259,28 +276,56 @@ msgstr "Autorización de pago rechazada"
 #. module: account_payment_authorization
 #. odoo-python
 #: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "Payment authorization revoked"
+msgstr "Autorización de pago revocada"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid ""
+"%(revoker)s revoked the authorization for payment %(payment)s, previously "
+"authorized by %(previous)s."
+msgstr ""
+"%(revoker)s revocó la autorización del pago %(payment)s, autorizado "
+"previamente por %(previous)s."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "Authorization revoked by %s. Awaiting authorization again."
+msgstr "Autorización revocada por %s. Pendiente de autorización nuevamente."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "an authorizer"
+msgstr "un autorizante"
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
 msgid "Payment authorization requested"
 msgstr "Autorización de pago solicitada"
 
 #. module: account_payment_authorization
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_form
-msgid "Payment authorization scheme"
-msgstr "Esquema de autorización de pago"
+msgid "Payment authorization policy"
+msgstr "Política de autorización de pago"
 
 #. module: account_payment_authorization
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_list
-msgid "Payment authorization schemes"
-msgstr "Esquemas de autorización de pago"
+msgid "Payment authorization policies"
+msgstr "Políticas de autorización de pago"
 
 #. module: account_payment_authorization
 #. odoo-python
 #: code:addons/account_payment_authorization/models/account_payment.py:0
 msgid ""
 "Payment authorized and confirmed directly by %s (already an authorized user "
-"for a matching scheme)."
+"for a matching policy)."
 msgstr ""
 "Pago autorizado y confirmado directamente por %s (ya es un usuario "
-"autorizado para un esquema coincidente)."
+"autorizado para una política coincidente)."
 
 #. module: account_payment_authorization
 #. odoo-python
@@ -330,6 +375,24 @@ msgid "Pending confirmation"
 msgstr "Pendiente de confirmación"
 
 #. module: account_payment_authorization
+#: model:ir.model.fields,help:account_payment_authorization.field_account_payment__is_pending_confirmation
+msgid ""
+"True while this payment has not actually been confirmed yet. Prefer this "
+"over the payment's own Status field when building a policy condition meant "
+"to only match payments still awaiting confirmation: the Register Payment "
+"wizard can set Status to 'In process' before the payment is actually "
+"confirmed, so a condition on Status = Draft can fail to match a payment that"
+" is genuinely still pending."
+msgstr ""
+"Verdadero mientras este pago todavía no fue confirmado realmente. Preferí "
+"este campo en lugar del Estado propio del pago al armar una condición de "
+"política pensada para apuntar solo a pagos que todavía esperan "
+"confirmación: el asistente de Registrar Pago puede poner el Estado en 'En "
+"proceso' antes de que el pago sea confirmado realmente, por lo que una "
+"condición sobre Estado = Borrador puede no coincidir con un pago que "
+"genuinamente todavía está pendiente."
+
+#. module: account_payment_authorization
 #: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment__pending_authorizer_ids
 msgid "Pending authorizers"
 msgstr "Autorizantes pendientes"
@@ -368,8 +431,8 @@ msgstr "Motivo de rechazo"
 
 #. module: account_payment_authorization
 #: model_terms:ir.ui.view,arch_db:account_payment_authorization.account_payment_authorization_scheme_view_search
-msgid "Search payment authorization schemes"
-msgstr "Buscar esquemas de autorización de pago"
+msgid "Search payment authorization policies"
+msgstr "Buscar políticas de autorización de pago"
 
 #. module: account_payment_authorization
 #: model:ir.model.fields,field_description:account_payment_authorization.field_account_payment_authorization_scheme__sequence
@@ -396,19 +459,25 @@ msgstr "Este pago no está pendiente de autorización."
 #. module: account_payment_authorization
 #. odoo-python
 #: code:addons/account_payment_authorization/models/account_payment.py:0
-msgid "This payment is permanently blocked by the following scheme(s): %s."
-msgstr "Este pago está bloqueado de forma permanente por el/los siguiente(s) esquema(s): %s."
+msgid "This payment is not currently authorized."
+msgstr "Este pago no está autorizado actualmente."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "This payment is permanently blocked by the following policy/policies: %s."
+msgstr "Este pago está bloqueado de forma permanente por la(s) siguiente(s) política(s): %s."
 
 #. module: account_payment_authorization
 #. odoo-python
 #: code:addons/account_payment_authorization/models/account_payment.py:0
 msgid ""
-"This payment matches an authorization scheme with no authorized users "
-"configured. It cannot be approved until a user is added to that scheme."
+"This payment matches an authorization policy with no authorized users "
+"configured. It cannot be approved until a user is added to that policy."
 msgstr ""
-"Este pago coincide con un esquema de autorización sin usuarios autorizados "
-"configurados. No podrá aprobarse hasta que se agregue un usuario a ese "
-"esquema."
+"Este pago coincide con una política de autorización sin usuarios "
+"autorizados configurados. No podrá aprobarse hasta que se agregue un "
+"usuario a esa política."
 
 #. module: account_payment_authorization
 #. odoo-python
@@ -434,15 +503,15 @@ msgstr "A autorizar por mí"
 #. module: account_payment_authorization
 #: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__authorized_user_ids
 msgid ""
-"Users allowed to approve a payment matching this scheme. Ignored if 'Always "
+"Users allowed to approve a payment matching this policy. Ignored if 'Always "
 "block' is checked. If left empty (and 'Always block' is not checked), any "
-"payment matching this scheme can never be approved either -- this has the "
+"payment matching this policy can never be approved either -- this has the "
 "same practical effect as 'Always block', but leaving the box unchecked here "
 "usually means it was left empty by mistake rather than on purpose."
 msgstr ""
-"Usuarios habilitados para aprobar un pago que coincida con este esquema. "
+"Usuarios habilitados para aprobar un pago que coincida con esta política. "
 "Se ignora si 'Siempre bloquear' está marcado. Si se deja vacío (y 'Siempre "
-"bloquear' no está marcado), ningún pago que coincida con este esquema "
+"bloquear' no está marcado), ningún pago que coincida con esta política "
 "podrá aprobarse tampoco -- tiene el mismo efecto práctico que 'Siempre "
 "bloquear', pero dejar la casilla sin marcar normalmente significa que se "
 "dejó vacío por error y no a propósito."
@@ -452,6 +521,12 @@ msgstr ""
 #: code:addons/account_payment_authorization/models/account_payment.py:0
 msgid "You are not allowed to authorize this payment."
 msgstr "No tenés permiso para autorizar este pago."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "You are not allowed to unauthorize this payment."
+msgstr "No tenés permiso para desautorizar este pago."
 
 #. module: account_payment_authorization
 #. odoo-python
