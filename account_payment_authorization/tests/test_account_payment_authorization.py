@@ -1,7 +1,10 @@
+from unittest.mock import patch
+
 from lxml import etree
 
 from odoo import Command
 from odoo.exceptions import AccessError, UserError
+from odoo.modules import module as odoo_module
 from odoo.tests import tagged
 from odoo.tools.safe_eval import safe_eval
 
@@ -511,6 +514,35 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
 
         self.assertIn("does not comply with the authorization policies", message)
         self.assertIn("requires authorization", message)
+
+    def test_blocking_a_payment_commits_before_raising_outside_tests(self):
+        """Odoo's RPC dispatcher rolls back the whole request's transaction
+        whenever an exception escapes uncaught (it never reaches the commit
+        a successful call would get), so without an explicit commit before
+        the final `raise UserError(...)`, every write action_post() just
+        made while blocking a payment -- authorization_state, the reverted
+        draft state, the activities, the chatter messages -- would be
+        silently undone in real usage from the web client. A plain
+        TransactionCase test can't catch that regression directly (it
+        never goes through that dispatch layer, and this cursor's commit
+        is forbidden mid-test anyway), so this confirms action_post() does
+        call it -- skipped only while a test is actually running -- right
+        before raising, using a mock instead of a real commit against the
+        shared per-test transaction.
+        """
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        wizard = (
+            self.env["account.payment.register"]
+            .with_user(self.user_creator)
+            .with_context(active_model="account.move", active_ids=bill.ids)
+            .create({"payment_method_line_id": self.outbound_payment_method_line.id})
+        )
+        with patch.object(odoo_module, "current_test", False), patch.object(
+            self.env.cr, "commit"
+        ) as mock_commit:
+            with self.assertRaises(UserError):
+                wizard._create_payments()
+            mock_commit.assert_called_once()
 
     def test_amount_tier_domain_schemes(self):
         scheme_low = self.env["account.payment.authorization.scheme"].create(

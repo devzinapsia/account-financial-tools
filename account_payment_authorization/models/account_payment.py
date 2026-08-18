@@ -1,4 +1,4 @@
-from odoo import _, api, fields, models
+from odoo import _, api, fields, models, modules
 from odoo.exceptions import AccessError, UserError
 
 ACTIVITY_TYPE_XMLID = "mail.mail_activity_data_todo"
@@ -320,6 +320,19 @@ class AccountPayment(models.Model):
                             ", ".join(to_authorize.mapped("display_name")),
                         )
                     )
+            # A UserError raised here would otherwise roll back every write
+            # this method just made (authorization_state, the reverted
+            # draft state, the activities, the chatter messages) -- Odoo's
+            # RPC dispatcher rolls back the whole request's transaction
+            # whenever an exception escapes uncaught, since it never
+            # reaches the commit a successful call would get. Commit now so
+            # the block is actually recorded despite the confirm attempt
+            # failing. Skipped under the test runner, where the cursor is a
+            # savepoint on a shared per-test transaction that must not be
+            # committed (see account_peppol's account_edi_proxy_user.py for
+            # the same commit-before-raise pattern in Odoo core).
+            if not modules.module.current_test:
+                self.env.cr.commit()
             raise UserError("\n\n".join(messages))
         return True
 
