@@ -92,6 +92,12 @@ msgid "Authorization status"
 msgstr "Estado de autorización"
 
 #. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid "Authorization reset: this payment's data changed after %s authorized it, so it must be authorized again before it can be confirmed."
+msgstr "Autorización reiniciada: los datos de este pago cambiaron después de que %s lo autorizara, por lo que debe autorizarse nuevamente antes de poder confirmarse."
+
+#. module: account_payment_authorization
 #: model:ir.model.fields.selection,name:account_payment_authorization.selection__account_payment__authorization_state__authorized
 msgid "Authorized"
 msgstr "Autorizado"

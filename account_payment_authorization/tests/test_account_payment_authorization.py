@@ -333,6 +333,80 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         self.assertEqual(payment.authorization_state, "authorized")
         self.assertEqual(payment.authorized_by_id, self.user_authorizer)
 
+    def test_authorization_reset_when_amount_changes_after_authorization(self):
+        """The reported scenario: a payment gets authorized while its
+        amount is still within a lower tier, then someone bumps it into a
+        tier with a different authorizer before confirming -- the stale
+        authorization must not let it through unchecked; action_post()
+        must block it again and require fresh authorization from whoever
+        is actually allowed to approve the new amount.
+        """
+        scheme_low = self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "0 to 1000",
+                "domain": str([("amount", ">=", 0), ("amount", "<", 1000)]),
+                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
+            }
+        )
+        scheme_high = self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "1000 and above",
+                "domain": str([("amount", ">=", 1000)]),
+                "authorized_user_ids": [Command.set([self.user_authorizer_2.id])],
+            }
+        )
+        bill = self._create_posted_bill(price=500.0)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+        self.assertIn(scheme_low, payment.matched_scheme_ids)
+
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+        self.assertEqual(payment.authorization_state, "authorized")
+        self.assertEqual(payment.authorized_by_id, self.user_authorizer)
+
+        # Matías bumps the amount well past the low tier, into the high one.
+        payment.with_user(self.user_creator).write({"amount": 60000.0})
+
+        self.assertEqual(
+            payment.authorization_state,
+            "to_authorize",
+            "Editing the amount after authorization must require fresh "
+            "authorization, not leave the stale 'authorized' state in place.",
+        )
+        self.assertFalse(payment.authorized_by_id)
+        messages = payment.message_ids.mapped("body")
+        self.assertTrue(
+            any("authorization reset" in (m or "").lower() for m in messages),
+            "Expected a chatter message logging the authorization reset.",
+        )
+        self.assertIn(scheme_high, payment.matched_scheme_ids)
+        self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer_2)
+
+        # The original (low-tier) authorizer can no longer just confirm it
+        # through the stale authorization -- must be blocked again.
+        try:
+            payment.with_user(self.user_creator).action_post()
+            self.fail("Expected a UserError blocking the re-confirm attempt.")
+        except UserError:
+            pass
+        self.assertEqual(payment.state, "draft")
+
+        # The new tier's actual authorizer can authorize it properly.
+        payment.with_user(self.user_authorizer_2).action_authorize_payment()
+        self.assertEqual(payment.authorized_by_id, self.user_authorizer_2)
+
+    def test_authorization_survives_edit_to_non_sensitive_field(self):
+        """Editing a field no scheme condition could plausibly reference
+        (e.g. the memo) must not throw away a valid authorization.
+        """
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment = self._register_payment_blocked(bill, self.user_creator)
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+
+        payment.with_user(self.user_creator).write({"memo": "Just a note"})
+
+        self.assertEqual(payment.authorization_state, "authorized")
+        self.assertEqual(payment.authorized_by_id, self.user_authorizer)
+
     def test_authorization_events_are_logged_in_chatter(self):
         bill = self._create_posted_bill(classification=self.classification_sensitive)
         payment = self._register_payment_blocked(bill, self.user_creator)

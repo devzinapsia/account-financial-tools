@@ -114,6 +114,31 @@ class AccountPayment(models.Model):
             open_schemes = payment.matched_scheme_ids.filtered(lambda s: not s.block_payment)
             payment.pending_authorizer_ids = open_schemes.authorized_user_ids
 
+    def _get_authorization_sensitive_fields(self):
+        """Fields an authorization policy's domain could plausibly key off
+        of; see write() below. Kept in sync by hand with
+        _compute_matched_scheme_ids's own @api.depends, since a scheme's
+        domain is admin-configured and arbitrary -- there's no way to know
+        exactly which fields it references, only a best-effort list of the
+        ones most likely to. A glue module bridging this one with a
+        third-party payment flow that populates invoice-relevant data
+        through its own field (e.g. ingadhoc's account_payment_pro and
+        to_pay_move_line_ids) should extend this via super(), the same way
+        _compute_matched_scheme_ids itself gets extended.
+        """
+        return {
+            "payment_type",
+            "partner_type",
+            "company_id",
+            "partner_id",
+            "payment_method_line_id",
+            "amount",
+            "date",
+            "journal_id",
+            "currency_id",
+            "invoice_ids",
+        }
+
     @api.model_create_multi
     def create(self, vals_list):
         payments = super().create(vals_list)
@@ -132,6 +157,21 @@ class AccountPayment(models.Model):
         return payments
 
     def write(self, vals):
+        # If a payment was already authorized and this write touches a
+        # field an authorization policy's domain could plausibly key off
+        # of (most obviously amount, but also the vendor, payment method,
+        # journal, currency, date, or which bills it's tied to), that
+        # earlier authorization no longer says anything about the payment
+        # as it exists now -- someone could otherwise get a small amount
+        # authorized, then bump it up before confirming without ever
+        # being re-checked, since action_post() trusts an "authorized"
+        # payment unconditionally. Capture who needs to be reset *before*
+        # the write actually changes anything.
+        to_reauthorize = self.browse()
+        if self._get_authorization_sensitive_fields().intersection(vals):
+            to_reauthorize = self.filtered(lambda p: p.authorization_state == "authorized")
+            previous_authorizers = {p.id: p.authorized_by_id for p in to_reauthorize}
+
         result = super().write(vals)
         # Same reasoning as create() above: a write can change which
         # scheme(s) match (e.g. ingadhoc's account_payment_pro setting
@@ -140,6 +180,25 @@ class AccountPayment(models.Model):
         # search-able -- right away rather than lazily.
         self.pending_authorizer_ids
         self.is_pending_confirmation
+
+        if to_reauthorize:
+            # Bypass this same override: the correction write below only
+            # touches authorization_state/authorized_by_id, neither of
+            # which is authorization-sensitive, so re-entering this method
+            # would just do redundant work.
+            super(AccountPayment, to_reauthorize).write(
+                {"authorization_state": "to_authorize", "authorized_by_id": False}
+            )
+            for payment in to_reauthorize:
+                payment.message_post(
+                    body=_(
+                        "Authorization reset: this payment's data changed "
+                        "after %s authorized it, so it must be authorized "
+                        "again before it can be confirmed.",
+                        previous_authorizers[payment.id].display_name
+                        or _("an authorizer"),
+                    )
+                )
         return result
 
     def _refresh_authorization_state(self):

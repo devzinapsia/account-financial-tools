@@ -71,6 +71,13 @@ just by hiding the buttons. Every authorization event (who authorized,
 who confirmed, who rejected and why) is logged on the payment's chatter,
 timestamped.
 
+Editing an already-authorized payment (amount, vendor, payment method,
+journal, currency, date, or which bill it settles) before it's confirmed
+throws away that authorization: its **Authorization status** goes back
+to *To authorize*, **Authorized by** is cleared, and this is logged on
+the chatter, so a payment can't be authorized for one amount and then
+confirmed after being changed to a different one.
+
 Finding pending payments
 =========================
 

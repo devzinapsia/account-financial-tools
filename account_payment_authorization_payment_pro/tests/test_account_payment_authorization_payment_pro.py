@@ -199,6 +199,38 @@ class TestAccountPaymentAuthorizationPaymentPro(AccountTestInvoicingCommon):
 
         self.assertIn(payment, results)
 
+    def test_payment_pro_authorization_resets_when_bill_changes_after_authorization(self):
+        """Swapping which bill to_pay_move_line_ids points to after the
+        payment was already authorized must throw away that authorization
+        immediately -- on the same write, not only once something later
+        happens to trigger the lazy invoice_ids sync.
+        """
+        bill_a = self._create_posted_bill()
+        payment = self._create_ppro_draft_payment(bill_a)
+        self._action_post_expect_blocked(payment)
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+        self.assertEqual(payment.authorization_state, "authorized")
+
+        bill_b = self.env["account.move"].create(
+            {
+                "move_type": "in_invoice",
+                "partner_id": self.partner_a.id,
+                "invoice_date": "2026-01-01",
+                # No classification: won't match self.scheme.
+                "invoice_line_ids": [
+                    Command.create({"name": "x", "quantity": 1, "price_unit": 300.0})
+                ],
+            }
+        )
+        bill_b.action_post()
+        payable_line_b = bill_b.line_ids.filtered(
+            lambda l: l.account_id.account_type == "liability_payable"
+        )
+        payment.to_pay_move_line_ids = [Command.set(payable_line_b.ids)]
+
+        self.assertEqual(payment.authorization_state, "to_authorize")
+        self.assertFalse(payment.authorized_by_id)
+
     def test_payment_pro_flow_non_authorizer_cannot_approve(self):
         bill = self._create_posted_bill()
         payment = self._create_ppro_draft_payment(bill)

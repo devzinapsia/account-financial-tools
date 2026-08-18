@@ -6,6 +6,18 @@ VENDOR_BILL_TYPES = ("in_invoice", "in_refund")
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
+    def _get_authorization_sensitive_fields(self):
+        # Under account_payment_pro, to_pay_move_line_ids -- not
+        # invoice_ids -- is what the user actually edits to change which
+        # bill a payment settles. invoice_ids does get updated too, but
+        # only lazily, as a side effect the next time something reads
+        # matched_scheme_ids/pending_authorizer_ids (see
+        # _sync_invoice_ids_from_payment_pro below); listing this field
+        # here makes the base module's write() override reset the
+        # authorization immediately on the same write, instead of only
+        # once that lazy sync happens to run.
+        return super()._get_authorization_sensitive_fields() | {"to_pay_move_line_ids"}
+
     def _sync_invoice_ids_from_payment_pro(self):
         """account_payment_pro replaces the core "Register Payment" wizard
         (`account.payment.register`) entirely: the user drafts the
