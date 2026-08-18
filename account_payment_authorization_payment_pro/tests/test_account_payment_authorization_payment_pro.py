@@ -164,14 +164,16 @@ class TestAccountPaymentAuthorizationPaymentPro(AccountTestInvoicingCommon):
     def test_payment_pro_authorizer_authorizes_untouched_draft(self):
         """The real-world reported scenario: account_payment_pro drafts the
         payment directly (to_pay_move_line_ids), and nobody has attempted
-        to confirm it yet, so authorization_state is still its default
-        "not_required". The authorizer must still be able to click
-        Authorize straight away, without anyone first attempting (and
-        being blocked from) confirming it.
+        to confirm it yet. authorization_state is already "to_authorize"
+        at this point -- it's synced with matched_scheme_ids on the same
+        write() that sets to_pay_move_line_ids, it doesn't wait for a first
+        (failed) confirm attempt. The authorizer must still be able to
+        click Authorize straight away, without anyone first attempting
+        (and being blocked from) confirming it.
         """
         bill = self._create_posted_bill()
         payment = self._create_ppro_draft_payment(bill)
-        self.assertEqual(payment.authorization_state, "not_required")
+        self.assertEqual(payment.authorization_state, "to_authorize")
         self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
 
         payment.with_user(self.user_authorizer).action_authorize_payment()
@@ -203,7 +205,10 @@ class TestAccountPaymentAuthorizationPaymentPro(AccountTestInvoicingCommon):
         """Swapping which bill to_pay_move_line_ids points to after the
         payment was already authorized must throw away that authorization
         immediately -- on the same write, not only once something later
-        happens to trigger the lazy invoice_ids sync.
+        happens to trigger the lazy invoice_ids sync. Here the new bill
+        matches no policy at all, so the payment doesn't just need a fresh
+        authorization: it needs none, and must read "not required" -- not
+        the stale "authorized" it had for the old bill.
         """
         bill_a = self._create_posted_bill()
         payment = self._create_ppro_draft_payment(bill_a)
@@ -228,7 +233,7 @@ class TestAccountPaymentAuthorizationPaymentPro(AccountTestInvoicingCommon):
         )
         payment.to_pay_move_line_ids = [Command.set(payable_line_b.ids)]
 
-        self.assertEqual(payment.authorization_state, "to_authorize")
+        self.assertEqual(payment.authorization_state, "not_required")
         self.assertFalse(payment.authorized_by_id)
 
     def test_payment_pro_flow_non_authorizer_cannot_approve(self):

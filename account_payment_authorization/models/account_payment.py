@@ -139,6 +139,28 @@ class AccountPayment(models.Model):
             "invoice_ids",
         }
 
+    def _sync_authorization_state_with_match(self):
+        """Keep authorization_state accurate for payments that haven't had
+        an explicit authorization decision made on them yet: it must read
+        "To authorize" as soon as the payment matches a policy, not stay on
+        the default "Not required" until someone happens to attempt
+        action_post() and gets blocked. "Not required" is reserved for
+        payments that genuinely don't need authorization -- it must not be
+        the value a matching payment shows just because nobody has tried to
+        confirm it yet.
+
+        Deliberately skips "authorized"/"rejected": those are decisions a
+        person made, not a derived fact, and must never be silently
+        overwritten by a recompute of matched_scheme_ids (see write()'s own
+        handling of a no-longer-valid "authorized" state instead).
+        """
+        for payment in self:
+            if payment.authorization_state not in ("not_required", "to_authorize"):
+                continue
+            new_state = "to_authorize" if payment.matched_scheme_ids else "not_required"
+            if payment.authorization_state != new_state:
+                payment.authorization_state = new_state
+
     @api.model_create_multi
     def create(self, vals_list):
         payments = super().create(vals_list)
@@ -154,6 +176,7 @@ class AccountPayment(models.Model):
         # already matches a scheme.
         payments.pending_authorizer_ids
         payments.is_pending_confirmation
+        payments._sync_authorization_state_with_match()
         return payments
 
     def write(self, vals):
@@ -199,6 +222,8 @@ class AccountPayment(models.Model):
                         or _("an authorizer"),
                     )
                 )
+
+        self._sync_authorization_state_with_match()
         return result
 
     def _refresh_authorization_state(self):

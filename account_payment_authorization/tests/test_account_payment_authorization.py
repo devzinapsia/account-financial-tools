@@ -118,8 +118,10 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         right after a third-party module (e.g. ingadhoc's
         account_payment_pro) drafts it directly, bypassing the standard
         "Register Payment" wizard entirely, before anyone has attempted to
-        confirm it. authorization_state stays at its default
-        ("not_required") until action_post() actually runs.
+        confirm it. authorization_state is synced with matched_scheme_ids
+        as soon as the record is created, so it already reads
+        "to_authorize" here if the payment matches a policy -- it does not
+        wait for a first (failed) action_post() attempt to flip it.
         """
         return (
             self.env["account.payment"]
@@ -220,14 +222,14 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         )
 
     def test_authorizer_authorizes_untouched_draft_before_any_confirm_attempt(self):
-        """An authorized user can authorize a payment that is still in
-        authorization_state "not_required" (its default) because nobody
-        has attempted to confirm it yet -- they don't need to wait for a
-        first confirm attempt to fail and flip it to "to_authorize".
+        """An authorized user can authorize a payment nobody has attempted
+        to confirm yet -- they don't need to wait for a first confirm
+        attempt to fail first. The payment is already "to_authorize" as
+        soon as it's created, since it matches a policy from the start.
         """
         bill = self._create_posted_bill(classification=self.classification_sensitive)
         payment = self._create_draft_payment(bill, self.user_creator)
-        self.assertEqual(payment.authorization_state, "not_required")
+        self.assertEqual(payment.authorization_state, "to_authorize")
         self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
 
         payment.with_user(self.user_authorizer).action_authorize_payment()
@@ -239,7 +241,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
     def test_authorizer_rejects_untouched_draft_before_any_confirm_attempt(self):
         bill = self._create_posted_bill(classification=self.classification_sensitive)
         payment = self._create_draft_payment(bill, self.user_creator)
-        self.assertEqual(payment.authorization_state, "not_required")
+        self.assertEqual(payment.authorization_state, "to_authorize")
 
         wizard = (
             self.env["account.payment.authorization.reject.wizard"]
@@ -249,6 +251,35 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         wizard.action_confirm()
 
         self.assertEqual(payment.authorization_state, "rejected")
+
+    def test_draft_payment_not_matching_any_scheme_stays_not_required(self):
+        """"Not required" must only ever describe a payment that genuinely
+        doesn't need authorization -- a payment that matches no policy at
+        all -- never one that simply hasn't been looked at yet.
+        """
+        bill = self._create_posted_bill()  # no classification set, no match
+        payment = self._create_draft_payment(bill, self.user_creator)
+
+        self.assertFalse(payment.matched_scheme_ids)
+        self.assertEqual(payment.authorization_state, "not_required")
+
+    def test_authorization_state_updates_on_write_when_match_changes(self):
+        """Editing a draft payment so it starts matching a policy it didn't
+        match before must flip authorization_state to "to_authorize"
+        immediately on that same write, not leave it on "not_required"
+        until someone happens to try to confirm it.
+        """
+        plain_bill = self._create_posted_bill()  # no classification set
+        payment = self._create_draft_payment(plain_bill, self.user_creator)
+        self.assertEqual(payment.authorization_state, "not_required")
+
+        sensitive_bill = self._create_posted_bill(classification=self.classification_sensitive)
+        payment.with_user(self.user_creator).write(
+            {"invoice_ids": [Command.set(sensitive_bill.ids)]}
+        )
+
+        self.assertEqual(payment.authorization_state, "to_authorize")
+        self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
         self.assertEqual(payment.state, "draft")
 
     def test_cannot_reauthorize_or_reject_once_already_authorized(self):
@@ -686,7 +717,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
     def test_search_filter_to_authorize_by_me_includes_untouched_draft(self):
         bill = self._create_posted_bill(classification=self.classification_sensitive)
         payment = self._create_draft_payment(bill, self.user_creator)
-        self.assertEqual(payment.authorization_state, "not_required")
+        self.assertEqual(payment.authorization_state, "to_authorize")
 
         domain = self._search_filter_domain(
             "authorization_to_authorize_by_me", self.user_authorizer
