@@ -455,6 +455,63 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         with self.assertRaises(AccessError):
             payment.with_user(self.user_authorizer).action_authorize_payment()
 
+    def test_block_payment_scheme_shows_data_review_error_message(self):
+        """The error the user sees when trying to confirm a payment blocked
+        by an "Always block" policy must point them at fixing the data, not
+        the generic "an activity has been assigned" wording used for a
+        payment that is genuinely just waiting for someone's approval --
+        waiting won't help here, since nobody can ever approve it.
+        """
+        self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "No classification -> never pay",
+                "domain": str([("invoice_ids.classification_id", "=", False)]),
+                "block_payment": True,
+            }
+        )
+        bill = self._create_posted_bill()  # no classification set
+
+        existing_ids = self.env["account.payment"].search([]).ids
+        try:
+            self._register_payment(bill, self.user_creator)
+            self.fail("Expected a UserError blocking the payment.")
+        except UserError as exc:
+            message = str(exc)
+
+        self.assertIn("does not comply with the authorization policies", message)
+        self.assertNotIn("an activity has been assigned", message.lower())
+        payment = self.env["account.payment"].search([("id", "not in", existing_ids)])
+        self.assertEqual(len(payment), 1)
+
+    def test_bulk_action_post_combines_both_block_reasons_in_one_error(self):
+        """A single action_post() call covering both a permanently-blocked
+        payment and a merely-pending-authorization payment (e.g. selecting
+        several vendor payments and confirming them together) must mention
+        both reasons, not silently drop one.
+        """
+        self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "No classification -> never pay",
+                "domain": str([("invoice_ids.classification_id", "=", False)]),
+                "block_payment": True,
+            }
+        )
+        blocked_bill = self._create_posted_bill()  # no classification set
+        blocked_payment = self._create_draft_payment(blocked_bill, self.user_creator)
+
+        pending_bill = self._create_posted_bill(classification=self.classification_sensitive)
+        pending_payment = self._create_draft_payment(pending_bill, self.user_creator)
+
+        payments = blocked_payment | pending_payment
+        try:
+            payments.with_user(self.user_creator).action_post()
+            self.fail("Expected a UserError blocking both payments.")
+        except UserError as exc:
+            message = str(exc)
+
+        self.assertIn("does not comply with the authorization policies", message)
+        self.assertIn("requires authorization", message)
+
     def test_amount_tier_domain_schemes(self):
         scheme_low = self.env["account.payment.authorization.scheme"].create(
             {

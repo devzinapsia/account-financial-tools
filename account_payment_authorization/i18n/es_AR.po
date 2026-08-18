@@ -76,12 +76,12 @@ msgstr "Autorización solicitada a: %s"
 #. module: account_payment_authorization
 #: model_terms:ir.actions.act_window,help:account_payment_authorization.action_account_payment_authorization_scheme
 msgid ""
-"Authorization schemes define, through a domain condition on\n"
+"Authorization policies define, through a domain condition on\n"
 "                the payment (including its linked vendor bill), which users\n"
 "                must authorize a vendor payment before it can be confirmed,\n"
 "                or whether it must always be blocked."
 msgstr ""
-"Los esquemas de autorización definen, a través de una condición domain\n"
+"Las políticas de autorización definen, a través de una condición domain\n"
 "                sobre el pago (incluyendo la factura de proveedor vinculada),\n"
 "                qué usuarios deben autorizar un pago a proveedor antes de que\n"
 "                pueda confirmarse, o si debe bloquearse siempre."
@@ -467,6 +467,24 @@ msgstr "Este pago no está autorizado actualmente."
 #: code:addons/account_payment_authorization/models/account_payment.py:0
 msgid "This payment is permanently blocked by the following policy/policies: %s."
 msgstr "Este pago está bloqueado de forma permanente por la(s) siguiente(s) política(s): %s."
+
+#. module: account_payment_authorization
+#. odoo-python
+#: code:addons/account_payment_authorization/models/account_payment.py:0
+msgid ""
+"This payment could not be processed because it does not comply with the authorization policies. Check whether the payment or its associated invoices have any of the following:\n"
+"\n"
+"- Missing required information.\n"
+"- A field value that is inconsistent with internal rules.\n"
+"\n"
+"Please validate the information or check with your supervisor."
+msgstr ""
+"El pago no pudo procesarse porque no cumple con las políticas de autorización. Revisá si en el pago o en las facturas asociadas ocurre algo de lo siguiente:\n"
+"\n"
+"- Falta completar algún dato.\n"
+"- El valor de un campo es inconsistente con las normas internas.\n"
+"\n"
+"Por favor, validá la información o consultá con tu supervisor."
 
 #. module: account_payment_authorization
 #. odoo-python

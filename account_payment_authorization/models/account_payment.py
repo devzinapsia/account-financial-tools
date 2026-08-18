@@ -277,22 +277,50 @@ class AccountPayment(models.Model):
             super(AccountPayment, to_confirm).action_post()
 
         if blocked_payments and not to_confirm:
-            if len(blocked_payments) == 1:
-                raise UserError(
+            # A payment matching a scheme with "Always block" checked can
+            # never be approved by anyone, no matter what -- point the user
+            # at fixing the underlying data instead of the normal "an
+            # activity has been assigned" message, which would incorrectly
+            # suggest that waiting for someone to approve it will help.
+            permanently_blocked = blocked_payments.filtered(
+                lambda p: p.matched_scheme_ids.filtered("block_payment")
+            )
+            to_authorize = blocked_payments - permanently_blocked
+
+            messages = []
+            if permanently_blocked:
+                messages.append(
                     _(
-                        "This payment requires authorization before it can be "
-                        "confirmed. An activity has been assigned to the "
-                        "authorized user(s)."
+                        "This payment could not be processed because it does "
+                        "not comply with the authorization policies. Check "
+                        "whether the payment or its associated invoices have "
+                        "any of the following:\n\n"
+                        "- Missing required information.\n"
+                        "- A field value that is inconsistent with internal "
+                        "rules.\n\n"
+                        "Please validate the information or check with your "
+                        "supervisor."
                     )
                 )
-            raise UserError(
-                _(
-                    "These payments require authorization before they can be "
-                    "confirmed: %s. An activity has been assigned to the "
-                    "authorized user(s) of each.",
-                    ", ".join(blocked_payments.mapped("display_name")),
-                )
-            )
+            if to_authorize:
+                if len(to_authorize) == 1:
+                    messages.append(
+                        _(
+                            "This payment requires authorization before it "
+                            "can be confirmed. An activity has been assigned "
+                            "to the authorized user(s)."
+                        )
+                    )
+                else:
+                    messages.append(
+                        _(
+                            "These payments require authorization before "
+                            "they can be confirmed: %s. An activity has been "
+                            "assigned to the authorized user(s) of each.",
+                            ", ".join(to_authorize.mapped("display_name")),
+                        )
+                    )
+            raise UserError("\n\n".join(messages))
         return True
 
     def action_authorize_payment(self):
