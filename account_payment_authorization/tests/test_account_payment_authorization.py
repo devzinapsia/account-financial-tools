@@ -612,6 +612,40 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         self.assertNotIn(payment_authorized, results)
         self.assertNotIn(payment_rejected, results)
 
+    def test_search_filter_authorized_unconfirmed_by_me(self):
+        """"Authorized, not confirmed by me yet" should surface payments I
+        registered myself, that needed authorization, already got it, and
+        are still a draft -- but not payments still awaiting authorization,
+        already confirmed, or registered by someone else.
+        """
+        bill_authorized = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_authorized = self._register_payment_blocked(bill_authorized, self.user_creator)
+        payment_authorized.with_user(self.user_authorizer).action_authorize_payment()
+        self.assertEqual(payment_authorized.state, "draft")
+
+        bill_pending = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_pending = self._register_payment_blocked(bill_pending, self.user_creator)
+
+        bill_confirmed = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_confirmed = self._register_payment_blocked(bill_confirmed, self.user_creator)
+        payment_confirmed.with_user(self.user_authorizer).action_authorize_payment()
+        payment_confirmed.with_user(self.user_creator).action_post()
+        self.assertEqual(payment_confirmed.state, "in_process")
+
+        bill_other_user = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_other_user = self._register_payment_blocked(bill_other_user, self.user_manager)
+        payment_other_user.with_user(self.user_authorizer).action_authorize_payment()
+
+        domain = self._search_filter_domain(
+            "authorization_authorized_unconfirmed_by_me", self.user_creator
+        )
+        results = self.env["account.payment"].with_user(self.user_creator).search(domain)
+
+        self.assertIn(payment_authorized, results)
+        self.assertNotIn(payment_pending, results)
+        self.assertNotIn(payment_confirmed, results)
+        self.assertNotIn(payment_other_user, results)
+
     def test_new_scheme_defaults_to_current_company(self):
         scheme = (
             self.env["account.payment.authorization.scheme"]

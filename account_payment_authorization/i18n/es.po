@@ -519,6 +519,11 @@ msgid "To authorize by me"
 msgstr "A autorizar por mí"
 
 #. module: account_payment_authorization
+#: model_terms:ir.ui.view,arch_db:account_payment_authorization.view_account_payment_search_authorization
+msgid "Authorized, not confirmed by me yet"
+msgstr "Autorizadas no pagadas por mí"
+
+#. module: account_payment_authorization
 #: model:ir.model.fields,help:account_payment_authorization.field_account_payment_authorization_scheme__authorized_user_ids
 msgid ""
 "Users allowed to approve a payment matching this policy. Ignored if 'Always "

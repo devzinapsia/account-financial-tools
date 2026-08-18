@@ -74,12 +74,17 @@ timestamped.
 Finding pending payments
 =========================
 
-The **Vendor Payments** list (Accounting ‣ Vendors ‣ Payments) offers two
+The **Vendor Payments** list (Accounting ‣ Vendors ‣ Payments) offers
 extra filters in the search bar:
 
 * **To authorize**: payments currently waiting for any authorization.
 * **To authorize by me**: payments you are personally allowed to
   approve or reject right now.
+* **Authorized, not confirmed by me yet**: payments you registered
+  yourself that needed authorization, already got it, and are still
+  sitting as a draft waiting to be confirmed -- easy to lose track of
+  among other drafts otherwise, since nothing else singles them out
+  once they are no longer *To authorize*.
 
 The **Authorization status** column is also available (hidden by
 default; enable it from the column selector).

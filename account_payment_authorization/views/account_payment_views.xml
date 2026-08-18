@@ -102,6 +102,15 @@
                         domain="[('state', '=', 'draft'),
                                  ('pending_authorizer_ids', 'in', [uid]),
                                  ('authorization_state', 'not in', ['authorized', 'rejected'])]"/>
+                <!-- Payments I registered myself that needed authorization,
+                     already got it, but that I (or anyone) still haven't
+                     confirmed, easy to lose track of among many drafts
+                     otherwise since nothing else singles them out once
+                     they're no longer "to_authorize". -->
+                <filter string="Authorized, not confirmed by me yet" name="authorization_authorized_unconfirmed_by_me"
+                        domain="[('state', '=', 'draft'),
+                                 ('authorization_state', '=', 'authorized'),
+                                 ('create_uid', '=', uid)]"/>
             </filter>
         </field>
     </record>
