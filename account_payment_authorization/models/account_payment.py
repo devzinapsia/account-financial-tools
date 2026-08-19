@@ -174,8 +174,18 @@ class AccountPayment(models.Model):
         # a third-party module like ingadhoc's account_payment_pro --
         # could otherwise be invisible to those filters even though it
         # already matches a scheme.
-        payments.pending_authorizer_ids
-        payments.is_pending_confirmation
+        #
+        # Field access on a recordset only works for a single record at a
+        # time (Odoo raises "Expected singleton" otherwise) -- loop instead
+        # of reading the field on `payments` directly. This still forces
+        # the compute for the whole batch in one shot, since accessing a
+        # dirty computed field on the first record in the loop recomputes
+        # it for every record still pending in that same batch, not just
+        # that one. Multi-record creates happen routinely here, e.g.
+        # registering a payment split across more than one payment method.
+        for payment in payments:
+            payment.pending_authorizer_ids
+            payment.is_pending_confirmation
         payments._sync_authorization_state_with_match()
         return payments
 
@@ -200,9 +210,16 @@ class AccountPayment(models.Model):
         # scheme(s) match (e.g. ingadhoc's account_payment_pro setting
         # to_pay_move_line_ids in a separate write right after creating
         # the draft), so force the recompute to happen -- and be
-        # search-able -- right away rather than lazily.
-        self.pending_authorizer_ids
-        self.is_pending_confirmation
+        # search-able -- right away rather than lazily. Loop instead of
+        # reading the field on `self` directly: field access only works on
+        # a single record at a time. `self` is not necessarily a single
+        # payment here -- e.g. l10n_ar_payment_bundle's action_draft()
+        # combines a payment with its linked "bundle" payments into one
+        # multi-record recordset before writing state="draft" on all of
+        # them at once, cascading into this write().
+        for payment in self:
+            payment.pending_authorizer_ids
+            payment.is_pending_confirmation
 
         if to_reauthorize:
             # Bypass this same override: the correction write below only

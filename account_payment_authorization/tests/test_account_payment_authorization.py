@@ -282,6 +282,54 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
         self.assertEqual(payment.state, "draft")
 
+    def test_create_multiple_payments_at_once_does_not_raise(self):
+        """create() can receive a vals_list with more than one entry -- e.g.
+        registering a payment split across more than one payment method
+        creates several account.payment records in a single call. Forcing
+        the eager matched_scheme_ids/pending_authorizer_ids compute must
+        loop per-record instead of reading the field directly off the
+        multi-record `payments` recordset, or Odoo raises "Expected
+        singleton: account.payment(...)".
+        """
+        bill = self._create_posted_bill(classification=self.classification_sensitive)
+        vals = {
+            "payment_type": "outbound",
+            "partner_type": "supplier",
+            "partner_id": bill.partner_id.id,
+            "date": bill.invoice_date,
+            "journal_id": self.company_data["default_journal_bank"].id,
+            "payment_method_line_id": self.outbound_payment_method_line.id,
+            "invoice_ids": [Command.set(bill.ids)],
+            "amount": 40.0,
+        }
+        payments = self.env["account.payment"].create([vals, dict(vals, amount=60.0)])
+
+        self.assertEqual(len(payments), 2)
+        for payment in payments:
+            self.assertEqual(payment.authorization_state, "to_authorize")
+            self.assertEqual(payment.pending_authorizer_ids, self.user_authorizer)
+
+    def test_write_on_multi_record_recordset_does_not_raise(self):
+        """Mimics l10n_ar_payment_bundle's account.payment.action_draft():
+        it combines a payment with its linked "bundle" payments into one
+        multi-record recordset (`self + active_links`) before calling
+        write() with state="draft" on all of them at once, cascading into
+        this module's write() override. Field access on `self` there must
+        loop per-record instead of reading the field directly off the
+        combined recordset, or Odoo raises "Expected singleton:
+        account.payment(...)".
+        """
+        bill_1 = self._create_posted_bill(classification=self.classification_sensitive)
+        bill_2 = self._create_posted_bill(classification=self.classification_sensitive)
+        payment_1 = self._create_draft_payment(bill_1, self.user_creator)
+        payment_2 = self._create_draft_payment(bill_2, self.user_creator)
+        combined = payment_1 + payment_2
+
+        combined.write({"state": "draft"})
+
+        for payment in combined:
+            self.assertEqual(payment.authorization_state, "to_authorize")
+
     def test_cannot_reauthorize_or_reject_once_already_authorized(self):
         bill = self._create_posted_bill(classification=self.classification_sensitive)
         payment = self._register_payment_blocked(bill, self.user_creator)
