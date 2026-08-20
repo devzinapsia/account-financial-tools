@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Extend the main account.move form (shared by all move_types) -->
+    <record id="view_move_form_classification" model="ir.ui.view">
+        <field name="name">account.move.form.classification</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <group id="header_left_group" position="inside">
+                <field name="classification_color" invisible="1"/>
+                <field name="classification_id"
+                       widget="classification_badge"
+                       options="{'no_open': True}"/>
+            </group>
+        </field>
+    </record>
+
+    <!-- Extend the invoice list view (base for out/in invoice trees) -->
+    <record id="view_invoice_tree_classification" model="ir.ui.view">
+        <field name="name">account.invoice.list.classification</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <field name="activity_ids" position="after">
+                <field name="classification_id" optional="show" widget="classification_badge"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Extend the generic account.move search (journal entries list) -->
+    <record id="view_account_move_filter_classification" model="ir.ui.view">
+        <field name="name">account.move.filter.classification</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="classification_id"/>
+            </field>
+            <group>
+                <filter string="Clasificación" name="group_by_classification"
+                        context="{'group_by': 'classification_id'}"/>
+            </group>
+        </field>
+    </record>
+
+    <!-- Extend the invoice-specific search (Customer Invoices + Vendor Bills) -->
+    <record id="view_account_invoice_filter_classification" model="ir.ui.view">
+        <field name="name">account.invoice.filter.classification</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="classification_id"/>
+            </field>
+            <group>
+                <filter string="Clasificación" name="group_by_classification"
+                        context="{'group_by': 'classification_id'}"/>
+            </group>
+        </field>
+    </record>
+
+</odoo>

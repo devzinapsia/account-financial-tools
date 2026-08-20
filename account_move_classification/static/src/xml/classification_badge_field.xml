@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="account_move_classification.ClassificationBadgeField">
+        <t t-if="props.readonly">
+            <!-- Readonly: colored badge chip -->
+            <span t-if="hasValue"
+                  class="o_tag o_badge badge rounded-pill"
+                  t-attf-class="o_tag_color_{{ colorIndex }}"
+                  t-esc="displayName"/>
+        </t>
+        <t t-else="">
+            <!-- Edit: chip overlay when a value is set, Many2OneField always handles interaction -->
+            <div class="o_classification_badge_edit d-flex align-items-center gap-1">
+                <t t-if="hasValue">
+                    <span class="o_tag o_badge badge rounded-pill"
+                          t-attf-class="o_tag_color_{{ colorIndex }}"
+                          t-esc="displayName"/>
+                    <a class="o_delete d-flex align-items-center opacity-75 opacity-100-hover ps-1"
+                       href="#"
+                       t-on-click.stop.prevent="clearValue"
+                       aria-label="Delete"
+                       data-tooltip="Delete">
+                        <i class="oi oi-close align-text-top"/>
+                    </a>
+                </t>
+                <t t-else="">
+                    <Many2OneField t-props="props"/>
+                </t>
+            </div>
+        </t>
+    </t>
+
+</templates>
