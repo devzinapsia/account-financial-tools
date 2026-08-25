@@ -13,6 +13,11 @@ class AccountAccount(models.Model):
         "lookups).",
     )
 
+    def copy_data(self, default=None):
+        default = dict(default or {})
+        default.setdefault("previous_system_account_code", False)
+        return super().copy_data(default=default)
+
     @api.constrains("previous_system_account_code")
     def _check_previous_system_account_code_unique(self):
         # Empty values are always allowed and never considered duplicates

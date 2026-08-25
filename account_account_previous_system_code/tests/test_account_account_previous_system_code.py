@@ -76,6 +76,17 @@ class TestAccountAccountPreviousSystemCode(AccountTestInvoicingCommon):
         account.previous_system_account_code = "OLD-300"
         self.assertEqual(account.previous_system_account_code, "OLD-300")
 
+    def test_duplicate_account_clears_previous_system_code(self):
+        """Duplicating an account must blank the previous system account
+        code on the copy, otherwise the uniqueness constraint would raise
+        as soon as the duplicate is saved."""
+        account = self._create_account(
+            "PSC060", previous_system_account_code="OLD-500"
+        )
+        duplicate = account.copy()
+        self.assertFalse(duplicate.previous_system_account_code)
+        self.assertEqual(account.previous_system_account_code, "OLD-500")
+
     def test_search_by_previous_system_account_code(self):
         """account.account records can be searched by
         previous_system_account_code."""
