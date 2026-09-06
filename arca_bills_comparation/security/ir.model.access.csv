@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_arca_bill_comparison_batch_invoice,arca.bill.comparison.batch (billing),model_arca_bill_comparison_batch,account.group_account_invoice,1,0,1,0
+access_arca_bill_comparison_batch_manager,arca.bill.comparison.batch (manager),model_arca_bill_comparison_batch,account.group_account_manager,1,1,1,1
+access_arca_bill_comparison_line_invoice,arca.bill.comparison.line (billing),model_arca_bill_comparison_line,account.group_account_invoice,1,0,1,0
+access_arca_bill_comparison_line_manager,arca.bill.comparison.line (manager),model_arca_bill_comparison_line,account.group_account_manager,1,1,1,1
+access_arca_bill_comparison_wizard,arca.bill.comparison.wizard,model_arca_bill_comparison_wizard,account.group_account_invoice,1,1,1,1

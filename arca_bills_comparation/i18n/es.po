@@ -1,0 +1,480 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* arca_bills_comparation
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-06 22:10+0000\n"
+"PO-Revision-Date: 2026-09-06 22:10+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: arca_bills_comparation
+#: model:ir.model,name:arca_bills_comparation.model_arca_bill_comparison_batch
+msgid "ARCA Bill Comparison Batch"
+msgstr "Lote de comparación ARCA"
+
+#. module: arca_bills_comparation
+#: model:ir.model,name:arca_bills_comparation.model_arca_bill_comparison_line
+msgid "ARCA Bill Comparison Result Line"
+msgstr "Línea de resultado de comparación ARCA"
+
+#. module: arca_bills_comparation
+#: model:ir.model,name:arca_bills_comparation.model_arca_bill_comparison_wizard
+msgid "ARCA My Vouchers Received - Import Wizard"
+msgstr "Asistente de importación ARCA - Mis comprobantes recibidos"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_list
+msgid "ARCA bill comparison results"
+msgstr "Resultados de comparación de comprobantes ARCA"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_authorization_code
+msgid "Authorization code"
+msgstr "Código de autorización"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__batch_id
+msgid "Batch"
+msgstr "Lote"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_wizard_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__company_id
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__create_uid
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__create_uid
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__create_date
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__create_date
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_currency_raw
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_list
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_currency_id
+msgid "Currency (for amount display)"
+msgstr "Moneda (para mostrar importes)"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "Currency: ARCA %(arca)s vs Odoo %(odoo)s"
+msgstr "Moneda: ARCA %(arca)s vs Odoo %(odoo)s"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "Currency: unrecognized ARCA symbol '%s'"
+msgstr "Moneda: símbolo de ARCA no reconocido '%s'"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_date
+msgid "Date"
+msgstr "Fecha"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "Date: ARCA %(arca)s vs Odoo %(odoo)s"
+msgstr "Fecha: ARCA %(arca)s vs Odoo %(odoo)s"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields.selection,name:arca_bills_comparation.selection__arca_bill_comparison_line__result__difference
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
+msgid "Difference"
+msgstr "Diferencias"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__difference_detail
+msgid "Difference detail"
+msgstr "Detalle de diferencias"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__display_name
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__display_name
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__display_name
+msgid "Display Name"
+msgstr "Nombre a mostrar"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/wizards/arca_bill_comparison_wizard.py:0
+msgid ""
+"El archivo a importar no pertenece a la empresa actual (CUIT del receptor "
+"%(file_vat)s diferente al de la empresa %(company_vat)s"
+msgstr ""
+"El archivo a importar no pertenece a la empresa actual (CUIT del receptor "
+"%(file_vat)s diferente al de la empresa %(company_vat)s"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_exchange_rate
+msgid "Exchange rate"
+msgstr "Tipo de cambio"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_exempt_operations
+msgid "Exempt operations"
+msgstr "Operaciones exentas"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__file
+msgid "File to import"
+msgstr "Archivo a importar"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__filename
+msgid "Filename"
+msgstr "Nombre del archivo"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__date_from
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__date_from
+msgid "From"
+msgstr "Desde"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__id
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__id
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/wizards/arca_bill_comparison_wizard.py:0
+msgid "Invalid file"
+msgstr "Archivo inválido"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
+msgid "Issuer"
+msgstr "Emisor"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_issuer_id_type
+msgid "Issuer ID type"
+msgstr "Tipo de documento del emisor"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_issuer_vat
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
+msgid "Issuer VAT"
+msgstr "CUIT del emisor"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_issuer_name
+msgid "Issuer name"
+msgstr "Denominación del emisor"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__write_uid
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__write_uid
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__write_date
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__write_date
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__line_ids
+msgid "Line"
+msgstr "Línea"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__line_count
+msgid "Line Count"
+msgstr "Cantidad de líneas"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields.selection,name:arca_bills_comparation.selection__arca_bill_comparison_line__result__match
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
+msgid "Match"
+msgstr "Coincidencia"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+#: model:ir.actions.act_window,name:arca_bills_comparation.action_arca_bill_comparison_wizard
+#: model:ir.ui.menu,name:arca_bills_comparation.menu_arca_bill_comparison_wizard
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_wizard_form
+msgid "My Vouchers"
+msgstr "Mis comprobantes"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "My Vouchers %(date_from)s - %(date_to)s"
+msgstr "Mis comprobantes %(date_from)s - %(date_to)s"
+
+#. module: arca_bills_comparation
+#: model:ir.actions.act_window,name:arca_bills_comparation.action_arca_bill_comparison_line
+msgid "My Vouchers - Comparison Results"
+msgstr "Mis comprobantes - Resultados de la comparación"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_batch_form
+msgid "My Vouchers - Run"
+msgstr "Mis comprobantes - Corrida"
+
+#. module: arca_bills_comparation
+#: model:ir.actions.act_window,name:arca_bills_comparation.action_arca_bill_comparison_batch
+#: model:ir.ui.menu,name:arca_bills_comparation.menu_arca_bill_comparison_batch
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_batch_list
+msgid "My Vouchers - Runs"
+msgstr "Mis comprobantes - Corridas"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_non_taxed_amount
+msgid "Non taxed amount"
+msgstr "Importe no gravado"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_number_from
+msgid "Number from"
+msgstr "Número desde"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_number_to
+msgid "Number to"
+msgstr "Número hasta"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_other_taxes
+msgid "Other taxes"
+msgstr "Otros tributos"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields.selection,name:arca_bills_comparation.selection__arca_bill_comparison_line__result__pending_in_arca
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
+msgid "Pending in ARCA"
+msgstr "Pendiente en ARCA"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields.selection,name:arca_bills_comparation.selection__arca_bill_comparison_line__result__pending_in_odoo
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
+msgid "Pending in Odoo"
+msgstr "Pendiente en Odoo"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/wizards/arca_bill_comparison_wizard.py:0
+msgid "Please attach a file to import."
+msgstr "Por favor adjunte un archivo para importar."
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_point_of_sale
+msgid "Point of sale"
+msgstr "Punto de venta"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_wizard_form
+msgid "Process"
+msgstr "Procesar"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__user_id
+msgid "Processed by"
+msgstr "Procesado por"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_recipient_id_type
+msgid "Recipient ID type"
+msgstr "Tipo de documento del receptor"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_recipient_vat
+msgid "Recipient VAT"
+msgstr "CUIT del receptor"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__result
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
+msgid "Result"
+msgstr "Resultado"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_batch_form
+msgid "Results"
+msgstr "Resultados"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
+msgid "Search ARCA bill comparison results"
+msgstr "Buscar resultados de comparación de comprobantes ARCA"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "Tax amount: ARCA %(arca).2f vs Odoo %(odoo).2f"
+msgstr "Importe de impuestos: ARCA %(arca).2f vs Odoo %(odoo).2f"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
+msgid "The file could not be read as a valid Excel (.xlsx) file."
+msgstr "El archivo no pudo leerse como un Excel (.xlsx) válido."
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
+msgid "The file is missing expected columns: %s"
+msgstr "Al archivo le faltan columnas esperadas: %s"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
+msgid "The file is missing the column headers row."
+msgstr "Al archivo le falta la fila de encabezados de columna."
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/wizards/arca_bill_comparison_wizard.py:0
+msgid "The selected file has no voucher rows to compare."
+msgstr "El archivo seleccionado no tiene filas de comprobantes para comparar."
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__date_to
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__date_to
+msgid "To"
+msgstr "Hasta"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_total_vat
+msgid "Total VAT"
+msgstr "IVA total"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_total_amount
+msgid "Total amount"
+msgstr "Importe total"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "Total amount: ARCA %(arca).2f vs Odoo %(odoo).2f"
+msgstr "Importe total: ARCA %(arca).2f vs Odoo %(odoo).2f"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_total
+msgid "Total taxed base"
+msgstr "Neto gravado total"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
+msgid "Unrecognized date format: %s"
+msgstr "Formato de fecha no reconocido: %s"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "Untaxed amount: ARCA %(arca).2f vs Odoo %(odoo).2f"
+msgstr "Importe neto: ARCA %(arca).2f vs Odoo %(odoo).2f"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_vat_0
+msgid "Untaxed base VAT 0%"
+msgstr "Neto grav. IVA 0%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_vat_10_5
+msgid "Untaxed base VAT 10.5%"
+msgstr "Neto grav. IVA 10,5%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_vat_2_5
+msgid "Untaxed base VAT 2.5%"
+msgstr "Neto grav. IVA 2,5%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_vat_21
+msgid "Untaxed base VAT 21%"
+msgstr "Neto grav. IVA 21%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_vat_27
+msgid "Untaxed base VAT 27%"
+msgstr "Neto grav. IVA 27%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_vat_5
+msgid "Untaxed base VAT 5%"
+msgstr "Neto grav. IVA 5%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_vat_10_5
+msgid "VAT 10.5%"
+msgstr "IVA 10,5%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_vat_2_5
+msgid "VAT 2.5%"
+msgstr "IVA 2,5%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_vat_21
+msgid "VAT 21%"
+msgstr "IVA 21%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_vat_27
+msgid "VAT 27%"
+msgstr "IVA 27%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_vat_5
+msgid "VAT 5%"
+msgstr "IVA 5%"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__move_id
+msgid "Vendor bill"
+msgstr "Factura de proveedor"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_voucher_type_raw
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_list
+msgid "Voucher type"
+msgstr "Tipo de comprobante"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_voucher_type_code
+msgid "Voucher type code"
+msgstr "Código de tipo de comprobante"

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_arca_bill_comparison_line_list" model="ir.ui.view">
+        <field name="name">arca.bill.comparison.line.list</field>
+        <field name="model">arca.bill.comparison.line</field>
+        <field name="arch" type="xml">
+            <list string="ARCA bill comparison results"
+                  decoration-success="result == 'match'"
+                  decoration-danger="result == 'difference'"
+                  decoration-warning="result == 'pending_in_odoo'"
+                  decoration-info="result == 'pending_in_arca'">
+                <field name="result" widget="badge"/>
+                <field name="arca_voucher_type_raw" string="Voucher type"/>
+                <field name="arca_point_of_sale"/>
+                <field name="arca_number_from"/>
+                <field name="arca_number_to"/>
+                <field name="arca_date"/>
+                <field name="arca_issuer_vat"/>
+                <field name="arca_issuer_name"/>
+                <field name="arca_currency_raw" string="Currency"/>
+                <field name="arca_untaxed_total"/>
+                <field name="arca_total_vat"/>
+                <field name="arca_total_amount"/>
+                <field name="move_id"/>
+                <field name="difference_detail"/>
+                <field name="arca_authorization_code" optional="hide"/>
+                <field name="arca_issuer_id_type" optional="hide"/>
+                <field name="arca_recipient_id_type" optional="hide"/>
+                <field name="arca_recipient_vat" optional="hide"/>
+                <field name="arca_exchange_rate" optional="hide"/>
+                <field name="arca_untaxed_vat_0" optional="hide"/>
+                <field name="arca_vat_2_5" optional="hide"/>
+                <field name="arca_untaxed_vat_2_5" optional="hide"/>
+                <field name="arca_vat_5" optional="hide"/>
+                <field name="arca_untaxed_vat_5" optional="hide"/>
+                <field name="arca_vat_10_5" optional="hide"/>
+                <field name="arca_untaxed_vat_10_5" optional="hide"/>
+                <field name="arca_vat_21" optional="hide"/>
+                <field name="arca_untaxed_vat_21" optional="hide"/>
+                <field name="arca_vat_27" optional="hide"/>
+                <field name="arca_untaxed_vat_27" optional="hide"/>
+                <field name="arca_non_taxed_amount" optional="hide"/>
+                <field name="arca_exempt_operations" optional="hide"/>
+                <field name="arca_other_taxes" optional="hide"/>
+                <field name="batch_id" optional="hide"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+                <field name="arca_currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_arca_bill_comparison_line_search" model="ir.ui.view">
+        <field name="name">arca.bill.comparison.line.search</field>
+        <field name="model">arca.bill.comparison.line</field>
+        <field name="arch" type="xml">
+            <search string="Search ARCA bill comparison results">
+                <field name="arca_issuer_name" string="Issuer"/>
+                <field name="arca_issuer_vat" string="Issuer VAT"/>
+                <field name="move_id"/>
+                <field name="batch_id"/>
+                <filter name="filter_match" string="Match" domain="[('result', '=', 'match')]"/>
+                <filter name="filter_difference" string="Difference" domain="[('result', '=', 'difference')]"/>
+                <filter name="filter_pending_in_odoo" string="Pending in Odoo" domain="[('result', '=', 'pending_in_odoo')]"/>
+                <filter name="filter_pending_in_arca" string="Pending in ARCA" domain="[('result', '=', 'pending_in_arca')]"/>
+                <group>
+                    <filter name="group_by_result" string="Result" context="{'group_by': 'result'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_arca_bill_comparison_line" model="ir.actions.act_window">
+        <field name="name">My Vouchers - Comparison Results</field>
+        <field name="res_model">arca.bill.comparison.line</field>
+        <field name="view_mode">list</field>
+        <field name="search_view_id" ref="view_arca_bill_comparison_line_search"/>
+        <field name="context">{'search_default_group_by_result': 1}</field>
+    </record>
+
+</odoo>
