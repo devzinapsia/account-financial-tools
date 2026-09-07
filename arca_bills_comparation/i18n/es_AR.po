@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 00:24+0000\n"
-"PO-Revision-Date: 2026-09-07 00:24+0000\n"
+"POT-Creation-Date: 2026-09-07 12:16+0000\n"
+"PO-Revision-Date: 2026-09-07 12:16+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_AR\n"
@@ -17,7 +17,13 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_form
+msgid "<span class=\"o_stat_text\">Vendor Bill</span>"
+msgstr "<span class=\"o_stat_text\">Factura de proveedor</span>"
+
+#. module: arca_bills_comparation
 #: model:ir.ui.menu,name:arca_bills_comparation.menu_arca_root
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_form
 msgid "ARCA"
 msgstr "ARCA"
 
@@ -37,12 +43,18 @@ msgid "ARCA My Vouchers Received - Import Wizard"
 msgstr "Asistente de importación ARCA - Mis comprobantes recibidos"
 
 #. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_form
+msgid "ARCA bill comparison result"
+msgstr "Resultado de comparación ARCA"
+
+#. module: arca_bills_comparation
 #: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_list
 msgid "ARCA bill comparison results"
 msgstr "Resultados de comparación de comprobantes ARCA"
 
 #. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_authorization_code
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_form
 msgid "Authorization code"
 msgstr "Código de autorización"
 
@@ -78,6 +90,7 @@ msgstr "Creado el"
 
 #. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_currency_raw
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_form
 #: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_list
 msgid "Currency"
 msgstr "Moneda"
@@ -340,6 +353,11 @@ msgid "Results"
 msgstr "Resultados"
 
 #. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_form
+msgid "Run"
+msgstr "Corrida"
+
+#. module: arca_bills_comparation
 #: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
 msgid "Search ARCA bill comparison results"
 msgstr "Buscar resultados de comparación de comprobantes ARCA"
@@ -475,6 +493,7 @@ msgstr "Factura de proveedor"
 
 #. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_voucher_type_raw
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_form
 #: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_list
 msgid "Voucher type"
 msgstr "Tipo de comprobante"
@@ -483,3 +502,9 @@ msgstr "Tipo de comprobante"
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_voucher_type_code
 msgid "Voucher type code"
 msgstr "Código de tipo de comprobante"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "Voucher type: ARCA %(arca)s vs Odoo %(odoo)s"
+msgstr "Tipo de comprobante: ARCA %(arca)s vs Odoo %(odoo)s"

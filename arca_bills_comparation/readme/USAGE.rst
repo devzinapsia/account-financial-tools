@@ -86,6 +86,17 @@ Assumptions
   (observed on exempt insurance premiums) even though the total is
   correct, and Odoo still books the full amount as untaxed base — that
   reporting quirk would otherwise show up as a false "Difference".
+- Voucher type is matched as a hard key first; if no bill matches on the
+  first pass, a second pass retries the same point of sale/number
+  range/issuer VAT ignoring voucher type. A match found this way is
+  always reported as "Difference" (never "Match"), noting the type
+  disagreement, since real bookkeeping sometimes records a bill under a
+  different but related document type than the one ARCA registered for
+  it (observed case: ARCA reports "81 - Tique Factura A", the bill was
+  entered in Odoo as "1 - Factura A"). Issuer VAT itself is never
+  loosened this way — a mismatched CUIT almost always means the bill was
+  booked against the wrong vendor in Odoo, which the tool should keep
+  surfacing as two separate Pending lines rather than silently pair up.
 
 Roadmap
 ~~~~~~~

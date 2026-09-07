@@ -61,22 +61,55 @@ class ArcaBillComparisonBatch(models.Model):
         self.ensure_one()
         candidate_moves = self._get_candidate_moves()
         move_index = self._index_moves(candidate_moves)
+        move_index_by_issuer = self._index_moves_by_issuer(candidate_moves)
 
         consumed_move_ids = set()
+        unmatched_rows = []
         line_values = []
         for row in rows:
-            moves = self._find_matching_moves(move_index, row, consumed_move_ids)
+            key = self._match_key(
+                row["voucher_type_code"], row["point_of_sale"], row["issuer_id_type"], row["issuer_vat"]
+            )
+            moves = self._find_matching_moves(move_index, key, row, consumed_move_ids)
             if moves:
                 consumed_move_ids.update(moves.ids)
                 result, detail = self._compare_soft_fields(row, moves)
+                # Only one move can be linked from a result line; when ARCA
+                # grouped several consecutive invoices into a single ranged
+                # row, all matched moves are aggregated for the soft-field
+                # comparison above and excluded from "Pending in ARCA" below,
+                # but the line itself links to the first (lowest-numbered)
+                # one as a representative reference.
+                line_values.append(self._prepare_line_from_row(row, moves[:1], result, detail))
             else:
-                result, detail = "pending_in_odoo", ""
-            # Only one move can be linked from a result line; when ARCA grouped
-            # several consecutive invoices into a single ranged row, all matched
-            # moves are aggregated for the soft-field comparison above and
-            # excluded from "Pending in ARCA" below, but the line itself links
-            # to the first (lowest-numbered) one as a representative reference.
-            line_values.append(self._prepare_line_from_row(row, moves[:1], result, detail))
+                unmatched_rows.append(row)
+
+        # Fallback pass, ignoring voucher type: real bookkeeping sometimes
+        # records a bill under a different (but related) document type than
+        # the one ARCA registered for the same issuer/point of sale/number
+        # (e.g. ARCA reports "81 - Tique Factura A" but the bill was entered
+        # in Odoo as "1 - Factura A"). Without this, both sides would show
+        # up as disconnected "Pending" lines instead of a linked Difference
+        # that calls out the type mismatch. Issuer VAT stays a hard key
+        # throughout — it is never loosened, since that could wrongly link
+        # bills from two different vendors.
+        for row in unmatched_rows:
+            issuer_key = self._issuer_key(row["point_of_sale"], row["issuer_id_type"], row["issuer_vat"])
+            moves = self._find_matching_moves(move_index_by_issuer, issuer_key, row, consumed_move_ids)
+            if moves:
+                consumed_move_ids.update(moves.ids)
+                _result, detail = self._compare_soft_fields(row, moves)
+                odoo_types = sorted(set(moves.mapped("l10n_latam_document_type_id.name")))
+                type_note = _("Voucher type: ARCA %(arca)s vs Odoo %(odoo)s") % {
+                    "arca": row["voucher_type_raw"],
+                    "odoo": ", ".join(odoo_types),
+                }
+                detail = "\n".join(filter(None, [type_note, detail]))
+                line_values.append(self._prepare_line_from_row(row, moves[:1], "difference", detail))
+            else:
+                line_values.append(
+                    self._prepare_line_from_row(row, self.env["account.move"], "pending_in_odoo", "")
+                )
 
         pending_in_arca_moves = candidate_moves.filtered(
             lambda move: move.id not in consumed_move_ids
@@ -111,8 +144,17 @@ class ArcaBillComparisonBatch(models.Model):
             normalize_vat(issuer_vat),
         )
 
+    @staticmethod
+    def _issuer_key(point_of_sale, issuer_id_type, issuer_vat):
+        """Same as _match_key but without voucher type, for the type-agnostic fallback pass."""
+        return (
+            point_of_sale,
+            (issuer_id_type or "").strip().upper(),
+            normalize_vat(issuer_vat),
+        )
+
     def _index_moves(self, moves):
-        """Group moves by their hard matching key, so each ARCA row is a single dict lookup."""
+        """Group moves by (type, point of sale, issuer), so each ARCA row is a single dict lookup."""
         index = {}
         for move in moves:
             point_of_sale, number = split_document_number(move.l10n_latam_document_number)
@@ -127,7 +169,22 @@ class ArcaBillComparisonBatch(models.Model):
             index.setdefault(key, []).append((move, number))
         return index
 
-    def _find_matching_moves(self, move_index, row, consumed_move_ids):
+    def _index_moves_by_issuer(self, moves):
+        """Same as _index_moves, keyed without voucher type, for the type-agnostic fallback pass."""
+        index = {}
+        for move in moves:
+            point_of_sale, number = split_document_number(move.l10n_latam_document_number)
+            if point_of_sale is None:
+                continue
+            key = self._issuer_key(
+                point_of_sale,
+                move.partner_id.l10n_latam_identification_type_id.name,
+                move.partner_id.vat,
+            )
+            index.setdefault(key, []).append((move, number))
+        return index
+
+    def _find_matching_moves(self, move_index, key, row, consumed_move_ids):
         """Return every move whose number falls in the row's range, lowest number first.
 
         Usually a single move. When ARCA groups several consecutive invoices
@@ -137,9 +194,6 @@ class ArcaBillComparisonBatch(models.Model):
         excluded, so a single bill is never linked from more than one result
         line even if two ARCA rows' ranges happen to overlap.
         """
-        key = self._match_key(
-            row["voucher_type_code"], row["point_of_sale"], row["issuer_id_type"], row["issuer_vat"]
-        )
         candidates = move_index.get(key, [])
         matches = sorted(
             (

@@ -268,6 +268,66 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertEqual(other_line.result, "pending_in_odoo")
 
     # ------------------------------------------------------------------
+    # A voucher type mismatch (same issuer/point of sale/number, different
+    # type) must be linked as a Difference, not shown as two disconnected
+    # Pending lines. Real case: ARCA reports "81 - Tique Factura A" for a
+    # bill entered in Odoo as "1 - Factura A".
+    # ------------------------------------------------------------------
+
+    def test_voucher_type_mismatch_links_as_difference(self):
+        move = self._create_bill(
+            self.partner_amx, self.doc_type_a, "35-2321", "2026-08-23", price_unit=8400.0
+        )
+        rows = [
+            self._make_row(
+                date=date(2026, 8, 23),
+                voucher_type_raw="81 - Tique Factura A",
+                voucher_type_code="81",
+                point_of_sale=35,
+                number_from=2321,
+                number_to=2321,
+                total_amount=8400.0,
+            ),
+        ]
+        batch = self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+        batch._run_comparison(rows)
+
+        self.assertEqual(len(batch.line_ids), 1)
+        line = batch.line_ids
+        self.assertEqual(line.move_id, move)
+        self.assertEqual(line.result, "difference")
+        self.assertIn("Voucher type", line.difference_detail)
+
+    def test_issuer_vat_mismatch_never_links(self):
+        move = self._create_bill(
+            self.partner_amx, self.doc_type_a, "35-2321", "2026-08-23", price_unit=8400.0
+        )
+        rows = [
+            self._make_row(
+                date=date(2026, 8, 23),
+                point_of_sale=35,
+                number_from=2321,
+                number_to=2321,
+                issuer_vat=self.partner_allianz.vat,
+                issuer_name=self.partner_allianz.name,
+                total_amount=8400.0,
+            ),
+        ]
+        batch = self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+        batch._run_comparison(rows)
+
+        results = {line.result for line in batch.line_ids}
+        self.assertEqual(results, {"pending_in_odoo", "pending_in_arca"})
+        # The move is referenced from its own "Pending in ARCA" line (by
+        # design), but never from a "match"/"difference" line.
+        matched_or_different = batch.line_ids.filtered(lambda line: line.result in ("match", "difference"))
+        self.assertNotIn(move, matched_or_different.mapped("move_id"))
+
+    # ------------------------------------------------------------------
     # The four possible results (section 5.4), against the base file
     # ------------------------------------------------------------------
 

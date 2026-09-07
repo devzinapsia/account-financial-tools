@@ -72,3 +72,14 @@ class ArcaBillComparisonLine(models.Model):
     # arca.bill.comparison.batch, not through this field. Set explicitly at
     # line creation time (see ArcaBillComparisonBatch), not computed here.
     arca_currency_id = fields.Many2one("res.currency", string="Currency (for amount display)")
+
+    def action_open_move(self):
+        """Open the linked vendor bill's own form (list views don't navigate on Many2one click)."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "account.move",
+            "res_id": self.move_id.id,
+            "views": [(False, "form")],
+            "target": "current",
+        }
