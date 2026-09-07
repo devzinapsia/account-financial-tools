@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-06 22:10+0000\n"
-"PO-Revision-Date: 2026-09-06 22:10+0000\n"
+"POT-Creation-Date: 2026-09-07 00:24+0000\n"
+"PO-Revision-Date: 2026-09-07 00:24+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_AR\n"
@@ -15,6 +15,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: arca_bills_comparation
+#: model:ir.ui.menu,name:arca_bills_comparation.menu_arca_root
+msgid "ARCA"
+msgstr "ARCA"
 
 #. module: arca_bills_comparation
 #: model:ir.model,name:arca_bills_comparation.model_arca_bill_comparison_batch
