@@ -300,7 +300,12 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertEqual(line.result, "difference")
         self.assertIn("Voucher type", line.difference_detail)
 
-    def test_issuer_vat_mismatch_never_links(self):
+    def test_issuer_vat_mismatch_links_as_difference_when_amount_agrees(self):
+        """Real case: a bill booked against a related but wrong vendor (e.g.
+        a "Telecom Personal S.A." invoice booked as "Telecom Argentina
+        S.A." in Odoo). Point of sale/number/total amount all agree, so it
+        should link as a Difference noting the issuer mismatch instead of
+        showing up as two disconnected Pending lines."""
         move = self._create_bill(
             self.partner_amx, self.doc_type_a, "35-2321", "2026-08-23", price_unit=8400.0
         )
@@ -313,6 +318,35 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
                 issuer_vat=self.partner_allianz.vat,
                 issuer_name=self.partner_allianz.name,
                 total_amount=8400.0,
+            ),
+        ]
+        batch = self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+        batch._run_comparison(rows)
+
+        self.assertEqual(len(batch.line_ids), 1)
+        line = batch.line_ids
+        self.assertEqual(line.move_id, move)
+        self.assertEqual(line.result, "difference")
+        self.assertIn("Issuer", line.difference_detail)
+
+    def test_issuer_vat_mismatch_stays_pending_when_amount_disagrees(self):
+        """Without amount agreement too, a point of sale/number coincidence
+        across two different vendors must never be linked — that combination
+        alone is too weak a signal on its own."""
+        move = self._create_bill(
+            self.partner_amx, self.doc_type_a, "35-2321", "2026-08-23", price_unit=8400.0
+        )
+        rows = [
+            self._make_row(
+                date=date(2026, 8, 23),
+                point_of_sale=35,
+                number_from=2321,
+                number_to=2321,
+                issuer_vat=self.partner_allianz.vat,
+                issuer_name=self.partner_allianz.name,
+                total_amount=999.0,
             ),
         ]
         batch = self.env["arca.bill.comparison.batch"].create(

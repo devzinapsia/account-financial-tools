@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 12:16+0000\n"
-"PO-Revision-Date: 2026-09-07 12:16+0000\n"
+"POT-Creation-Date: 2026-09-07 14:37+0000\n"
+"PO-Revision-Date: 2026-09-07 14:37+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -212,6 +212,12 @@ msgid "Issuer name"
 msgstr "Denominación del emisor"
 
 #. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "Issuer: ARCA %(arca_name)s (%(arca_vat)s) vs Odoo %(odoo)s"
+msgstr "Emisor: ARCA %(arca_name)s (%(arca_vat)s) vs Odoo %(odoo)s"
+
+#. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__write_uid
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__write_uid
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_wizard__write_uid
@@ -294,6 +300,11 @@ msgid "Number to"
 msgstr "Número hasta"
 
 #. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_list
+msgid "Open bill"
+msgstr "Abrir factura"
+
+#. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_other_taxes
 msgid "Other taxes"
 msgstr "Otros tributos"
@@ -363,6 +374,11 @@ msgid "Search ARCA bill comparison results"
 msgstr "Buscar resultados de comparación de comprobantes ARCA"
 
 #. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_total_vat
+msgid "Tax amount"
+msgstr "Importe de impuestos"
+
+#. module: arca_bills_comparation
 #. odoo-python
 #: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
 msgid "Tax amount: ARCA %(arca).2f vs Odoo %(odoo).2f"
@@ -399,11 +415,6 @@ msgid "To"
 msgstr "Hasta"
 
 #. module: arca_bills_comparation
-#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_total_vat
-msgid "Total VAT"
-msgstr "IVA total"
-
-#. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_total_amount
 msgid "Total amount"
 msgstr "Importe total"
@@ -415,15 +426,15 @@ msgid "Total amount: ARCA %(arca).2f vs Odoo %(odoo).2f"
 msgstr "Importe total: ARCA %(arca).2f vs Odoo %(odoo).2f"
 
 #. module: arca_bills_comparation
-#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_total
-msgid "Total taxed base"
-msgstr "Neto gravado total"
-
-#. module: arca_bills_comparation
 #. odoo-python
 #: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
 msgid "Unrecognized date format: %s"
 msgstr "Formato de fecha no reconocido: %s"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_untaxed_total
+msgid "Untaxed amount"
+msgstr "Importe neto"
 
 #. module: arca_bills_comparation
 #. odoo-python
@@ -490,6 +501,12 @@ msgstr "IVA 5%"
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__move_id
 msgid "Vendor bill"
 msgstr "Factura de proveedor"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_line.py:0
+msgid "Voucher Detail"
+msgstr "Detalle del comprobante"
 
 #. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_voucher_type_raw

@@ -139,17 +139,39 @@ Assumptions
   (observed on exempt insurance premiums) even though the total is
   correct, and Odoo still books the full amount as untaxed base — that
   reporting quirk would otherwise show up as a false "Difference".
-- Voucher type is matched as a hard key first; if no bill matches on the
-  first pass, a second pass retries the same point of sale/number
-  range/issuer VAT ignoring voucher type. A match found this way is
-  always reported as "Difference" (never "Match"), noting the type
-  disagreement, since real bookkeeping sometimes records a bill under a
-  different but related document type than the one ARCA registered for
-  it (observed case: ARCA reports "81 - Tique Factura A", the bill was
-  entered in Odoo as "1 - Factura A"). Issuer VAT itself is never
-  loosened this way — a mismatched CUIT almost always means the bill was
-  booked against the wrong vendor in Odoo, which the tool should keep
-  surfacing as two separate Pending lines rather than silently pair up.
+- Matching runs in three passes, from strictest to loosest, each only
+  applied to what the previous pass left unmatched. A match found on the
+  second or third pass is always reported as "Difference" (never
+  "Match"), with a note on which key disagreed:
+
+  1. Voucher type + point of sale/number range + issuer VAT (the normal
+     case).
+  2. Same point of sale/number range/issuer VAT, ignoring voucher type —
+     real bookkeeping sometimes records a bill under a different but
+     related document type than the one ARCA registered for it (observed
+     case: ARCA reports "81 - Tique Factura A", the bill was entered in
+     Odoo as "1 - Factura A").
+  3. Same point of sale/number range only, ignoring both voucher type and
+     issuer VAT, **but only accepted when the total amount also agrees**
+     — a mismatched CUIT usually means the bill was booked against the
+     wrong (often related) vendor in Odoo (observed case: an invoice from
+     "Telecom Personal S.A." booked against "Telecom Argentina S.A.").
+     Point of sale/number alone is too weak a key to trust on its own, so
+     without the amount also matching, this pass is skipped and both
+     sides are left as separate Pending lines instead of risking a false
+     pairing between two unrelated vendors.
+- The "Untaxed amount"/"Tax amount" columns and their soft-field
+  comparison always show the *combined* total (ARCA's "Neto Gravado
+  Total" + "Neto No Gravado" + "Op. Exentas" for the untaxed amount,
+  "Total IVA" + "Otros Tributos" for the tax amount) rather than each raw
+  ARCA column alone, so a "Pending in ARCA" line (built from the Odoo
+  bill's own ``amount_untaxed``/``amount_tax``, which don't separate
+  those out) shows a value on the same basis as an ARCA-sourced line.
+- "Pending in ARCA" lines show the voucher type as "``<code>`` -
+  ``<Title Cased name>``" (e.g. "1 - Factura A") to visually match ARCA's
+  own formatting, even though there is no real ARCA text for that line —
+  ``l10n_latam.document.type.name`` is stored in all caps internally
+  (e.g. "FACTURAS A").
 
 Roadmap
 -------

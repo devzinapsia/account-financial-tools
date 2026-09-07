@@ -62,6 +62,7 @@ class ArcaBillComparisonBatch(models.Model):
         candidate_moves = self._get_candidate_moves()
         move_index = self._index_moves(candidate_moves)
         move_index_by_issuer = self._index_moves_by_issuer(candidate_moves)
+        move_index_by_pos = self._index_moves_by_point_of_sale(candidate_moves)
 
         consumed_move_ids = set()
         unmatched_rows = []
@@ -90,21 +91,34 @@ class ArcaBillComparisonBatch(models.Model):
         # (e.g. ARCA reports "81 - Tique Factura A" but the bill was entered
         # in Odoo as "1 - Factura A"). Without this, both sides would show
         # up as disconnected "Pending" lines instead of a linked Difference
-        # that calls out the type mismatch. Issuer VAT stays a hard key
-        # throughout — it is never loosened, since that could wrongly link
-        # bills from two different vendors.
+        # that calls out the type mismatch.
+        still_unmatched_rows = []
         for row in unmatched_rows:
             issuer_key = self._issuer_key(row["point_of_sale"], row["issuer_id_type"], row["issuer_vat"])
             moves = self._find_matching_moves(move_index_by_issuer, issuer_key, row, consumed_move_ids)
             if moves:
                 consumed_move_ids.update(moves.ids)
-                _result, detail = self._compare_soft_fields(row, moves)
-                odoo_types = sorted(set(moves.mapped("l10n_latam_document_type_id.name")))
-                type_note = _("Voucher type: ARCA %(arca)s vs Odoo %(odoo)s") % {
-                    "arca": row["voucher_type_raw"],
-                    "odoo": ", ".join(odoo_types),
-                }
-                detail = "\n".join(filter(None, [type_note, detail]))
+                line_values.append(self._prepare_line_from_row(row, moves[:1], "difference", self._type_mismatch_detail(row, moves)))
+            else:
+                still_unmatched_rows.append(row)
+
+        # Second fallback pass, ignoring issuer VAT too (same point of sale
+        # and number range only): a wrong vendor on the Odoo bill is a rarer
+        # mistake than a type mismatch, but also an easy one to make between
+        # related companies (e.g. a bill from "Telecom Personal S.A." booked
+        # against "Telecom Argentina S.A." in Odoo) and an easy one to spot
+        # once flagged. To avoid pairing up bills from two unrelated vendors
+        # that happen to share a point of sale/number by coincidence, a
+        # candidate here is only accepted when its total amount also agrees
+        # with ARCA's, so the match is never accepted on number alone.
+        for row in still_unmatched_rows:
+            moves = self._find_matching_moves(move_index_by_pos, row["point_of_sale"], row, consumed_move_ids)
+            moves = moves.filtered(lambda move: abs(move.amount_total - row["total_amount"]) <= AMOUNT_TOLERANCE)
+            if moves:
+                consumed_move_ids.update(moves.ids)
+                detail = self._issuer_mismatch_detail(row, moves)
+                if row["voucher_type_code"] not in moves.mapped("l10n_latam_document_type_id.code"):
+                    detail = "\n".join(filter(None, [self._type_mismatch_detail(row, moves), detail]))
                 line_values.append(self._prepare_line_from_row(row, moves[:1], "difference", detail))
             else:
                 line_values.append(
@@ -183,6 +197,40 @@ class ArcaBillComparisonBatch(models.Model):
             )
             index.setdefault(key, []).append((move, number))
         return index
+
+    def _index_moves_by_point_of_sale(self, moves):
+        """Index purely by point of sale, for the last-resort fallback pass.
+
+        Ignores both voucher type and issuer, so callers must gate any match
+        found through this index on another strong signal (the total amount)
+        before accepting it — point of sale/number alone is too weak a key
+        on its own, since two unrelated vendors can plausibly reuse the same
+        combination.
+        """
+        index = {}
+        for move in moves:
+            point_of_sale, number = split_document_number(move.l10n_latam_document_number)
+            if point_of_sale is None:
+                continue
+            index.setdefault(point_of_sale, []).append((move, number))
+        return index
+
+    def _type_mismatch_detail(self, row, moves):
+        odoo_types = sorted(set(moves.mapped("l10n_latam_document_type_id.name")))
+        return _("Voucher type: ARCA %(arca)s vs Odoo %(odoo)s") % {
+            "arca": row["voucher_type_raw"],
+            "odoo": ", ".join(odoo_types),
+        }
+
+    def _issuer_mismatch_detail(self, row, moves):
+        odoo_issuers = sorted(
+            "%s (%s)" % (name, vat) for name, vat in set(zip(moves.mapped("partner_id.name"), moves.mapped("partner_id.vat")))
+        )
+        return _("Issuer: ARCA %(arca_name)s (%(arca_vat)s) vs Odoo %(odoo)s") % {
+            "arca_name": row["issuer_name"],
+            "arca_vat": row["issuer_vat"],
+            "odoo": ", ".join(odoo_issuers),
+        }
 
     def _find_matching_moves(self, move_index, key, row, consumed_move_ids):
         """Return every move whose number falls in the row's range, lowest number first.
@@ -267,6 +315,14 @@ class ArcaBillComparisonBatch(models.Model):
         values["arca_point_of_sale"] = _format_point_of_sale(row["point_of_sale"])
         values["arca_number_from"] = _format_number(row["number_from"])
         values["arca_number_to"] = _format_number(row["number_to"])
+        # Displayed (and compared) as combined totals rather than the raw
+        # "Total IVA"/"Neto Gravado Total" columns alone, so this matches
+        # what "Pending in ARCA" lines show (computed from Odoo's own
+        # amount_untaxed/amount_tax, which don't separate out "Otros
+        # Tributos"/"Neto No Gravado"/"Op. Exentas") and what the soft-field
+        # comparison above actually checks.
+        values["arca_untaxed_total"] = row["untaxed_total"] + row["non_taxed_amount"] + row["exempt_operations"]
+        values["arca_total_vat"] = row["total_vat"] + row["other_taxes"]
         arca_currency_code = resolve_currency_code(row["currency_raw"])
         currency = (
             self.env["res.currency"]
@@ -286,6 +342,19 @@ class ArcaBillComparisonBatch(models.Model):
         )
         return values
 
+    @staticmethod
+    def _format_voucher_type(document_type):
+        """Match ARCA's own "<code> - <Title Case Name>" style (e.g. "1 - Factura A").
+
+        l10n_latam.document.type.name is stored in ALL CAPS (e.g. "FACTURAS
+        A"); this is only used for "Pending in ARCA" lines, which have no
+        real ARCA text to show, so it's just a display approximation.
+        """
+        if not document_type:
+            return ""
+        name = (document_type.name or "").title()
+        return "%s - %s" % (document_type.code, name) if document_type.code else name
+
     def _prepare_line_from_move(self, move):
         point_of_sale, number = split_document_number(move.l10n_latam_document_number)
         return {
@@ -294,7 +363,7 @@ class ArcaBillComparisonBatch(models.Model):
             "result": "pending_in_arca",
             "difference_detail": "",
             "arca_date": move.invoice_date,
-            "arca_voucher_type_raw": move.l10n_latam_document_type_id.name,
+            "arca_voucher_type_raw": self._format_voucher_type(move.l10n_latam_document_type_id),
             "arca_voucher_type_code": move.l10n_latam_document_type_id.code,
             "arca_point_of_sale": _format_point_of_sale(point_of_sale),
             "arca_number_from": _format_number(number),
