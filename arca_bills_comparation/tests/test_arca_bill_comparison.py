@@ -6,7 +6,7 @@ from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
-from ..tools.arca_xlsx_parser import parse_arca_file
+from ..tools.arca_file_parser import parse_arca_file
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -66,7 +66,7 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
     # ------------------------------------------------------------------
 
     def _load_rows(self, filename):
-        return parse_arca_file((DATA_DIR / filename).read_bytes())
+        return parse_arca_file((DATA_DIR / filename).read_bytes(), filename)
 
     def _create_bill(self, partner, doc_type, document_number, invoice_date, price_unit, tax=False):
         line_vals = {
@@ -114,7 +114,7 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertEqual(rows[1]["voucher_type_code"], "6")
 
     def test_document_number_split(self):
-        from ..tools.arca_xlsx_parser import split_document_number
+        from ..tools.arca_file_parser import split_document_number
 
         self.assertEqual(split_document_number("00005-00000303"), (5, 303))
         self.assertEqual(split_document_number("1340-373146"), (1340, 373146))
@@ -124,6 +124,20 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
     def test_empty_file(self):
         rows = self._load_rows("mis_comprobantes_vacio.xlsx")
         self.assertEqual(rows, [])
+
+    def test_csv_parsing_basic(self):
+        rows = self._load_rows("mis_comprobantes_base.csv")
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]["date"], date(2026, 8, 1))
+        self.assertEqual(rows[0]["point_of_sale"], 1340)
+        self.assertEqual(rows[0]["total_amount"], 120271.80)
+        # Unlike the xlsx export, the csv export only gives the bare AFIP
+        # code, not "<code> - <name>" text.
+        self.assertEqual(rows[0]["voucher_type_code"], "1")
+        self.assertEqual(rows[0]["voucher_type_raw"], "1")
+        # AFIP's numeric "Tipo de Documento" code (80) must resolve to the
+        # same "CUIT" text the xlsx export already gives.
+        self.assertEqual(rows[0]["issuer_id_type"], "CUIT")
 
     # ------------------------------------------------------------------
     # Company VAT mismatch (section 5.1)
@@ -382,6 +396,91 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertEqual(line.arca_point_of_sale, "")
         self.assertEqual(line.arca_number_from, "INV-2024-00123")
         self.assertEqual(line.arca_number_to, "INV-2024-00123")
+
+    # ------------------------------------------------------------------
+    # csv import: same comparison engine, different source file format.
+    # ------------------------------------------------------------------
+
+    def test_csv_import_links_and_enriches_voucher_type(self):
+        rows = self._load_rows("mis_comprobantes_base.csv")
+        match_row = rows[0]
+        move = self._create_bill(
+            self.partner_amx,
+            self.doc_type_a,
+            "%s-%s" % (match_row["point_of_sale"], match_row["number_from"]),
+            match_row["date"],
+            price_unit=match_row["untaxed_total"] + match_row["non_taxed_amount"] + match_row["exempt_operations"],
+        )
+        wizard = self._create_wizard("mis_comprobantes_base.csv")
+        wizard.action_process()
+
+        batch = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertTrue(line)
+        # The csv only gives the bare code ("1"); the grid should show it
+        # the same way the xlsx export's own text does.
+        self.assertEqual(line.arca_voucher_type_raw, "1 - Factura A")
+
+    # ------------------------------------------------------------------
+    # Storing the source file in Documents, and reprocessing it later.
+    # ------------------------------------------------------------------
+
+    def test_process_stores_source_file_in_documents(self):
+        wizard = self._create_wizard("mis_comprobantes_base.xlsx")
+        wizard.action_process()
+
+        batch = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        self.assertTrue(batch.source_document_id)
+        self.assertEqual(batch.source_document_id.name, "mis_comprobantes_base.xlsx")
+        self.assertEqual(batch.source_document_id.folder_id.name, "Mis comprobantes ARCA")
+        self.assertEqual(batch.source_document_id.folder_id.folder_id.name, "Zinapsia")
+        self.assertTrue(batch.last_processed_on)
+
+    def test_get_or_create_arca_documents_folder_is_idempotent(self):
+        batch = self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+        self.assertEqual(
+            batch._get_or_create_arca_documents_folder(),
+            batch._get_or_create_arca_documents_folder(),
+        )
+
+    def test_reprocess_reruns_comparison_from_stored_file(self):
+        move = self._create_bill(
+            self.partner_amx, self.doc_type_a, "9999-1", "2026-08-15", price_unit=500.0
+        )
+        wizard = self._create_wizard("mis_comprobantes_base.xlsx")
+        wizard.action_process()
+
+        batch = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        line_count_before = batch.line_count
+        pending_line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertEqual(pending_line.result, "pending_in_arca")
+
+        # Simulate the user fixing the bill's document number after seeing
+        # it wrongly flagged, then reprocessing the same file instead of
+        # re-uploading it.
+        match_row = self._load_rows("mis_comprobantes_base.xlsx")[0]
+        move.l10n_latam_document_number = "%s-%s" % (match_row["point_of_sale"], match_row["number_from"])
+        batch.action_reprocess()
+
+        self.assertEqual(batch.line_count, line_count_before - 1)
+        new_line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertTrue(new_line)
+        self.assertNotEqual(new_line.result, "pending_in_arca")
+
+    def test_reprocess_without_source_file_raises(self):
+        batch = self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+        with self.assertRaises(UserError):
+            batch.action_reprocess()
 
     # ------------------------------------------------------------------
     # The four possible results (section 5.4), against the base file

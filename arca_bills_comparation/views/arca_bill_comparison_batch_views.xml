@@ -5,12 +5,13 @@
         <field name="name">arca.bill.comparison.batch.list</field>
         <field name="model">arca.bill.comparison.batch</field>
         <field name="arch" type="xml">
-            <list string="My Vouchers - Runs">
+            <list string="My Vouchers - Runs" create="0">
                 <field name="name"/>
                 <field name="date_from"/>
                 <field name="date_to"/>
                 <field name="user_id"/>
                 <field name="line_count"/>
+                <field name="last_processed_on"/>
                 <field name="company_id" groups="base.group_multi_company"/>
             </list>
         </field>
@@ -20,7 +21,16 @@
         <field name="name">arca.bill.comparison.batch.form</field>
         <field name="model">arca.bill.comparison.batch</field>
         <field name="arch" type="xml">
-            <form string="My Vouchers - Run">
+            <form string="My Vouchers - Run" create="0">
+                <header>
+                    <button
+                        name="action_reprocess"
+                        type="object"
+                        string="Reprocess"
+                        class="btn-primary"
+                        invisible="not source_document_id"
+                    />
+                </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_lines" type="object" class="oe_stat_button" icon="fa-list">
@@ -33,6 +43,8 @@
                         <field name="date_from"/>
                         <field name="date_to"/>
                         <field name="user_id"/>
+                        <field name="last_processed_on"/>
+                        <field name="source_document_id"/>
                     </group>
                 </sheet>
             </form>

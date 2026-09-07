@@ -42,6 +42,12 @@ msgid "ARCA bill comparison results"
 msgstr "Resultados de comparación de comprobantes ARCA"
 
 #. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "ARCA file"
+msgstr "Archivo ARCA"
+
+#. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_authorization_code
 msgid "Authorization code"
 msgstr "Código de autorización"
@@ -219,6 +225,11 @@ msgid "Last Updated on"
 msgstr "Última actualización el"
 
 #. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__last_processed_on
+msgid "Last processed on"
+msgstr "Última fecha de procesamiento"
+
+#. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__line_ids
 msgid "Line"
 msgstr "Línea"
@@ -351,6 +362,11 @@ msgid "Recipient VAT"
 msgstr "CUIT del receptor"
 
 #. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_batch_form
+msgid "Reprocess"
+msgstr "Reprocesar"
+
+#. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__result
 #: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_search
 msgid "Result"
@@ -367,6 +383,11 @@ msgid "Search ARCA bill comparison results"
 msgstr "Buscar resultados de comparación de comprobantes ARCA"
 
 #. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__source_document_id
+msgid "Source file"
+msgstr "Archivo de origen"
+
+#. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_total_vat
 msgid "Taxes"
 msgstr "Impuestos"
@@ -379,21 +400,33 @@ msgstr "Impuestos: ARCA %(arca).2f vs Odoo %(odoo).2f"
 
 #. module: arca_bills_comparation
 #. odoo-python
-#: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
+#: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
+msgid "The file could not be read as a valid CSV (UTF-8) file."
+msgstr "El archivo no pudo leerse como un CSV (UTF-8) válido."
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
 msgid "The file could not be read as a valid Excel (.xlsx) file."
 msgstr "El archivo no pudo leerse como un Excel (.xlsx) válido."
 
 #. module: arca_bills_comparation
 #. odoo-python
-#: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
+#: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
 msgid "The file is missing expected columns: %s"
 msgstr "Al archivo le faltan columnas esperadas: %s"
 
 #. module: arca_bills_comparation
 #. odoo-python
-#: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
+#: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
 msgid "The file is missing the column headers row."
 msgstr "Al archivo le falta la fila de encabezados de columna."
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid "The original file is no longer available; nothing to reprocess."
+msgstr "El archivo original ya no está disponible; no hay nada para reprocesar."
 
 #. module: arca_bills_comparation
 #. odoo-python
@@ -420,7 +453,7 @@ msgstr "Importe total: ARCA %(arca).2f vs Odoo %(odoo).2f"
 
 #. module: arca_bills_comparation
 #. odoo-python
-#: code:addons/arca_bills_comparation/tools/arca_xlsx_parser.py:0
+#: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
 msgid "Unrecognized date format: %s"
 msgstr "Formato de fecha no reconocido: %s"
 

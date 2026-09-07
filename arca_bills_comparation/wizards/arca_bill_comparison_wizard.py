@@ -3,7 +3,7 @@ import base64
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from ..tools.arca_xlsx_parser import ArcaFileFormatError, normalize_vat, parse_arca_file
+from ..tools.arca_file_parser import ArcaFileFormatError, normalize_vat, parse_arca_file
 
 
 class ArcaBillComparisonWizard(models.TransientModel):
@@ -20,7 +20,7 @@ class ArcaBillComparisonWizard(models.TransientModel):
         if not self.file:
             return
         try:
-            rows = parse_arca_file(base64.b64decode(self.file))
+            rows = parse_arca_file(base64.b64decode(self.file), self.filename)
         except ArcaFileFormatError as exc:
             return {"warning": {"title": _("Invalid file"), "message": str(exc)}}
         dates = [row["date"] for row in rows if row["date"]]
@@ -33,7 +33,7 @@ class ArcaBillComparisonWizard(models.TransientModel):
         if not self.file:
             raise UserError(_("Please attach a file to import."))
         try:
-            rows = parse_arca_file(base64.b64decode(self.file))
+            rows = parse_arca_file(base64.b64decode(self.file), self.filename)
         except ArcaFileFormatError as exc:
             raise UserError(str(exc)) from exc
         if not rows:
@@ -66,5 +66,6 @@ class ArcaBillComparisonWizard(models.TransientModel):
                 "date_to": date_to,
             }
         )
+        batch._attach_source_file(self.filename, self.file)
         batch._run_comparison(rows)
         return batch.action_view_lines()

@@ -1,9 +1,24 @@
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 from odoo.tools.misc import format_date
 
-from ..tools.arca_xlsx_parser import normalize_vat, resolve_currency_code, split_document_number
+from ..tools.arca_file_parser import (
+    ArcaFileFormatError,
+    normalize_vat,
+    parse_arca_file,
+    resolve_currency_code,
+    split_document_number,
+)
 
 AMOUNT_TOLERANCE = 0.02
+
+# Fixed Documents app path where every processed file is filed away, so
+# accountants can find the original ARCA export later without digging
+# through the wizard's own (transient) attachment. Looked up/created lazily
+# on first use rather than as static XML data, so the module doesn't create
+# these folders for clients that never run the process.
+DOCUMENTS_ROOT_FOLDER_NAME = "Zinapsia"
+DOCUMENTS_ARCA_FOLDER_NAME = "Mis comprobantes ARCA"
 
 
 def _format_point_of_sale(value):
@@ -30,6 +45,10 @@ class ArcaBillComparisonBatch(models.Model):
     )
     line_ids = fields.One2many("arca.bill.comparison.line", "batch_id", readonly=True)
     line_count = fields.Integer(compute="_compute_line_count")
+    source_document_id = fields.Many2one(
+        "documents.document", string="Source file", readonly=True, copy=False
+    )
+    last_processed_on = fields.Datetime(string="Last processed on", readonly=True, copy=False)
 
     @api.depends("date_from", "date_to")
     def _compute_name(self):
@@ -47,6 +66,80 @@ class ArcaBillComparisonBatch(models.Model):
         for batch in self:
             batch.line_count = len(batch.line_ids)
 
+    def _get_or_create_arca_documents_folder(self):
+        """Return the "Zinapsia / Mis comprobantes ARCA" Documents folder, creating it (and its
+        parent) the first time it's needed. Uses sudo() since regular Billing users don't
+        necessarily have Documents access of their own, but must still be able to trigger this."""
+        Document = self.env["documents.document"].sudo()
+        root_folder = Document.search(
+            [
+                ("type", "=", "folder"),
+                ("name", "=", DOCUMENTS_ROOT_FOLDER_NAME),
+                ("folder_id", "=", False),
+                ("shortcut_document_id", "=", False),
+            ],
+            limit=1,
+        )
+        if not root_folder:
+            # owner_id explicitly False (not the sudo() superuser default),
+            # so this shows up as a shared "Company" folder for every user
+            # instead of looking privately owned by nobody-in-particular.
+            root_folder = Document.create(
+                {"name": DOCUMENTS_ROOT_FOLDER_NAME, "type": "folder", "owner_id": False}
+            )
+        folder = Document.search(
+            [
+                ("type", "=", "folder"),
+                ("name", "=", DOCUMENTS_ARCA_FOLDER_NAME),
+                ("folder_id", "=", root_folder.id),
+                ("shortcut_document_id", "=", False),
+            ],
+            limit=1,
+        )
+        if not folder:
+            folder = Document.create(
+                {
+                    "name": DOCUMENTS_ARCA_FOLDER_NAME,
+                    "type": "folder",
+                    "folder_id": root_folder.id,
+                    "owner_id": False,
+                }
+            )
+        return folder
+
+    def _attach_source_file(self, filename, file_base64):
+        """Keep a permanent copy of the imported file in Documents, so it's still available for
+        action_reprocess() (and for manual reference) after the wizard's own transient attachment
+        is gone."""
+        self.ensure_one()
+        folder = self._get_or_create_arca_documents_folder()
+        document = self.env["documents.document"].sudo().create(
+            {
+                "name": filename or _("ARCA file"),
+                "folder_id": folder.id,
+                "datas": file_base64,
+                "owner_id": self.env.user.id,
+            }
+        )
+        self.source_document_id = document.id
+
+    def action_reprocess(self):
+        """Re-run the comparison against the same source file, discarding the previous results.
+
+        Meant for after the user fixes the issues a previous run flagged (wrong vendor, wrong
+        document number, etc.) directly on the vendor bills, without needing to re-upload the
+        same ARCA file again.
+        """
+        self.ensure_one()
+        if not self.source_document_id or not self.source_document_id.attachment_id:
+            raise UserError(_("The original file is no longer available; nothing to reprocess."))
+        try:
+            rows = parse_arca_file(self.source_document_id.attachment_id.raw, self.source_document_id.name)
+        except ArcaFileFormatError as exc:
+            raise UserError(str(exc)) from exc
+        self._run_comparison(rows)
+        return self.action_view_lines()
+
     def action_view_lines(self):
         self.ensure_one()
         action = self.env["ir.actions.actions"]._for_xml_id(
@@ -57,8 +150,13 @@ class ArcaBillComparisonBatch(models.Model):
         return action
 
     def _run_comparison(self, rows):
-        """Compare parsed ARCA rows against this batch's vendor bills and create the result lines."""
+        """Compare parsed ARCA rows against this batch's vendor bills and create the result lines.
+
+        Clears any lines from a previous run first, so this is safe to call again for the same
+        batch (action_reprocess()) without leaving stale/duplicate results behind.
+        """
         self.ensure_one()
+        self.line_ids.unlink()
         candidate_moves = self._get_candidate_moves()
         move_index = self._index_moves(candidate_moves)
         move_index_by_issuer = self._index_moves_by_issuer(candidate_moves)
@@ -134,6 +232,7 @@ class ArcaBillComparisonBatch(models.Model):
             line_values.append(self._prepare_line_from_move(move))
 
         self.env["arca.bill.comparison.line"].create(line_values)
+        self.last_processed_on = fields.Datetime.now()
 
     def _get_candidate_moves(self):
         moves = self.env["account.move"].search(
@@ -312,6 +411,20 @@ class ArcaBillComparisonBatch(models.Model):
 
     def _prepare_line_from_row(self, row, move, result, detail):
         values = {("arca_%s" % key): value for key, value in row.items()}
+        if row["voucher_type_raw"] == row["voucher_type_code"]:
+            # The csv export only gives the bare AFIP code (e.g. "1"),
+            # unlike the xlsx export's "<code> - <Name>" text. Look up the
+            # real name so the grid stays consistent regardless of which
+            # file format was imported.
+            document_type = self.env["l10n_latam.document.type"].search(
+                [
+                    ("code", "=", row["voucher_type_code"]),
+                    ("country_id", "=", self.company_id.account_fiscal_country_id.id),
+                ],
+                limit=1,
+            )
+            if document_type:
+                values["arca_voucher_type_raw"] = self._format_voucher_type(document_type)
         values["arca_point_of_sale"] = _format_point_of_sale(row["point_of_sale"])
         values["arca_number_from"] = _format_number(row["number_from"])
         values["arca_number_to"] = _format_number(row["number_to"])

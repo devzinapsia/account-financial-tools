@@ -53,8 +53,8 @@ Usage
 
 Go to **Accounting ‣ Review ‣ ARCA ‣ My Vouchers**.
 
-1. Download the "Mis Comprobantes Recibidos" Excel file from ARCA's web
-   portal for the desired period.
+1. Download the "Mis Comprobantes Recibidos" export from ARCA's web portal
+   for the desired period, either as Excel (``.xlsx``) or CSV.
 2. Attach it in the **File to import** field. The **From**/**To** dates are
    proposed automatically from the first and last voucher dates found in the
    file (ARCA's export only lists days with activity, so this may differ
@@ -72,7 +72,16 @@ review each outcome separately, and the list view's own **Export** action
 to get an ``.xlsx`` copy.
 
 Each run is kept as a run record (**Accounting ‣ Review ‣ ARCA ‣ My
-Vouchers - Runs**) so past comparisons remain available for reference.
+Vouchers - Runs**) so past comparisons remain available for reference. Runs
+are only created by processing a file through this wizard, so that list has
+no **New** button of its own. The imported file itself is also kept, filed
+under **Documents ‣ Zinapsia ‣ Mis comprobantes ARCA**, and the run record
+shows when it was last processed.
+
+After fixing issues a run flagged (e.g. a wrong vendor or document number
+on a bill), open that run and click **Reprocess** to compare against the
+same file again without downloading/uploading it a second time; this
+discards and rebuilds that run's results.
 
 Field mapping
 -------------
@@ -188,6 +197,31 @@ Assumptions
   ARCA"; the **Point of sale** column is left blank and the **Number**
   columns show the full document number as entered, instead of blank
   columns.
+- The CSV export carries the same data as the Excel one, but with
+  different header text, ``;`` as the field separator, ISO (``YYYY-MM-DD``)
+  dates instead of ``DD/MM/YYYY``, and AFIP's own numeric codes instead of
+  text for "Tipo de Comprobante" (e.g. ``1`` instead of ``1 - Factura A``)
+  and the issuer/recipient identification type (e.g. ``80`` instead of
+  ``CUIT``). The file format is picked from the uploaded filename's
+  extension. Numeric identification type codes are mapped to their name
+  (only the ones this tool's matching logic cares about have an entry: 80
+  CUIT, 86 CUIL, 87 CDI, 96 DNI); anything else is kept as the raw code.
+  A bare numeric voucher type is looked up against
+  ``l10n_latam.document.type`` so the grid always shows "``<code>`` -
+  ``<Name>``" regardless of which file format was imported.
+- The imported file is stored as a ``documents.document`` under a fixed
+  **Zinapsia / Mis comprobantes ARCA** folder path (created automatically
+  the first time it's needed, reused afterwards — never duplicated). Both
+  folders are created without an owner so they show up as a shared
+  "Company" folder for every user instead of looking privately owned by
+  whoever ran the first import; the file itself is owned by the user who
+  ran the wizard.
+- **Reprocess** re-parses that same stored file and re-runs the full
+  comparison, discarding the run's previous result lines first (so it's
+  safe to click more than once). It requires the stored file to still be
+  there — deleting it from Documents (or the run predating this feature,
+  when no file was stored yet) leaves nothing to reprocess and raises an
+  error instead of silently doing nothing.
 
 Roadmap
 -------

@@ -1,1 +1,1 @@
-from . import arca_xlsx_parser
+from . import arca_file_parser
