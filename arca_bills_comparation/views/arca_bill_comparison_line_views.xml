@@ -7,8 +7,8 @@
         <field name="arch" type="xml">
             <list string="ARCA bill comparison results"
                   decoration-success="result == 'match'"
-                  decoration-danger="result == 'difference'"
-                  decoration-warning="result == 'pending_in_odoo'"
+                  decoration-warning="result == 'difference'"
+                  decoration-danger="result == 'pending_in_odoo'"
                   decoration-info="result == 'pending_in_arca'">
                 <field name="result" widget="badge"/>
                 <field name="arca_voucher_type_raw" string="Voucher type"/>
@@ -51,49 +51,6 @@
         </field>
     </record>
 
-    <record id="view_arca_bill_comparison_line_form" model="ir.ui.view">
-        <field name="name">arca.bill.comparison.line.form</field>
-        <field name="model">arca.bill.comparison.line</field>
-        <field name="arch" type="xml">
-            <form string="ARCA bill comparison result">
-                <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_open_move" type="object" class="oe_stat_button"
-                                icon="fa-file-text-o" invisible="not move_id">
-                            <div class="o_stat_info">
-                                <span class="o_stat_text">Vendor Bill</span>
-                            </div>
-                        </button>
-                    </div>
-                    <group>
-                        <field name="result" widget="badge"/>
-                        <field name="difference_detail" invisible="not difference_detail"/>
-                    </group>
-                    <group>
-                        <group string="ARCA">
-                            <field name="arca_voucher_type_raw" string="Voucher type"/>
-                            <field name="arca_point_of_sale"/>
-                            <field name="arca_number_from"/>
-                            <field name="arca_number_to"/>
-                            <field name="arca_date"/>
-                            <field name="arca_issuer_vat"/>
-                            <field name="arca_issuer_name"/>
-                            <field name="arca_authorization_code" string="Authorization code"/>
-                            <field name="arca_currency_raw" string="Currency"/>
-                            <field name="arca_untaxed_total"/>
-                            <field name="arca_total_vat"/>
-                            <field name="arca_total_amount"/>
-                        </group>
-                        <group string="Run">
-                            <field name="batch_id"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
-                        </group>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
     <record id="view_arca_bill_comparison_line_search" model="ir.ui.view">
         <field name="name">arca.bill.comparison.line.search</field>
         <field name="model">arca.bill.comparison.line</field>
@@ -117,7 +74,7 @@
     <record id="action_arca_bill_comparison_line" model="ir.actions.act_window">
         <field name="name">My Vouchers - Comparison Results</field>
         <field name="res_model">arca.bill.comparison.line</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list</field>
         <field name="search_view_id" ref="view_arca_bill_comparison_line_search"/>
         <field name="context">{'search_default_group_by_result': 1}</field>
     </record>

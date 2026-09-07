@@ -296,13 +296,13 @@ class ArcaBillComparisonBatch(models.Model):
             arca_untaxed = row["untaxed_total"] + row["non_taxed_amount"] + row["exempt_operations"]
             if abs(arca_untaxed - odoo_untaxed) > AMOUNT_TOLERANCE:
                 diffs.append(
-                    _("Untaxed amount: ARCA %(arca).2f vs Odoo %(odoo).2f")
+                    _("Net amounts: ARCA %(arca).2f vs Odoo %(odoo).2f")
                     % {"arca": arca_untaxed, "odoo": odoo_untaxed}
                 )
 
             if abs(arca_tax - odoo_tax) > AMOUNT_TOLERANCE:
                 diffs.append(
-                    _("Tax amount: ARCA %(arca).2f vs Odoo %(odoo).2f")
+                    _("Taxes: ARCA %(arca).2f vs Odoo %(odoo).2f")
                     % {"arca": arca_tax, "odoo": odoo_tax}
                 )
 

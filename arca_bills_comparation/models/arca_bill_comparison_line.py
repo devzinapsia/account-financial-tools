@@ -1,4 +1,4 @@
-from odoo import _, api, fields, models
+from odoo import fields, models
 
 
 class ArcaBillComparisonLine(models.Model):
@@ -60,16 +60,16 @@ class ArcaBillComparisonLine(models.Model):
     arca_untaxed_vat_21 = fields.Monetary(string="Untaxed base VAT 21%", currency_field="arca_currency_id")
     arca_vat_27 = fields.Monetary(string="VAT 27%", currency_field="arca_currency_id")
     arca_untaxed_vat_27 = fields.Monetary(string="Untaxed base VAT 27%", currency_field="arca_currency_id")
-    # These two show the combined total (matching the "Untaxed amount"/"Tax
-    # amount" soft-field comparison, and what "Pending in ARCA" lines show
-    # from Odoo's own amount_untaxed/amount_tax), not just the raw "Neto
-    # Gravado Total"/"Total IVA" ARCA columns alone — see
+    # These two show the combined total (matching the soft-field comparison,
+    # and what "Pending in ARCA" lines show from Odoo's own
+    # amount_untaxed/amount_tax), not just the raw "Neto Gravado Total"/
+    # "Total IVA" ARCA columns alone — see
     # ArcaBillComparisonBatch._prepare_line_from_row.
-    arca_untaxed_total = fields.Monetary(string="Untaxed amount", currency_field="arca_currency_id")
+    arca_untaxed_total = fields.Monetary(string="Net amounts", currency_field="arca_currency_id")
     arca_non_taxed_amount = fields.Monetary(string="Non taxed amount", currency_field="arca_currency_id")
     arca_exempt_operations = fields.Monetary(string="Exempt operations", currency_field="arca_currency_id")
     arca_other_taxes = fields.Monetary(string="Other taxes", currency_field="arca_currency_id")
-    arca_total_vat = fields.Monetary(string="Tax amount", currency_field="arca_currency_id")
+    arca_total_vat = fields.Monetary(string="Taxes", currency_field="arca_currency_id")
     arca_total_amount = fields.Monetary(string="Total amount", currency_field="arca_currency_id")
 
     # Only used so Monetary fields render with the right symbol; the actual
@@ -77,14 +77,6 @@ class ArcaBillComparisonLine(models.Model):
     # arca.bill.comparison.batch, not through this field. Set explicitly at
     # line creation time (see ArcaBillComparisonBatch), not computed here.
     arca_currency_id = fields.Many2one("res.currency", string="Currency (for amount display)")
-
-    @api.depends()
-    def _compute_display_name(self):
-        # Static: the model has no natural "name" field, and this record's
-        # own form isn't meant to be a destination in itself (see
-        # action_open_move) — just a readable breadcrumb/tab title.
-        for line in self:
-            line.display_name = _("Voucher Detail")
 
     def action_open_move(self):
         """Open the linked vendor bill's own form (list views don't navigate on Many2one click)."""

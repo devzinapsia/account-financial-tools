@@ -160,18 +160,26 @@ Assumptions
      without the amount also matching, this pass is skipped and both
      sides are left as separate Pending lines instead of risking a false
      pairing between two unrelated vendors.
-- The "Untaxed amount"/"Tax amount" columns and their soft-field
-  comparison always show the *combined* total (ARCA's "Neto Gravado
-  Total" + "Neto No Gravado" + "Op. Exentas" for the untaxed amount,
-  "Total IVA" + "Otros Tributos" for the tax amount) rather than each raw
-  ARCA column alone, so a "Pending in ARCA" line (built from the Odoo
-  bill's own ``amount_untaxed``/``amount_tax``, which don't separate
-  those out) shows a value on the same basis as an ARCA-sourced line.
+- The "Net amounts"/"Taxes" columns and their soft-field comparison
+  always show the *combined* total (ARCA's "Neto Gravado Total" + "Neto
+  No Gravado" + "Op. Exentas" for the net amount, "Total IVA" + "Otros
+  Tributos" for taxes) rather than each raw ARCA column alone, so a
+  "Pending in ARCA" line (built from the Odoo bill's own
+  ``amount_untaxed``/``amount_tax``, which don't separate those out)
+  shows a value on the same basis as an ARCA-sourced line.
 - "Pending in ARCA" lines show the voucher type as "``<code>`` -
   ``<Title Cased name>``" (e.g. "1 - Factura A") to visually match ARCA's
   own formatting, even though there is no real ARCA text for that line —
   ``l10n_latam.document.type.name`` is stored in all caps internally
   (e.g. "FACTURAS A").
+- The results list has no form view: there is nothing useful to show on
+  a comparison line's own record, so opening one would just be an extra
+  click for no benefit. Each row has an "Open bill" button (only when a
+  vendor bill is linked) that jumps straight to it instead.
+- Row color follows severity, not the order results are usually reviewed
+  in: green for "Match", amber for "Difference" (something exists on
+  both sides but disagrees), red for "Pending in Odoo" (ARCA reported a
+  voucher with no matching bill at all), blue for "Pending in ARCA".
 
 Roadmap
 -------
