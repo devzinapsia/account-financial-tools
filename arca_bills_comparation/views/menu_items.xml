@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <menuitem id="menu_arca_root"
+              name="ARCA"
+              parent="account.account_audit_menu"
+              groups="account.group_account_invoice"
+              sequence="100"/>
+
     <menuitem id="menu_arca_bill_comparison_wizard"
               name="My Vouchers"
               action="arca_bills_comparation.action_arca_bill_comparison_wizard"
-              parent="account.account_audit_control_menu"
+              parent="menu_arca_root"
               groups="account.group_account_invoice"
               sequence="1"/>
 
     <menuitem id="menu_arca_bill_comparison_batch"
               name="My Vouchers - Runs"
               action="arca_bills_comparation.action_arca_bill_comparison_batch"
-              parent="account.account_audit_control_menu"
+              parent="menu_arca_root"
               groups="account.group_account_invoice"
               sequence="2"/>
 

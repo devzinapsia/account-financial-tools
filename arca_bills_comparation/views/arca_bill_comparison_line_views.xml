@@ -18,11 +18,11 @@
                 <field name="arca_date"/>
                 <field name="arca_issuer_vat"/>
                 <field name="arca_issuer_name"/>
+                <field name="move_id"/>
                 <field name="arca_currency_raw" string="Currency"/>
                 <field name="arca_untaxed_total"/>
                 <field name="arca_total_vat"/>
                 <field name="arca_total_amount"/>
-                <field name="move_id"/>
                 <field name="difference_detail"/>
                 <field name="arca_authorization_code" optional="hide"/>
                 <field name="arca_issuer_id_type" optional="hide"/>

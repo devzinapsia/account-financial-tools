@@ -6,6 +6,14 @@ from ..tools.arca_xlsx_parser import normalize_vat, resolve_currency_code, split
 AMOUNT_TOLERANCE = 0.02
 
 
+def _format_point_of_sale(value):
+    return "%05d" % value if value is not None else ""
+
+
+def _format_number(value):
+    return "%08d" % value if value is not None else ""
+
+
 class ArcaBillComparisonBatch(models.Model):
     _name = "arca.bill.comparison.batch"
     _description = "ARCA Bill Comparison Batch"
@@ -57,7 +65,7 @@ class ArcaBillComparisonBatch(models.Model):
         consumed_move_ids = set()
         line_values = []
         for row in rows:
-            moves = self._find_matching_moves(move_index, row)
+            moves = self._find_matching_moves(move_index, row, consumed_move_ids)
             if moves:
                 consumed_move_ids.update(moves.ids)
                 result, detail = self._compare_soft_fields(row, moves)
@@ -119,20 +127,26 @@ class ArcaBillComparisonBatch(models.Model):
             index.setdefault(key, []).append((move, number))
         return index
 
-    def _find_matching_moves(self, move_index, row):
+    def _find_matching_moves(self, move_index, row, consumed_move_ids):
         """Return every move whose number falls in the row's range, lowest number first.
 
         Usually a single move. When ARCA groups several consecutive invoices
         from the same issuer into one ranged row, this can be more than one;
         callers must aggregate them for the soft-field comparison rather than
-        treat each independently.
+        treat each independently. Moves already consumed by an earlier row are
+        excluded, so a single bill is never linked from more than one result
+        line even if two ARCA rows' ranges happen to overlap.
         """
         key = self._match_key(
             row["voucher_type_code"], row["point_of_sale"], row["issuer_id_type"], row["issuer_vat"]
         )
         candidates = move_index.get(key, [])
         matches = sorted(
-            (pair for pair in candidates if row["number_from"] <= pair[1] <= row["number_to"]),
+            (
+                pair
+                for pair in candidates
+                if pair[0].id not in consumed_move_ids and row["number_from"] <= pair[1] <= row["number_to"]
+            ),
             key=lambda pair: pair[1],
         )
         return self.env["account.move"].concat(*(move for move, _number in matches))
@@ -165,21 +179,30 @@ class ArcaBillComparisonBatch(models.Model):
                 % {"arca": arca_total, "odoo": odoo_total}
             )
 
-        odoo_untaxed = sum(moves.mapped("amount_untaxed"))
-        arca_untaxed = row["untaxed_total"] + row["non_taxed_amount"] + row["exempt_operations"]
-        if abs(arca_untaxed - odoo_untaxed) > AMOUNT_TOLERANCE:
-            diffs.append(
-                _("Untaxed amount: ARCA %(arca).2f vs Odoo %(odoo).2f")
-                % {"arca": arca_untaxed, "odoo": odoo_untaxed}
-            )
-
         odoo_tax = sum(moves.mapped("amount_tax"))
         arca_tax = row["total_vat"] + row["other_taxes"]
-        if abs(arca_tax - odoo_tax) > AMOUNT_TOLERANCE:
-            diffs.append(
-                _("Tax amount: ARCA %(arca).2f vs Odoo %(odoo).2f")
-                % {"arca": arca_tax, "odoo": odoo_tax}
-            )
+        # ARCA sometimes reports every breakdown column as zero for vouchers
+        # with no VAT at all (e.g. certain exempt insurance premiums), while
+        # Odoo still books the full amount as untaxed base. When neither side
+        # reports any VAT, only the total (already checked above) is
+        # meaningful; comparing the untaxed/tax split would flag a false
+        # difference driven purely by that reporting quirk.
+        has_vat = abs(arca_tax) > AMOUNT_TOLERANCE or abs(odoo_tax) > AMOUNT_TOLERANCE
+
+        if has_vat:
+            odoo_untaxed = sum(moves.mapped("amount_untaxed"))
+            arca_untaxed = row["untaxed_total"] + row["non_taxed_amount"] + row["exempt_operations"]
+            if abs(arca_untaxed - odoo_untaxed) > AMOUNT_TOLERANCE:
+                diffs.append(
+                    _("Untaxed amount: ARCA %(arca).2f vs Odoo %(odoo).2f")
+                    % {"arca": arca_untaxed, "odoo": odoo_untaxed}
+                )
+
+            if abs(arca_tax - odoo_tax) > AMOUNT_TOLERANCE:
+                diffs.append(
+                    _("Tax amount: ARCA %(arca).2f vs Odoo %(odoo).2f")
+                    % {"arca": arca_tax, "odoo": odoo_tax}
+                )
 
         if diffs:
             return "difference", "\n".join(diffs)
@@ -187,6 +210,9 @@ class ArcaBillComparisonBatch(models.Model):
 
     def _prepare_line_from_row(self, row, move, result, detail):
         values = {("arca_%s" % key): value for key, value in row.items()}
+        values["arca_point_of_sale"] = _format_point_of_sale(row["point_of_sale"])
+        values["arca_number_from"] = _format_number(row["number_from"])
+        values["arca_number_to"] = _format_number(row["number_to"])
         arca_currency_code = resolve_currency_code(row["currency_raw"])
         currency = (
             self.env["res.currency"]
@@ -216,9 +242,9 @@ class ArcaBillComparisonBatch(models.Model):
             "arca_date": move.invoice_date,
             "arca_voucher_type_raw": move.l10n_latam_document_type_id.name,
             "arca_voucher_type_code": move.l10n_latam_document_type_id.code,
-            "arca_point_of_sale": point_of_sale or 0,
-            "arca_number_from": number or 0,
-            "arca_number_to": number or 0,
+            "arca_point_of_sale": _format_point_of_sale(point_of_sale),
+            "arca_number_from": _format_number(number),
+            "arca_number_to": _format_number(number),
             "arca_authorization_code": "",
             "arca_issuer_id_type": move.partner_id.l10n_latam_identification_type_id.name or "",
             "arca_issuer_vat": move.partner_id.vat or "",

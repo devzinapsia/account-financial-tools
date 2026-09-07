@@ -34,9 +34,13 @@ class ArcaBillComparisonLine(models.Model):
     arca_date = fields.Date(string="Date")
     arca_voucher_type_raw = fields.Char(string="Voucher type")
     arca_voucher_type_code = fields.Char(string="Voucher type code")
-    arca_point_of_sale = fields.Integer(string="Point of sale")
-    arca_number_from = fields.Integer(string="Number from")
-    arca_number_to = fields.Integer(string="Number to")
+    # Stored zero-padded (5 digits point of sale, 8 digits number), matching
+    # l10n_ar's own document number formatting, so they display and sort
+    # correctly instead of picking up Odoo's Integer thousands-separator
+    # formatting and losing leading zeros.
+    arca_point_of_sale = fields.Char(string="Point of sale")
+    arca_number_from = fields.Char(string="Number from")
+    arca_number_to = fields.Char(string="Number to")
     arca_authorization_code = fields.Char(string="Authorization code")
     arca_issuer_id_type = fields.Char(string="Issuer ID type")
     arca_issuer_vat = fields.Char(string="Issuer VAT")

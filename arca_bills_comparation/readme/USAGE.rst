@@ -1,4 +1,4 @@
-Go to **Accounting ‣ Review ‣ Control ‣ My Vouchers**.
+Go to **Accounting ‣ Review ‣ ARCA ‣ My Vouchers**.
 
 1. Download the "Mis Comprobantes Recibidos" Excel file from ARCA's web
    portal for the desired period.
@@ -18,7 +18,7 @@ values that disagree. Use **Group By ‣ Result** (active by default) to
 review each outcome separately, and the list view's own **Export** action
 to get an ``.xlsx`` copy.
 
-Each run is kept as a run record (**Accounting ‣ Review ‣ Control ‣ My
+Each run is kept as a run record (**Accounting ‣ Review ‣ ARCA ‣ My
 Vouchers - Runs**) so past comparisons remain available for reference.
 
 Field mapping
@@ -72,7 +72,20 @@ Assumptions
   number falls in that range is aggregated (amounts summed) for the
   comparison, so none of them is wrongly reported as "Pending in ARCA".
   The result line links to the first (lowest-numbered) bill as a
-  reference.
+  reference. If two ARCA rows' ranges overlap (a data-quality issue on
+  ARCA's side), a bill already linked to an earlier row is never linked
+  again from a later one.
+- Point of sale and voucher number are stored zero-padded (5 and 8 digits
+  respectively, matching ``l10n_ar``'s own formatting) as text, so they
+  display and sort correctly instead of picking up Odoo's Integer
+  thousands-separator formatting and losing leading zeros.
+- When a voucher carries no VAT on either side (ARCA's ``Total IVA`` +
+  ``Otros Tributos`` and Odoo's ``amount_tax`` both zero), only the total
+  amount is compared; the untaxed/tax breakdown is skipped. ARCA
+  sometimes reports every breakdown column as zero for such vouchers
+  (observed on exempt insurance premiums) even though the total is
+  correct, and Odoo still books the full amount as untaxed base — that
+  reporting quirk would otherwise show up as a false "Difference".
 
 Roadmap
 ~~~~~~~

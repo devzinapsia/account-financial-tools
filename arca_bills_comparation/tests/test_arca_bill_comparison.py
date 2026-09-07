@@ -1,4 +1,5 @@
 import base64
+from datetime import date
 from pathlib import Path
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
@@ -173,7 +174,7 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
             [("company_id", "=", self.company.id)], order="id desc", limit=1
         )
         range_line = batch.line_ids.filtered(
-            lambda line: line.arca_point_of_sale == 1340 and line.arca_number_from == 7978664
+            lambda line: line.arca_point_of_sale == "01340" and line.arca_number_from == "07978664"
         )
         self.assertEqual(len(range_line), 1)
         self.assertEqual(range_line.move_id, move_lower)
@@ -184,6 +185,87 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertIn(move_outside.id, pending_in_arca_move_ids)
         for move in (move_lower, move_middle, move_upper):
             self.assertNotIn(move.id, pending_in_arca_move_ids)
+
+    # ------------------------------------------------------------------
+    # When a voucher carries no VAT on either side, ARCA sometimes reports
+    # every breakdown column as zero even though the total is correct (real
+    # case: exempt insurance premiums). Only the total should be compared
+    # then, not the untaxed/tax split.
+    # ------------------------------------------------------------------
+
+    def test_no_vat_voucher_ignores_untaxed_breakdown_mismatch(self):
+        rows = self._load_rows("mis_comprobantes_base.xlsx")
+        no_vat_row = rows[1]  # Allianz: all breakdown columns 0, only Imp. Total set
+        self.assertEqual(no_vat_row["total_vat"], 0.0)
+        self.assertEqual(no_vat_row["other_taxes"], 0.0)
+
+        move = self._create_bill(
+            self.partner_allianz,
+            self.doc_type_b,
+            "%s-%s" % (no_vat_row["point_of_sale"], no_vat_row["number_from"]),
+            no_vat_row["date"],
+            price_unit=no_vat_row["total_amount"],
+        )
+
+        wizard = self._create_wizard("mis_comprobantes_base.xlsx")
+        wizard.action_process()
+
+        batch = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertEqual(line.result, "match")
+        self.assertFalse(line.difference_detail)
+
+    # ------------------------------------------------------------------
+    # A bill must never be linked from more than one result line, even if
+    # two ARCA rows' ranges overlap (a data-quality issue on ARCA's side).
+    # ------------------------------------------------------------------
+
+    def _make_row(self, **overrides):
+        row = {
+            "date": None,
+            "voucher_type_raw": "1 - Factura A",
+            "voucher_type_code": "1",
+            "point_of_sale": 1,
+            "number_from": 1,
+            "number_to": 1,
+            "authorization_code": "1",
+            "issuer_id_type": "CUIT",
+            "issuer_vat": self.partner_amx.vat,
+            "issuer_name": self.partner_amx.name,
+            "recipient_id_type": "CUIT",
+            "recipient_vat": self.company.partner_id.vat,
+            "currency_raw": "$",
+            "exchange_rate": 1.0,
+        }
+        for key in (
+            "untaxed_vat_0", "vat_2_5", "untaxed_vat_2_5", "vat_5", "untaxed_vat_5",
+            "vat_10_5", "untaxed_vat_10_5", "vat_21", "untaxed_vat_21", "vat_27",
+            "untaxed_vat_27", "untaxed_total", "non_taxed_amount", "exempt_operations",
+            "other_taxes", "total_vat", "total_amount",
+        ):
+            row[key] = 0.0
+        row.update(overrides)
+        return row
+
+    def test_overlapping_ranges_do_not_duplicate_a_bill(self):
+        move = self._create_bill(
+            self.partner_amx, self.doc_type_a, "1-7", "2026-08-12", price_unit=100.0
+        )
+        rows = [
+            self._make_row(date=date(2026, 8, 12), number_from=1, number_to=10, total_amount=100.0),
+            self._make_row(date=date(2026, 8, 12), number_from=5, number_to=15, total_amount=100.0),
+        ]
+        batch = self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+        batch._run_comparison(rows)
+
+        lines_with_move = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertEqual(len(lines_with_move), 1)
+        other_line = batch.line_ids - lines_with_move
+        self.assertEqual(other_line.result, "pending_in_odoo")
 
     # ------------------------------------------------------------------
     # The four possible results (section 5.4), against the base file
@@ -212,14 +294,14 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
             tax=fixed_tax,
         )
 
-        # No tax: amount_untaxed will equal the ARCA total, which differs from
-        # the (zero) untaxed breakdown ARCA reported for this row.
+        # Total amount itself doesn't match ARCA's, which is always compared
+        # regardless of whether the voucher carries any VAT.
         difference_move = self._create_bill(
             self.partner_allianz,
             self.doc_type_b,
             "%s-%s" % (difference_row["point_of_sale"], difference_row["number_from"]),
             difference_row["date"],
-            price_unit=difference_row["total_amount"],
+            price_unit=difference_row["total_amount"] - 50.0,
         )
 
         pending_in_arca_move = self._create_bill(
@@ -240,7 +322,7 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
 
         difference_line = batch.line_ids.filtered(lambda line: line.move_id == difference_move)
         self.assertEqual(difference_line.result, "difference")
-        self.assertIn("Untaxed amount", difference_line.difference_detail)
+        self.assertIn("Total amount", difference_line.difference_detail)
 
         pending_in_arca_line = batch.line_ids.filtered(lambda line: line.move_id == pending_in_arca_move)
         self.assertEqual(pending_in_arca_line.result, "pending_in_arca")
