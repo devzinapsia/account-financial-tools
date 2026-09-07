@@ -180,6 +180,14 @@ Assumptions
   in: green for "Match", amber for "Difference" (something exists on
   both sides but disagrees), red for "Pending in Odoo" (ARCA reported a
   voucher with no matching bill at all), blue for "Pending in ARCA".
+- Some document types have no point of sale component at all (e.g.
+  "Facturas y Comprobantes del Exterior" for foreign suppliers), so the
+  accountant types the vendor's own document number freely instead of
+  Odoo's usual "PPPPP-NNNNNNNN" sequence. These bills can't be matched
+  against a point of sale/number key and always show as "Pending in
+  ARCA"; the **Point of sale** column is left blank and the **Number**
+  columns show the full document number as entered, instead of blank
+  columns.
 
 Roadmap
 -------

@@ -1,6 +1,6 @@
 {
     "name": "ARCA Bills Comparison",
-    "version": "19.0.1.0.4",
+    "version": "19.0.1.0.5",
     "summary": "Compare ARCA 'Mis Comprobantes Recibidos' exports against vendor bills in Odoo",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",

@@ -362,6 +362,28 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertNotIn(move, matched_or_different.mapped("move_id"))
 
     # ------------------------------------------------------------------
+    # Document types with no point of sale component (e.g. foreign-invoice
+    # documents, where the accountant types a free-form number) must still
+    # show the full document number instead of a blank column.
+    # ------------------------------------------------------------------
+
+    def test_move_without_point_of_sale_shows_full_document_number(self):
+        doc_type_exterior = self.env.ref("l10n_ar.fa_exterior")
+        move = self._create_bill(
+            self.partner_amx, doc_type_exterior, "INV-2024-00123", "2026-08-12", price_unit=100.0
+        )
+        batch = self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+        batch._run_comparison([])
+
+        line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertEqual(line.result, "pending_in_arca")
+        self.assertEqual(line.arca_point_of_sale, "")
+        self.assertEqual(line.arca_number_from, "INV-2024-00123")
+        self.assertEqual(line.arca_number_to, "INV-2024-00123")
+
+    # ------------------------------------------------------------------
     # The four possible results (section 5.4), against the base file
     # ------------------------------------------------------------------
 

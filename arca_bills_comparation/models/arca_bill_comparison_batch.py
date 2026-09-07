@@ -357,6 +357,17 @@ class ArcaBillComparisonBatch(models.Model):
 
     def _prepare_line_from_move(self, move):
         point_of_sale, number = split_document_number(move.l10n_latam_document_number)
+        if point_of_sale is None:
+            # Some document types (e.g. "Facturas y Comprobantes del
+            # Exterior") have no point of sale component; the number is a
+            # free-form value entered by the accountant instead of Odoo's
+            # usual "PPPPP-NNNNNNNN" sequence. Show it as-is rather than
+            # leaving the column blank.
+            point_of_sale_display = ""
+            number_display = move.l10n_latam_document_number or ""
+        else:
+            point_of_sale_display = _format_point_of_sale(point_of_sale)
+            number_display = _format_number(number)
         return {
             "batch_id": self.id,
             "move_id": move.id,
@@ -365,9 +376,9 @@ class ArcaBillComparisonBatch(models.Model):
             "arca_date": move.invoice_date,
             "arca_voucher_type_raw": self._format_voucher_type(move.l10n_latam_document_type_id),
             "arca_voucher_type_code": move.l10n_latam_document_type_id.code,
-            "arca_point_of_sale": _format_point_of_sale(point_of_sale),
-            "arca_number_from": _format_number(number),
-            "arca_number_to": _format_number(number),
+            "arca_point_of_sale": point_of_sale_display,
+            "arca_number_from": number_display,
+            "arca_number_to": number_display,
             "arca_authorization_code": "",
             "arca_issuer_id_type": move.partner_id.l10n_latam_identification_type_id.name or "",
             "arca_issuer_vat": move.partner_id.vat or "",
