@@ -44,13 +44,12 @@ class ArcaBillComparisonWizard(models.TransientModel):
         company_vat = normalize_vat(company.vat)
         if file_recipient_vat != company_vat:
             # Exact wording mandated by the ARCA control process spec (kept
-            # in Spanish verbatim, including the unbalanced parenthesis, on
-            # explicit client request instead of the usual English-source
-            # + es/es_AR translation convention).
+            # in Spanish verbatim, on explicit client request, instead of
+            # the usual English-source + es/es_AR translation convention).
             raise UserError(
                 _(
                     "El archivo a importar no pertenece a la empresa actual "
-                    "(CUIT del receptor %(file_vat)s diferente al de la empresa %(company_vat)s"
+                    "(CUIT del receptor %(file_vat)s diferente al de la empresa %(company_vat)s)"
                 )
                 % {"file_vat": rows[0]["recipient_vat"], "company_vat": company.vat}
             )

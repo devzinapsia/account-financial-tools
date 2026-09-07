@@ -17,7 +17,7 @@
                 <field name="arca_date"/>
                 <field name="arca_issuer_vat"/>
                 <field name="arca_issuer_name"/>
-                <button name="action_open_move" type="object" string="Open bill" icon="fa-external-link" invisible="not move_id"/>
+                <button name="action_open_move" type="object" icon="fa-external-link" title="Open bill" invisible="not move_id"/>
                 <field name="arca_currency_raw" string="Currency"/>
                 <field name="arca_untaxed_total"/>
                 <field name="arca_total_vat"/>

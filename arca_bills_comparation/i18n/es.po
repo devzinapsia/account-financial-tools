@@ -139,10 +139,10 @@ msgstr "Nombre a mostrar"
 #: code:addons/arca_bills_comparation/wizards/arca_bill_comparison_wizard.py:0
 msgid ""
 "El archivo a importar no pertenece a la empresa actual (CUIT del receptor "
-"%(file_vat)s diferente al de la empresa %(company_vat)s"
+"%(file_vat)s diferente al de la empresa %(company_vat)s)"
 msgstr ""
 "El archivo a importar no pertenece a la empresa actual (CUIT del receptor "
-"%(file_vat)s diferente al de la empresa %(company_vat)s"
+"%(file_vat)s diferente al de la empresa %(company_vat)s)"
 
 #. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_exchange_rate

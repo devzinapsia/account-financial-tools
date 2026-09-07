@@ -153,6 +153,7 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
             self.assertIn("no pertenece a la empresa actual", message)
             self.assertIn("30500000001", message)
             self.assertIn("30718972082", message)
+            self.assertTrue(message.rstrip().endswith(")"))
         self.assertFalse(
             self.env["arca.bill.comparison.batch"].search([("company_id", "=", self.company.id)])
         )
