@@ -458,6 +458,24 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertEqual(batch.source_document_id.folder_id.folder_id.name, "Zinapsia")
         self.assertTrue(batch.last_processed_on)
 
+    def test_action_process_result_clears_breadcrumb(self):
+        # Otherwise this inherits whatever page was open behind the
+        # wizard's modal dialog instead of starting clean.
+        wizard = self._create_wizard("mis_comprobantes_base.xlsx")
+        action = wizard.action_process()
+        self.assertEqual(action.get("target"), "main")
+
+    def test_action_view_lines_keeps_breadcrumb(self):
+        # Reached from a run's own "Results"/"Reprocess" button, this must
+        # NOT clear the breadcrumb, or there's no way back to that run.
+        wizard = self._create_wizard("mis_comprobantes_base.xlsx")
+        wizard.action_process()
+        batch = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        action = batch.action_view_lines()
+        self.assertNotEqual(action.get("target"), "main")
+
     def test_delete_run_archives_source_document(self):
         wizard = self._create_wizard("mis_comprobantes_base.xlsx")
         wizard.action_process()

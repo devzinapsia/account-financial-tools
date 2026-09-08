@@ -67,4 +67,12 @@ class ArcaBillComparisonWizard(models.TransientModel):
         )
         batch._attach_source_file(self.filename, self.file)
         batch._run_comparison(rows)
-        return batch.action_view_lines()
+        action = batch.action_view_lines()
+        # Otherwise this inherits whatever breadcrumb happened to be behind
+        # this wizard's own dialog (e.g. the Accounting dashboard), since
+        # the wizard is a modal with no breadcrumb of its own. Only done
+        # here, not in action_view_lines() itself, so opening the results
+        # from a run's own "Results" button (or "Reprocess") still keeps
+        # that run in the breadcrumb instead of losing it.
+        action["target"] = "main"
+        return action

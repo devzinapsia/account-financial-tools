@@ -167,10 +167,6 @@ class ArcaBillComparisonBatch(models.Model):
         )
         action["domain"] = [("batch_id", "=", self.id)]
         action["context"] = {"search_default_group_by_result": 1}
-        # Otherwise this inherits whatever breadcrumb happened to be behind
-        # the "My Vouchers" wizard dialog (e.g. the Accounting dashboard),
-        # since the wizard itself is a modal with no breadcrumb of its own.
-        action["target"] = "main"
         return action
 
     def _run_comparison(self, rows):

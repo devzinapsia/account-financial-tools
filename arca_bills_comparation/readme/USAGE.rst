@@ -178,10 +178,12 @@ Assumptions
   export always uses the same filename regardless of period, which would
   otherwise make every run's file indistinguishable from another in
   Documents.
-- The results grid opens with ``target: "main"``, clearing any existing
-  breadcrumb, instead of inheriting whichever page happened to be open
-  behind the "My Vouchers" wizard dialog (a modal has no breadcrumb entry
-  of its own to attach to).
+- Only the "My Vouchers" wizard's own result opens with ``target: "main"``,
+  clearing any existing breadcrumb, since it's a modal dialog with no
+  breadcrumb entry of its own to attach to and would otherwise inherit
+  whichever page happened to be open behind it. Opening the results from a
+  run's own **Results** or **Reprocess** button does NOT clear it, so
+  there's still a way back to **My Vouchers - Runs**.
 - Deleting a run also sends its stored file to the Documents trash
   (archived, not hard-deleted — recoverable from there like any other
   manually deleted document), instead of leaving an orphaned file behind
