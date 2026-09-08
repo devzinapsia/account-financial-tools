@@ -362,6 +362,8 @@ msgid "Recipient VAT"
 msgstr "CUIT del receptor"
 
 #. module: arca_bills_comparation
+#: model:ir.actions.server,name:arca_bills_comparation.action_server_arca_bill_comparison_batch_reprocess
+#: model:ir.actions.server,name:arca_bills_comparation.action_server_arca_bill_comparison_line_reprocess
 #: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_batch_form
 msgid "Reprocess"
 msgstr "Reprocesar"
