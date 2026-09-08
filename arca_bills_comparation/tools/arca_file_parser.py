@@ -128,6 +128,9 @@ CURRENCY_SYMBOL_TO_ISO = {
     "u$s": "USD",
     "us$": "USD",
     "u$d": "USD",
+    "usd": "USD",
+    "eur": "EUR",
+    "€": "EUR",
 }
 
 # AFIP's own numeric "Tipo de Documento" codes, used by the csv export for

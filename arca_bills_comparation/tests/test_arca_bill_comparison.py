@@ -121,6 +121,18 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertEqual(split_document_number(False), (None, None))
         self.assertEqual(split_document_number("not-a-number"), (None, None))
 
+    def test_resolve_currency_code(self):
+        from ..tools.arca_file_parser import resolve_currency_code
+
+        self.assertEqual(resolve_currency_code("$"), "ARS")
+        self.assertEqual(resolve_currency_code("u$s"), "USD")
+        # Real case: ARCA sends the literal code "USD" for some vouchers
+        # instead of its usual "u$s" symbol.
+        self.assertEqual(resolve_currency_code("USD"), "USD")
+        self.assertEqual(resolve_currency_code("EUR"), "EUR")
+        self.assertEqual(resolve_currency_code("€"), "EUR")
+        self.assertIsNone(resolve_currency_code("XYZ"))
+
     def test_empty_file(self):
         rows = self._load_rows("mis_comprobantes_vacio.xlsx")
         self.assertEqual(rows, [])
