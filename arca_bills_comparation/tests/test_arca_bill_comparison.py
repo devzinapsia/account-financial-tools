@@ -481,6 +481,31 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertTrue(new_line)
         self.assertNotEqual(new_line.result, "pending_in_arca")
 
+    def test_action_reprocess_multi_from_runs_list(self):
+        wizard = self._create_wizard("mis_comprobantes_base.xlsx")
+        wizard.action_process()
+        batch1 = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        wizard2 = self._create_wizard("mis_comprobantes_base.xlsx")
+        wizard2.action_process()
+        batch2 = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        self.assertNotEqual(batch1, batch2)
+        line_ids_before_1 = batch1.line_ids.ids
+        line_ids_before_2 = batch2.line_ids.ids
+
+        # Simulates selecting both runs in "My Vouchers - Runs" and using
+        # the "Reprocess" entry in the Action menu.
+        result = (batch1 | batch2).action_reprocess_multi()
+
+        self.assertEqual(result, {"type": "ir.actions.client", "tag": "reload"})
+        # _run_comparison() unlinks and recreates lines, so new ids prove
+        # both runs actually reran rather than one being silently skipped.
+        self.assertNotEqual(batch1.line_ids.ids, line_ids_before_1)
+        self.assertNotEqual(batch2.line_ids.ids, line_ids_before_2)
+
     def test_action_reprocess_batches_from_line_selection(self):
         wizard = self._create_wizard("mis_comprobantes_base.xlsx")
         wizard.action_process()

@@ -144,6 +144,12 @@ class ArcaBillComparisonBatch(models.Model):
         self._run_comparison(rows)
         return self.action_view_lines()
 
+    def action_reprocess_multi(self):
+        """Reprocess every selected run at once, from My Vouchers - Runs' own Action menu."""
+        for batch in self:
+            batch.action_reprocess()
+        return {"type": "ir.actions.client", "tag": "reload"}
+
     def action_view_lines(self):
         self.ensure_one()
         action = self.env["ir.actions.actions"]._for_xml_id(

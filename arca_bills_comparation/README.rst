@@ -82,9 +82,10 @@ After fixing issues a run flagged (e.g. a wrong vendor or document number
 on a bill), open that run and click **Reprocess** to compare against the
 same file again without downloading/uploading it a second time; this
 discards and rebuilds that run's results. **Reprocess** is also available
-from the results grid's own **Actions** (⚙) menu, so several runs can be
-reprocessed at once by selecting rows from each of them, without opening
-every run individually.
+from the **Actions** (⚙) menu on both **My Vouchers - Runs** (select one or
+more runs directly) and the results grid (select rows from one or more
+runs), so several runs can be reprocessed at once without opening each one
+individually.
 
 Field mapping
 -------------

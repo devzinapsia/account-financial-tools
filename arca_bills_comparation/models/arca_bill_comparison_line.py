@@ -97,6 +97,4 @@ class ArcaBillComparisonLine(models.Model):
         Since reprocessing replaces a run's lines with new records, the current list's rows are
         stale afterwards; reload the page instead of trying to refresh them in place.
         """
-        for batch in self.mapped("batch_id"):
-            batch.action_reprocess()
-        return {"type": "ir.actions.client", "tag": "reload"}
+        return self.mapped("batch_id").action_reprocess_multi()
