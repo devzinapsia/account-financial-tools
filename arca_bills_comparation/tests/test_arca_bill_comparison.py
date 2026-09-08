@@ -458,6 +458,21 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertEqual(batch.source_document_id.folder_id.folder_id.name, "Zinapsia")
         self.assertTrue(batch.last_processed_on)
 
+    def test_delete_run_archives_source_document(self):
+        wizard = self._create_wizard("mis_comprobantes_base.xlsx")
+        wizard.action_process()
+        batch = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        document = batch.source_document_id
+        self.assertTrue(document.active)
+
+        batch.unlink()
+
+        # Archived (sent to the Documents trash), not hard-deleted, same as
+        # manually deleting it from Documents.
+        self.assertFalse(document.active)
+
     def test_get_or_create_arca_documents_folder_is_idempotent(self):
         batch = self.env["arca.bill.comparison.batch"].create(
             {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}

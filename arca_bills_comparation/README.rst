@@ -235,6 +235,10 @@ Assumptions
   breadcrumb, instead of inheriting whichever page happened to be open
   behind the "My Vouchers" wizard dialog (a modal has no breadcrumb entry
   of its own to attach to).
+- Deleting a run also sends its stored file to the Documents trash
+  (archived, not hard-deleted — recoverable from there like any other
+  manually deleted document), instead of leaving an orphaned file behind
+  with nothing pointing to it.
 
 Roadmap
 -------

@@ -66,6 +66,16 @@ class ArcaBillComparisonBatch(models.Model):
         for batch in self:
             batch.line_count = len(batch.line_ids)
 
+    def unlink(self):
+        # Send the stored source file to the Documents trash along with the
+        # run itself, instead of leaving it behind with nothing pointing to
+        # it. Archived (not hard-deleted), same as manually deleting it from
+        # Documents, so it's still recoverable from there if needed.
+        documents = self.source_document_id
+        result = super().unlink()
+        documents.sudo().action_archive()
+        return result
+
     def _get_or_create_arca_documents_folder(self):
         """Return the "Zinapsia / Mis comprobantes ARCA" Documents folder, creating it (and its
         parent) the first time it's needed. Uses sudo() since regular Billing users don't
