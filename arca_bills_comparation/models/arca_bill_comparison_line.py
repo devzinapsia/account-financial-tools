@@ -88,3 +88,15 @@ class ArcaBillComparisonLine(models.Model):
             "views": [(False, "form")],
             "target": "current",
         }
+
+    def action_reprocess_batches(self):
+        """Reprocess every run the selected lines belong to, from the results grid's own Action
+        menu, without having to open each run individually. Bound to this model's list view via
+        an ir.actions.server (see data/arca_bill_comparison_line_data.xml).
+
+        Since reprocessing replaces a run's lines with new records, the current list's rows are
+        stale afterwards; reload the page instead of trying to refresh them in place.
+        """
+        for batch in self.mapped("batch_id"):
+            batch.action_reprocess()
+        return {"type": "ir.actions.client", "tag": "reload"}

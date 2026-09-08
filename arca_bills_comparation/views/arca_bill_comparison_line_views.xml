@@ -79,4 +79,16 @@
         <field name="context">{'search_default_group_by_result': 1}</field>
     </record>
 
+    <record id="action_server_arca_bill_comparison_line_reprocess" model="ir.actions.server">
+        <field name="name">Reprocess</field>
+        <field name="model_id" ref="model_arca_bill_comparison_line"/>
+        <field name="binding_model_id" ref="model_arca_bill_comparison_line"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_reprocess_batches()
+        </field>
+    </record>
+
 </odoo>

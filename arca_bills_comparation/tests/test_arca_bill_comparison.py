@@ -436,7 +436,12 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
             [("company_id", "=", self.company.id)], order="id desc", limit=1
         )
         self.assertTrue(batch.source_document_id)
-        self.assertEqual(batch.source_document_id.name, "mis_comprobantes_base.xlsx")
+        # Prefixed with the run's own date range, since ARCA always names
+        # this export the same way.
+        self.assertEqual(
+            batch.source_document_id.name,
+            "%s - %s - mis_comprobantes_base.xlsx" % (batch.date_from, batch.date_to),
+        )
         self.assertEqual(batch.source_document_id.folder_id.name, "Mis comprobantes ARCA")
         self.assertEqual(batch.source_document_id.folder_id.folder_id.name, "Zinapsia")
         self.assertTrue(batch.last_processed_on)
@@ -475,6 +480,21 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         new_line = batch.line_ids.filtered(lambda line: line.move_id == move)
         self.assertTrue(new_line)
         self.assertNotEqual(new_line.result, "pending_in_arca")
+
+    def test_action_reprocess_batches_from_line_selection(self):
+        wizard = self._create_wizard("mis_comprobantes_base.xlsx")
+        wizard.action_process()
+
+        batch = self.env["arca.bill.comparison.batch"].search(
+            [("company_id", "=", self.company.id)], order="id desc", limit=1
+        )
+        processed_on_before = batch.last_processed_on
+
+        # Simulates selecting rows in the results grid and using the
+        # "Reprocess" entry in the Action menu, instead of opening the run.
+        result = batch.line_ids.action_reprocess_batches()
+        self.assertEqual(result, {"type": "ir.actions.client", "tag": "reload"})
+        self.assertGreater(batch.last_processed_on, processed_on_before)
 
     def test_reprocess_without_source_file_raises(self):
         batch = self.env["arca.bill.comparison.batch"].create(

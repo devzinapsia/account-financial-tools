@@ -113,9 +113,13 @@ class ArcaBillComparisonBatch(models.Model):
         is gone."""
         self.ensure_one()
         folder = self._get_or_create_arca_documents_folder()
+        # ARCA always names this export the same way, so several runs would
+        # otherwise be indistinguishable in the Documents folder; prefix the
+        # run's own date range.
+        name = "%s - %s - %s" % (self.date_from, self.date_to, filename or _("ARCA file"))
         document = self.env["documents.document"].sudo().create(
             {
-                "name": filename or _("ARCA file"),
+                "name": name,
                 "folder_id": folder.id,
                 "datas": file_base64,
                 "owner_id": self.env.user.id,
@@ -147,6 +151,10 @@ class ArcaBillComparisonBatch(models.Model):
         )
         action["domain"] = [("batch_id", "=", self.id)]
         action["context"] = {"search_default_group_by_result": 1}
+        # Otherwise this inherits whatever breadcrumb happened to be behind
+        # the "My Vouchers" wizard dialog (e.g. the Accounting dashboard),
+        # since the wizard itself is a modal with no breadcrumb of its own.
+        action["target"] = "main"
         return action
 
     def _run_comparison(self, rows):

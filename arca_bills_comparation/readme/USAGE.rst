@@ -28,7 +28,10 @@ shows when it was last processed.
 After fixing issues a run flagged (e.g. a wrong vendor or document number
 on a bill), open that run and click **Reprocess** to compare against the
 same file again without downloading/uploading it a second time; this
-discards and rebuilds that run's results.
+discards and rebuilds that run's results. **Reprocess** is also available
+from the results grid's own **Actions** (⚙) menu, so several runs can be
+reprocessed at once by selecting rows from each of them, without opening
+every run individually.
 
 Field mapping
 ~~~~~~~~~~~~~
@@ -169,6 +172,15 @@ Assumptions
   there — deleting it from Documents (or the run predating this feature,
   when no file was stored yet) leaves nothing to reprocess and raises an
   error instead of silently doing nothing.
+- The stored file's name is prefixed with the run's own date range (e.g.
+  "2026-08-01 - 2026-08-31 - <original filename>"), since ARCA's own
+  export always uses the same filename regardless of period, which would
+  otherwise make every run's file indistinguishable from another in
+  Documents.
+- The results grid opens with ``target: "main"``, clearing any existing
+  breadcrumb, instead of inheriting whichever page happened to be open
+  behind the "My Vouchers" wizard dialog (a modal has no breadcrumb entry
+  of its own to attach to).
 
 Roadmap
 ~~~~~~~
