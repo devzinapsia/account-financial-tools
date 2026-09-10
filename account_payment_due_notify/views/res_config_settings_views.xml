@@ -14,21 +14,17 @@
                             <label for="payment_due_notify_days_first" class="col-lg-6 o_light_label"/>
                             <field name="payment_due_notify_days_first"/>
                         </div>
-                        <div class="mt8 d-flex">
+                        <div class="mt8">
                             <field name="payment_due_notify_second_enabled"/>
-                            <div>
-                                <label for="payment_due_notify_second_enabled" style="font-weight: normal !important;"/><br/>
-                            </div>
+                            <label for="payment_due_notify_second_enabled" class="fw-normal me-1"/>
                         </div>
                         <div class="row mt8" invisible="not payment_due_notify_second_enabled">
                             <label for="payment_due_notify_days_second" class="col-lg-6 o_light_label"/>
                             <field name="payment_due_notify_days_second"/>
                         </div>
-                        <div class="mt8 d-flex">
+                        <div class="mt8">
                             <field name="payment_due_notify_weekly_summary_enabled"/>
-                            <div>
-                                <label for="payment_due_notify_weekly_summary_enabled" style="font-weight: normal !important;"/><br/>
-                            </div>
+                            <label for="payment_due_notify_weekly_summary_enabled" class="fw-normal me-1"/>
                         </div>
                         <div class="mt16"></div>
                         <div class="row mt8">
