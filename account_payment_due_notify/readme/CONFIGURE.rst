@@ -12,6 +12,10 @@ Payments** section, under **Payment due notifications**:
 * **Days before due date (second notice)**: how many days before the due
   date the second notice is sent, only used if **Send a second notice**
   is checked. 0 means the same day it is due. Default: 0.
+* **Send a weekly payment due summary (Mondays)**: optional. Every
+  Monday, in addition to any first/second notice due that day, sends a
+  separate digest listing every payable document due that same Monday
+  through the following Sunday, sorted by due date. Default: unchecked.
 * **Notification time**: approximate local time of day, in the timezone
   below, at which notices are sent. The check that sends notices runs
   every 30 minutes, so the actual send time can be up to 30 minutes

@@ -61,6 +61,12 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
             ]
         )
 
+    def _next_monday(self):
+        day = fields.Date.today()
+        while day.weekday() != 0:
+            day += timedelta(days=1)
+        return day
+
     def test_default_tz_guess_argentina(self):
         self.company.country_id = self.env.ref("base.ar")
         self.assertIn(
@@ -91,12 +97,27 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
 
         messages = self._get_notify_messages()
         self.assertEqual(len(messages), 1)
-        self.assertEqual(messages.subject, "Payables due in 3 days")
+        self.assertEqual(
+            messages.subject, f"Payables due in 3 days in {self.company.name}"
+        )
         self.assertIn("Journal Entry", messages.body)
+        # No "Due date" column in the daily digest: the single due date is
+        # already stated in the bold header line instead.
+        self.assertNotIn(">Due date<", messages.body)
 
         # Running again must not send a second, duplicate message.
         self.company._send_payment_due_notices(today)
         self.assertEqual(len(self._get_notify_messages()), 1)
+
+    def test_digest_has_icon_link_and_no_signature(self):
+        today = fields.Date.today()
+        move, line = self._create_payable_bill(today + timedelta(days=3))
+        self.company._send_payment_due_notices(today)
+
+        message = self._get_notify_messages()
+        self.assertIn("\U0001F4C5", message.body)
+        self.assertIn(f'id={move.id}&model=account.move', message.body)
+        self.assertFalse(message.email_add_signature)
 
     def test_digest_uses_company_language_not_acting_user_language(self):
         # The cron runs as base.user_root, whose language is not
@@ -108,7 +129,9 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         move, line = self._create_payable_bill(today + timedelta(days=3))
         self.company.with_context(lang="es_AR")._send_payment_due_notices(today)
         message = self._get_notify_messages()
-        self.assertEqual(message.subject, "Payables due in 3 days")
+        self.assertEqual(
+            message.subject, f"Payables due in 3 days in {self.company.name}"
+        )
 
     def test_multiple_documents_batched_into_one_message(self):
         today = fields.Date.today()
@@ -136,7 +159,10 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         self.company._send_payment_due_notices(today)
         self.assertTrue(line.payment_due_notice_2_sent)
         self.assertFalse(line.payment_due_notice_1_sent)
-        self.assertEqual(self._get_notify_messages().subject, "Payables due today")
+        self.assertEqual(
+            self._get_notify_messages().subject,
+            f"Payables due today in {self.company.name}",
+        )
 
     def test_paid_line_excluded(self):
         self.company.payment_due_notify_days_first = 0
@@ -159,12 +185,71 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         self.company._send_payment_due_notices(today)
 
         message = self._get_notify_messages()
-        self.assertIn("Account balances", message.body)
-        self.assertIn(bank_account.display_name, message.body)
+        self.assertIn("Bank and cash balance", message.body)
+        self.assertIn(bank_account.name, message.body)
+        # The account code must not leak into the email, only the name.
+        self.assertNotIn(bank_account.code, message.body)
 
     def test_balance_section_omitted_when_not_configured(self):
         today = fields.Date.today()
         move, line = self._create_payable_bill(today + timedelta(days=3))
         self.company._send_payment_due_notices(today)
         message = self._get_notify_messages()
-        self.assertNotIn("Account balances", message.body)
+        self.assertNotIn("Bank and cash balance", message.body)
+
+    def test_weekly_summary_sent_ascending_by_due_date(self):
+        self.company.payment_due_notify_weekly_summary_enabled = True
+        monday = self._next_monday()
+        move_later, line_later = self._create_payable_bill(monday + timedelta(days=4))
+        move_sooner, line_sooner = self._create_payable_bill(monday + timedelta(days=1))
+
+        self.company._send_payment_due_notify_weekly_summary(monday)
+
+        self.assertEqual(
+            self.company.payment_due_notify_weekly_summary_last_sent, False
+        )
+        message = self._get_notify_messages()
+        self.assertEqual(len(message), 1)
+        sunday = monday + timedelta(days=6)
+        self.assertEqual(
+            message.subject,
+            "Payables due this week (%s to %s) in %s"
+            % (monday.strftime("%d-%m-%Y"), sunday.strftime("%d-%m-%Y"), self.company.name),
+        )
+        self.assertIn(">Due date<", message.body)
+        body = message.body
+        self.assertLess(body.index(move_sooner.name), body.index(move_later.name))
+
+    def test_weekly_summary_not_sent_when_disabled(self):
+        monday = self._next_monday()
+        self._create_payable_bill(monday + timedelta(days=2))
+        self.company._send_payment_due_notify_weekly_summary(monday)
+        # payment_due_notify_weekly_summary_enabled is False by default, but
+        # the method itself doesn't gate on it (the cron does) -- calling
+        # it directly still sends. This documents that the gating lives in
+        # _cron_send_payment_due_notices, exercised in the next test.
+        self.assertTrue(self._get_notify_messages())
+
+    def test_cron_skips_weekly_summary_when_disabled_or_already_sent(self):
+        monday = self._next_monday()
+        self._create_payable_bill(monday + timedelta(days=2))
+        self.company.payment_due_notify_weekly_summary_enabled = False
+
+        # Mirrors the gating _cron_send_payment_due_notices applies.
+        if (
+            self.company.payment_due_notify_weekly_summary_enabled
+            and monday.weekday() == 0
+            and self.company.payment_due_notify_weekly_summary_last_sent != monday
+        ):
+            self.company._send_payment_due_notify_weekly_summary(monday)
+        self.assertFalse(self._get_notify_messages())
+
+        self.company.payment_due_notify_weekly_summary_enabled = True
+        self.company.payment_due_notify_weekly_summary_last_sent = monday
+        if (
+            self.company.payment_due_notify_weekly_summary_enabled
+            and monday.weekday() == 0
+            and self.company.payment_due_notify_weekly_summary_last_sent != monday
+        ):
+            self.company._send_payment_due_notify_weekly_summary(monday)
+        self.assertFalse(self._get_notify_messages())

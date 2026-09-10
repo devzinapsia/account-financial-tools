@@ -1,11 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytz
 from markupsafe import Markup
 
 from odoo import _, fields, models
 from odoo.addons.base.models.res_partner import _tz_get
-from odoo.tools import formatLang
+from odoo.tools import format_date, formatLang
+
+_CELL_STYLE = "padding: 4px 16px 4px 0;"
+_CELL_STYLE_RIGHT = "padding: 4px 0 4px 16px; text-align: right;"
 
 
 class ResCompany(models.Model):
@@ -38,6 +41,17 @@ class ResCompany(models.Model):
         "notice. 0 means the same day it is due. Only used if 'Send a "
         "second notice' is checked.",
     )
+    payment_due_notify_weekly_summary_enabled = fields.Boolean(
+        string="Send a weekly payment due summary (Mondays)",
+        help="Every Monday, in addition to any first/second notice due "
+        "that day, send a separate digest listing every payable document "
+        "due that same Monday through the following Sunday, sorted by "
+        "due date.",
+    )
+    # Monday this company's weekly summary was last sent for; prevents
+    # sending it twice if the check runs more than once within the same
+    # Monday's notification window. Purely internal, not shown in any view.
+    payment_due_notify_weekly_summary_last_sent = fields.Date(copy=False)
     payment_due_notify_time = fields.Float(
         string="Notification time",
         default=9.0,
@@ -111,15 +125,21 @@ class ResCompany(models.Model):
             if not company.payment_due_notify_tz:
                 continue
             now_local = now_utc.astimezone(pytz.timezone(company.payment_due_notify_tz))
-            if company._payment_due_notify_in_window(now_local):
-                company._send_payment_due_notices(now_local.date())
+            if not company._payment_due_notify_in_window(now_local):
+                continue
+            today = now_local.date()
+            company._send_payment_due_notices(today)
+            if (
+                company.payment_due_notify_weekly_summary_enabled
+                and today.weekday() == 0
+                and company.payment_due_notify_weekly_summary_last_sent != today
+            ):
+                company._send_payment_due_notify_weekly_summary(today)
+                company.payment_due_notify_weekly_summary_last_sent = today
 
-    def _send_payment_due_notices(self, today):
+    def _get_payment_due_notify_base_domain(self):
         self.ensure_one()
-        partner_ids = self.payment_due_notify_user_ids.partner_id.ids
-        if not partner_ids:
-            return
-        lines = self.env["account.move.line"].search([
+        return [
             ("account_id.account_type", "=", "liability_payable"),
             ("reconciled", "=", False),
             ("amount_residual", "!=", 0),
@@ -127,7 +147,14 @@ class ResCompany(models.Model):
             ("date_maturity", "!=", False),
             ("parent_state", "=", "posted"),
             ("company_id", "=", self.id),
-        ])
+        ]
+
+    def _send_payment_due_notices(self, today):
+        self.ensure_one()
+        partner_ids = self.payment_due_notify_user_ids.partner_id.ids
+        if not partner_ids:
+            return
+        lines = self.env["account.move.line"].search(self._get_payment_due_notify_base_domain())
 
         first_lines = lines.filtered(
             lambda l: (l.date_maturity - today).days == self.payment_due_notify_days_first
@@ -163,35 +190,84 @@ class ResCompany(models.Model):
         lang = self.partner_id.lang or self.env.user.lang
         self = self.with_context(lang=lang)
         notice_lines = notice_lines.with_context(lang=lang)
+        due_date = notice_lines[0].date_maturity
         if days == 0:
-            subject = _("Payables due today")
-            intro = _("The following payable documents are due today.")
+            subject = _("Payables due today in %(company)s", company=self.name)
         else:
-            subject = _("Payables due in %(days)s days", days=days)
-            intro = _(
-                "The following payable documents are due in %(days)s days.",
+            subject = _(
+                "Payables due in %(days)s days in %(company)s",
                 days=days,
+                company=self.name,
             )
-        header_row = Markup(
-            "<tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>"
-        ) % (
-            _("Vendor"),
-            _("Document"),
-            _("Reference"),
-            _("Due date"),
-            _("Amount"),
+        intro = Markup("<strong>%s</strong>") % _(
+            "Payable documents for %(date)s:", date=format_date(self.env, due_date)
         )
+        body = self._build_payment_due_notice_body(intro, notice_lines, include_due_date=False)
+        self._notify_payment_due(subject, body, partner_ids)
+
+    def _send_payment_due_notify_weekly_summary(self, monday):
+        """Send a single digest of every payable document due from
+        ``monday`` through the following Sunday, sorted ascending by due
+        date. Independent of the first/second notice tracking above: it
+        is its own weekly overview, not itself a per-document notice.
+        """
+        self.ensure_one()
+        partner_ids = self.payment_due_notify_user_ids.partner_id.ids
+        if not partner_ids:
+            return
+        sunday = monday + timedelta(days=6)
+        domain = self._get_payment_due_notify_base_domain() + [
+            ("date_maturity", ">=", monday),
+            ("date_maturity", "<=", sunday),
+        ]
+        lines = self.env["account.move.line"].search(domain, order="date_maturity asc")
+        if not lines:
+            return
+        lang = self.partner_id.lang or self.env.user.lang
+        self = self.with_context(lang=lang)
+        lines = lines.with_context(lang=lang)
+        subject = _(
+            "Payables due this week (%(date_from)s to %(date_to)s) in %(company)s",
+            date_from=monday.strftime("%d-%m-%Y"),
+            date_to=sunday.strftime("%d-%m-%Y"),
+            company=self.name,
+        )
+        intro = Markup("<strong>%s</strong>") % _(
+            "Payable documents from %(date_from)s to %(date_to)s:",
+            date_from=format_date(self.env, monday),
+            date_to=format_date(self.env, sunday),
+        )
+        body = self._build_payment_due_notice_body(intro, lines, include_due_date=True)
+        self._notify_payment_due(subject, body, partner_ids)
+
+    def _build_payment_due_notice_body(self, intro, lines, include_due_date):
+        self.ensure_one()
+        headers = []
+        if include_due_date:
+            headers.append(_("Due date"))
+        headers += [_("Vendor"), _("Document"), _("Reference")]
+        header_html = Markup("").join(
+            Markup('<th style="%s">%s</th>') % (_CELL_STYLE, header) for header in headers
+        )
+        header_html += Markup('<th style="%s">%s</th>') % (_CELL_STYLE_RIGHT, _("Amount"))
+        header_row = Markup("<tr>%s</tr>") % header_html
+
         body_rows = Markup("").join(
-            line._get_payment_due_notice_row() for line in notice_lines
+            line._get_payment_due_notice_row(include_due_date) for line in lines
         )
-        body = Markup("%s<br/><br/><table>%s%s</table>%s") % (
+        return Markup("%s<br/><br/><table>%s%s</table>%s") % (
             intro,
             header_row,
             body_rows,
             self._get_payment_due_notify_balance_section(),
         )
+
+    def _notify_payment_due(self, subject, body, partner_ids):
         self.env["mail.thread"].message_notify(
-            partner_ids=partner_ids, subject=subject, body=body
+            partner_ids=partner_ids,
+            subject=subject,
+            body=body,
+            email_add_signature=False,
         )
 
     def _get_payment_due_notify_balance_section(self):
@@ -211,14 +287,14 @@ class ResCompany(models.Model):
             )
         )
         rows = Markup("").join(
-            Markup("<tr><td>%s</td><td>%s</td></tr>")
+            Markup('<tr><td style="%s">%s</td><td style="%s">%s</td></tr>')
             % (
-                account.display_name,
+                _CELL_STYLE,
+                account.name,
+                _CELL_STYLE_RIGHT,
                 formatLang(self.env, balances.get(account, 0.0), currency_obj=self.currency_id),
             )
             for account in accounts
         )
-        return Markup("<br/><br/>%s<table>%s</table>") % (
-            _("Account balances (for reference):"),
-            rows,
-        )
+        heading = Markup("<strong>%s</strong>") % _("Bank and cash balance")
+        return Markup("<br/><br/>%s<table>%s</table>") % (heading, rows)

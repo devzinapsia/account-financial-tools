@@ -36,6 +36,10 @@ Payments** section, under **Payment due notifications**:
 * **Days before due date (second notice)**: how many days before the due
   date the second notice is sent, only used if **Send a second notice**
   is checked. 0 means the same day it is due. Default: 0.
+* **Send a weekly payment due summary (Mondays)**: optional. Every
+  Monday, in addition to any first/second notice due that day, sends a
+  separate digest listing every payable document due that same Monday
+  through the following Sunday, sorted by due date. Default: unchecked.
 * **Notification time**: approximate local time of day, in the timezone
   below, at which notices are sent. The check that sends notices runs
   every 30 minutes, so the actual send time can be up to 30 minutes
@@ -85,18 +89,33 @@ stops matching the criteria above, so no further notices go out for it.
 All documents due on the same run for the same notice are sent as a
 **single email**, not one email per document -- if five bills are due
 in 3 days, that is one email listing all five, not five separate ones.
-Its subject is **"Vencimientos a pagar hoy"** when the notice is for the
-same day, or **"Vencimientos a pagar en ## días"** otherwise, where
-``##`` is the configured number of days. The body lists, for every
-document in that batch, its type and number (with a link to it), the
-vendor, the reference, the due date, and the amount due; if any
-**Accounts to report balance** are configured, their current balance is
-added at the foot of the email.
+Its subject is **"Vencimientos a pagar hoy en <company>"** when the
+notice is for the same day, or **"Vencimientos a pagar en ## días en
+<company>"** otherwise, where ``##`` is the configured number of days
+and ``<company>`` is this company's name. The body starts with a bold
+**"Comprobantes a pagar el día: ##/##/####"** line, then a table with,
+for every document in that batch, the vendor, its type and number (with
+a small calendar-icon link to it), the reference, and the amount due,
+right-aligned; if any **Accounts to report balance** are configured,
+their current balance (name only, no account code) is added at the foot
+of the email under a bold **"Saldo de bancos y efectivo"** heading, also
+right-aligned.
+
+If **Send a weekly payment due summary (Mondays)** is checked, every
+Monday -- in the same notification window as the daily notices above --
+a separate digest is sent listing every payable document due that same
+Monday through the following Sunday, sorted ascending by due date (with
+the due date as its own first column, since unlike the daily digest a
+week can span several different dates). Its subject is
+**"Vencimientos a pagar esta semana (##-##-#### a ##-##-####) en
+<company>"**. It is independent of the first/second notice tracking:
+it does not mark any document as notified, and is only sent once per
+Monday regardless of how many cron runs fall in that day's window.
 
 Each notice is sent through the standard Odoo notification system, so
 every configured user gets it by email or as an internal notification
 according to their own preference (**Settings ‣ Preferences ‣
-Notification**).
+Notification**). No mail signature is appended.
 
 Bug Tracker
 ===========

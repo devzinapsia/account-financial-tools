@@ -3,6 +3,9 @@ from markupsafe import Markup
 from odoo import _, fields, models
 from odoo.tools import format_date, formatLang
 
+_CELL_STYLE = "padding: 4px 16px 4px 0;"
+_CELL_STYLE_RIGHT = "padding: 4px 0 4px 16px; text-align: right;"
+
 
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
@@ -37,13 +40,16 @@ class AccountMoveLine(models.Model):
         return _("Journal Entry %s", move.name)
 
     def _get_payment_due_notice_link(self):
+        """A small calendar-icon link to the document, used instead of a
+        text link so the "Document" column stays compact.
+        """
         self.ensure_one()
         move = self.move_id
         url = "%s/web#id=%s&model=account.move&view_type=form" % (
             move.get_base_url(),
             move.id,
         )
-        return Markup('<a href="%s">%s</a>') % (url, _("view document"))
+        return Markup('<a href="%s" title="%s">\U0001F4C5</a>') % (url, _("view document"))
 
     def _get_payment_due_notice_amount(self):
         self.ensure_one()
@@ -55,16 +61,29 @@ class AccountMoveLine(models.Model):
         )
         return formatLang(self.env, amount, currency_obj=currency)
 
-    def _get_payment_due_notice_row(self):
+    def _get_payment_due_notice_row(self, include_due_date=False):
         """One <tr> of the notification digest table for this line."""
         self.ensure_one()
-        return Markup(
-            "<tr><td>%s</td><td>%s (%s)</td><td>%s</td><td>%s</td><td>%s</td></tr>"
-        ) % (
-            self.partner_id.name,
-            self._get_payment_due_notice_document_label(),
-            self._get_payment_due_notice_link(),
-            self.move_id.ref or "",
-            format_date(self.env, self.date_maturity),
-            self._get_payment_due_notice_amount(),
+        cells = []
+        if include_due_date:
+            cells.append(
+                Markup('<td style="%s">%s</td>')
+                % (_CELL_STYLE, format_date(self.env, self.date_maturity))
+            )
+        cells.append(Markup('<td style="%s">%s</td>') % (_CELL_STYLE, self.partner_id.name))
+        cells.append(
+            Markup('<td style="%s">%s %s</td>')
+            % (
+                _CELL_STYLE,
+                self._get_payment_due_notice_document_label(),
+                self._get_payment_due_notice_link(),
+            )
         )
+        cells.append(
+            Markup('<td style="%s">%s</td>') % (_CELL_STYLE, self.move_id.ref or "")
+        )
+        cells.append(
+            Markup('<td style="%s">%s</td>')
+            % (_CELL_STYLE_RIGHT, self._get_payment_due_notice_amount())
+        )
+        return Markup("<tr>%s</tr>") % Markup("").join(cells)

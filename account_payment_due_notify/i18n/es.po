@@ -113,6 +113,25 @@ msgstr ""
 "segundo aviso' está tildado."
 
 #. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_weekly_summary_enabled
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_weekly_summary_enabled
+msgid "Send a weekly payment due summary (Mondays)"
+msgstr "Enviar resumen semanal de vencimiento (los lunes)"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_weekly_summary_enabled
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_weekly_summary_enabled
+msgid ""
+"Every Monday, in addition to any first/second notice due that day, "
+"send a separate digest listing every payable document due that same "
+"Monday through the following Sunday, sorted by due date."
+msgstr ""
+"Todos los lunes, además de cualquier primer o segundo aviso que venza "
+"ese día, envía un resumen aparte con todos los comprobantes a pagar "
+"que vencen desde ese mismo lunes hasta el domingo siguiente, "
+"ordenados por fecha de vencimiento."
+
+#. module: account_payment_due_notify
 #: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_time
 #: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_time
 msgid "Notification time"
@@ -212,26 +231,32 @@ msgstr "ver comprobante"
 #. module: account_payment_due_notify
 #. odoo-python
 #: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "Payables due today"
-msgstr "Vencimientos a pagar hoy"
+msgid "Payables due today in %(company)s"
+msgstr "Vencimientos a pagar hoy en %(company)s"
 
 #. module: account_payment_due_notify
 #. odoo-python
 #: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "Payables due in %(days)s days"
-msgstr "Vencimientos a pagar en %(days)s días"
+msgid "Payables due in %(days)s days in %(company)s"
+msgstr "Vencimientos a pagar en %(days)s días en %(company)s"
 
 #. module: account_payment_due_notify
 #. odoo-python
 #: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "The following payable documents are due today."
-msgstr "Los siguientes comprobantes a pagar vencen hoy."
+msgid "Payables due this week (%(date_from)s to %(date_to)s) in %(company)s"
+msgstr "Vencimientos a pagar esta semana (%(date_from)s a %(date_to)s) en %(company)s"
 
 #. module: account_payment_due_notify
 #. odoo-python
 #: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "The following payable documents are due in %(days)s days."
-msgstr "Los siguientes comprobantes a pagar vencen en %(days)s días."
+msgid "Payable documents for %(date)s:"
+msgstr "Comprobantes a pagar el día: %(date)s"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Payable documents from %(date_from)s to %(date_to)s:"
+msgstr "Comprobantes a pagar del %(date_from)s al %(date_to)s:"
 
 #. module: account_payment_due_notify
 #. odoo-python
@@ -266,5 +291,5 @@ msgstr "Importe"
 #. module: account_payment_due_notify
 #. odoo-python
 #: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "Account balances (for reference):"
-msgstr "Saldos de cuentas (a modo de referencia):"
+msgid "Bank and cash balance"
+msgstr "Saldo de bancos y efectivo"

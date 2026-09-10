@@ -17,6 +17,9 @@ class ResConfigSettings(models.TransientModel):
     payment_due_notify_days_second = fields.Integer(
         related="company_id.payment_due_notify_days_second", readonly=False
     )
+    payment_due_notify_weekly_summary_enabled = fields.Boolean(
+        related="company_id.payment_due_notify_weekly_summary_enabled", readonly=False
+    )
     payment_due_notify_time = fields.Float(
         related="company_id.payment_due_notify_time", readonly=False
     )
