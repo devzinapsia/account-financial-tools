@@ -203,14 +203,14 @@ msgstr "ver comprobante"
 #. module: account_payment_due_notify
 #. odoo-python
 #: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "Payables due today in %(company)s"
-msgstr "Vencimientos a pagar hoy en %(company)s"
+msgid "Payables due today (%(date)s) in %(company)s"
+msgstr "Vencimientos a pagar hoy (%(date)s) en %(company)s"
 
 #. module: account_payment_due_notify
 #. odoo-python
 #: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "Payables due in %(days)s days in %(company)s"
-msgstr "Vencimientos a pagar en %(days)s días en %(company)s"
+msgid "Payables due in %(days)s days (%(date)s) in %(company)s"
+msgstr "Vencimientos a pagar en %(days)s días (%(date)s) en %(company)s"
 
 #. module: account_payment_due_notify
 #. odoo-python
@@ -221,14 +221,8 @@ msgstr "Vencimientos a pagar esta semana (%(date_from)s a %(date_to)s) en %(comp
 #. module: account_payment_due_notify
 #. odoo-python
 #: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "Payable documents for %(date)s:"
-msgstr "Comprobantes a pagar el día: %(date)s"
-
-#. module: account_payment_due_notify
-#. odoo-python
-#: code:addons/account_payment_due_notify/models/res_company.py:0
-msgid "Payable documents from %(date_from)s to %(date_to)s:"
-msgstr "Comprobantes a pagar del %(date_from)s al %(date_to)s:"
+msgid "Payable documents:"
+msgstr "Comprobantes a pagar:"
 
 #. module: account_payment_due_notify
 #. odoo-python

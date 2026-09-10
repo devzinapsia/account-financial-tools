@@ -194,17 +194,21 @@ class ResCompany(models.Model):
         self = self.with_context(lang=lang)
         notice_lines = notice_lines.with_context(lang=lang)
         due_date = notice_lines[0].date_maturity
+        due_date_str = format_date(self.env, due_date)
         if days == 0:
-            subject = _("Payables due today in %(company)s", company=self.name)
-        else:
             subject = _(
-                "Payables due in %(days)s days in %(company)s",
-                days=days,
+                "Payables due today (%(date)s) in %(company)s",
+                date=due_date_str,
                 company=self.name,
             )
-        intro = Markup("<strong>%s</strong>") % _(
-            "Payable documents for %(date)s:", date=format_date(self.env, due_date)
-        )
+        else:
+            subject = _(
+                "Payables due in %(days)s days (%(date)s) in %(company)s",
+                days=days,
+                date=due_date_str,
+                company=self.name,
+            )
+        intro = Markup("<strong>%s</strong>") % _("Payable documents:")
         body = self._build_payment_due_notice_body(intro, notice_lines, include_due_date=False)
         self._notify_payment_due(subject, body, partner_ids)
 
@@ -235,11 +239,7 @@ class ResCompany(models.Model):
             date_to=sunday.strftime("%d-%m-%Y"),
             company=self.name,
         )
-        intro = Markup("<strong>%s</strong>") % _(
-            "Payable documents from %(date_from)s to %(date_to)s:",
-            date_from=format_date(self.env, monday),
-            date_to=format_date(self.env, sunday),
-        )
+        intro = Markup("<strong>%s</strong>") % _("Payable documents:")
         body = self._build_payment_due_notice_body(intro, lines, include_due_date=True)
         self._notify_payment_due(subject, body, partner_ids)
 

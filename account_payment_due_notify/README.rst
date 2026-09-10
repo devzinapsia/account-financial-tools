@@ -95,17 +95,19 @@ All documents due on the same run for the same notice are sent as a
 **single email**, not one email per document -- if five bills are due
 in 3 days, that is one email listing all five, not five separate ones.
 
-Its subject is **"Vencimientos a pagar hoy en <company>"** when the
-notice is for the same day, or **"Vencimientos a pagar en ## días en
-<company>"** otherwise, where ``##`` is the configured number of days
-and ``<company>`` is this company's name. The body starts with a bold
-**"Comprobantes a pagar el día: ##/##/####"** line, then a table with,
-for every document in that batch, the vendor, its type and number (with
-a small calendar-icon link to it), the reference, and the amount due,
-right-aligned; if any **Accounts to report balance** are configured,
-their current balance (name only, no account code) is added at the foot
-of the email under a bold **"Saldo de bancos y efectivo"** heading, also
-right-aligned.
+Its subject is **"Vencimientos a pagar hoy (##/##/####) en <company>"**
+when the notice is for the same day, or **"Vencimientos a pagar en ##
+días (##/##/####) en <company>"** otherwise, where the first ``##`` is
+the configured number of days, ``(##/##/####)`` the actual due date of
+every document in that batch, and ``<company>`` this company's name.
+The body starts with a bold **"Comprobantes a pagar:"** line (the date
+is already in the subject, so it is not repeated here), then a table
+with, for every document in that batch, the vendor, its type and number
+(with a small external-link icon to it), the reference, and the amount
+due, right-aligned; if any **Accounts to report balance** are
+configured, their current balance (name only, no account code) is added
+at the foot of the email under a bold **"Saldo de bancos y efectivo"**
+heading, also right-aligned.
 
 If **Send a weekly payment due summary (Mondays)** is checked, every
 Monday -- in the same notification window as the daily notices above --

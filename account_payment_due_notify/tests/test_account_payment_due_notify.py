@@ -4,6 +4,7 @@ import pytz
 
 from odoo import Command, fields
 from odoo.tests import tagged
+from odoo.tools import format_date
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -95,12 +96,16 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
 
         messages = self._get_notify_messages()
         self.assertEqual(len(messages), 1)
+        date_str = format_date(self.env, today + timedelta(days=3))
         self.assertEqual(
-            messages.subject, f"Payables due in 3 days in {self.company.name}"
+            messages.subject,
+            f"Payables due in 3 days ({date_str}) in {self.company.name}",
         )
         self.assertIn("Journal Entry", messages.body)
+        # The date moved to the subject; the body intro no longer repeats it.
+        self.assertIn("<strong>Payable documents:</strong>", messages.body)
         # No "Due date" column in the daily digest: the single due date is
-        # already stated in the bold header line instead.
+        # already stated in the subject instead.
         self.assertNotIn(">Due date<", messages.body)
 
     def test_running_again_resends_whatever_still_matches(self):
@@ -121,7 +126,7 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         self.company._send_payment_due_notices(today)
 
         message = self._get_notify_messages()
-        self.assertIn("\U0001F4C5", message.body)
+        self.assertIn("data:image/svg+xml", message.body)
         self.assertIn(f'id={move.id}&model=account.move', message.body)
         self.assertFalse(message.email_add_signature)
 
@@ -135,8 +140,10 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         move, line = self._create_payable_bill(today + timedelta(days=3))
         self.company.with_context(lang="es_AR")._send_payment_due_notices(today)
         message = self._get_notify_messages()
+        date_str = format_date(self.env, today + timedelta(days=3), lang_code="en_US")
         self.assertEqual(
-            message.subject, f"Payables due in 3 days in {self.company.name}"
+            message.subject,
+            f"Payables due in 3 days ({date_str}) in {self.company.name}",
         )
 
     def test_multiple_documents_batched_into_one_message(self):
@@ -160,9 +167,10 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         today = fields.Date.today()
         move, line = self._create_payable_bill(today)
         self.company._send_payment_due_notices(today)
+        date_str = format_date(self.env, today)
         self.assertEqual(
             self._get_notify_messages().subject,
-            f"Payables due today in {self.company.name}",
+            f"Payables due today ({date_str}) in {self.company.name}",
         )
 
     def test_paid_line_excluded(self):
@@ -218,6 +226,7 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
             % (monday.strftime("%d-%m-%Y"), sunday.strftime("%d-%m-%Y"), self.company.name),
         )
         self.assertIn(">Due date<", message.body)
+        self.assertIn("<strong>Payable documents:</strong>", message.body)
         body = message.body
         self.assertLess(body.index(move_sooner.name), body.index(move_later.name))
 
