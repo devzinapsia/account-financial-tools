@@ -284,15 +284,20 @@ repo you're in before doing anything:
   view_type='form')` and inspect the `<notebook>` elements in the returned
   arch) — and use `position="move"` plus a high view `priority` to relocate
   it if needed.
-- A checkbox nested inside a `<setting>` block's content-group, meant to
-  sit inline with its own label on one row, should copy the exact markup
-  an existing core checkbox of that kind already uses (e.g. account's
-  `link_qr_code` "Add QR-code link on PDF": a plain `<field>` directly
-  under a `d-flex` div, next to a `<div><label/><br/></div>`) rather than
-  improvising with Bootstrap `.row`/`.col-lg-*` or the
-  `o_setting_left_pane`/`o_setting_right_pane` pair — the latter is for a
-  standalone boxed toggle, not a plain sub-option, and renders stacked
-  with a stray border in that context.
+- A checkbox nested inside a `<setting>` block, meant to sit inline with
+  its own **non-bold** label on one row: a plain `<field name="x"/>`
+  followed directly by `<label for="x" class="fw-normal me-1"/>` — no
+  wrapping div, no `d-flex`, no `<br/>`. Copy point_of_sale's "Show
+  product images"/"Show category images" checkboxes verbatim rather than
+  improvising. Don't try to un-bold the label with an inline
+  `style="font-weight: normal"` — even with `!important` it silently
+  does nothing, because whatever the `<setting>` element's compiler does
+  to descendant `<label>` tags doesn't preserve arbitrary `style`
+  attributes; only a `class` (here `fw-normal`, a Bootstrap 5 utility
+  that ships its own `!important`) survives. Also don't reach for
+  `o_setting_left_pane`/`o_setting_right_pane` for a plain sub-option —
+  that pair is for a standalone boxed toggle and renders stacked with a
+  stray border in this nested context.
 - To verify a fix against a client's actual third-party modules instead of
   guessing: point a temporary `--addons-path` at that client's deployment
   repo submodules (e.g. `E:\zinapsia\clientes\<client>\ingadhoc\*`,
