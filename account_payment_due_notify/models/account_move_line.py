@@ -6,18 +6,6 @@ from odoo.tools import format_date, formatLang
 _CELL_STYLE = "padding: 4px 16px 4px 0;"
 _CELL_STYLE_RIGHT = "padding: 4px 0 4px 16px; text-align: right;"
 
-# "Open external link" icon (Zinapsia standard, see CLAUDE.md) as an inline
-# SVG data URI: email clients don't load Odoo's own icon font, so this is
-# self-contained instead of relying on a webfont/external asset.
-_EXTERNAL_LINK_ICON_SRC = Markup(
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' "
-    "viewBox='0 0 24 24' width='14' height='14' fill='none' "
-    "stroke='%2300A0A9' stroke-width='2' stroke-linecap='round' "
-    "stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 "
-    "0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 "
-    "9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E"
-)
-
 
 class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
@@ -39,9 +27,15 @@ class AccountMoveLine(models.Model):
         return _("Journal Entry %s", move.name)
 
     def _get_payment_due_notice_link(self):
-        """A small "open external link" icon linking to the document,
-        used instead of a text link so the "Document" column stays
-        compact.
+        """A small "open external link" arrow linking to the document.
+        A plain Unicode character, not an image: an inline SVG data URI
+        looked correct but real mail clients (tested: Outlook) block or
+        fail to load it, leaving a broken-image box with the alt text
+        showing next to it. Unlike a `fa-external-link` button in an
+        Odoo view (rendered by the live web client, which has the icon
+        font), an email is a static HTML document opened in a
+        third-party client with none of that -- so only plain text is
+        guaranteed to render.
         """
         self.ensure_one()
         move = self.move_id
@@ -49,11 +43,7 @@ class AccountMoveLine(models.Model):
             move.get_base_url(),
             move.id,
         )
-        icon = Markup(
-            '<img src="%s" alt="%s" width="14" height="14" '
-            'style="vertical-align: middle;"/>'
-        ) % (_EXTERNAL_LINK_ICON_SRC, _("view document"))
-        return Markup('<a href="%s" title="%s">%s</a>') % (url, _("view document"), icon)
+        return Markup('<a href="%s" title="%s">↗</a>') % (url, _("view document"))
 
     def _get_payment_due_notice_amount(self):
         self.ensure_one()

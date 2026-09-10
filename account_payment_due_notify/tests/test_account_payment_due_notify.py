@@ -126,7 +126,10 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         self.company._send_payment_due_notices(today)
 
         message = self._get_notify_messages()
-        self.assertIn("data:image/svg+xml", message.body)
+        # A plain Unicode arrow, not an <img>: real mail clients failed to
+        # load an inline SVG data URI, leaving a broken-image box.
+        self.assertIn("↗", message.body)
+        self.assertNotIn("<img", message.body)
         self.assertIn(f'id={move.id}&model=account.move', message.body)
         self.assertFalse(message.email_add_signature)
 
