@@ -17,7 +17,7 @@
                         <div class="mt8 d-flex">
                             <field name="payment_due_notify_second_enabled"/>
                             <div>
-                                <label for="payment_due_notify_second_enabled" style="font-weight: normal;"/><br/>
+                                <label for="payment_due_notify_second_enabled" style="font-weight: normal !important;"/><br/>
                             </div>
                         </div>
                         <div class="row mt8" invisible="not payment_due_notify_second_enabled">
@@ -27,7 +27,7 @@
                         <div class="mt8 d-flex">
                             <field name="payment_due_notify_weekly_summary_enabled"/>
                             <div>
-                                <label for="payment_due_notify_weekly_summary_enabled" style="font-weight: normal;"/><br/>
+                                <label for="payment_due_notify_weekly_summary_enabled" style="font-weight: normal !important;"/><br/>
                             </div>
                         </div>
                         <div class="mt16"></div>
