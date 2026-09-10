@@ -20,10 +20,20 @@ coincide. Each notice is sent once per document: sending it stamps the
 document with the date and time it was sent, so it is never sent twice.
 A document that gets reconciled or paid before its turn comes up simply
 stops matching the criteria above, so no further notices go out for it.
+If a document's due date changes after a notice was already sent for it
+(e.g. reset to draft, corrected, and posted again), that stamp is
+cleared, so it becomes eligible for a fresh notice under the new date.
 
 All documents due on the same run for the same notice are sent as a
 **single email**, not one email per document -- if five bills are due
 in 3 days, that is one email listing all five, not five separate ones.
+A run only sends an email when at least one document is genuinely new
+(not yet notified), but that email always lists **every** document due
+that day for that notice, sent before or not -- so a document added
+later in the day triggers a follow-up email with the complete picture,
+never one that reads as "this is the only thing due today" in
+isolation from what was already notified earlier.
+
 Its subject is **"Vencimientos a pagar hoy en <company>"** when the
 notice is for the same day, or **"Vencimientos a pagar en ## días en
 <company>"** otherwise, where ``##`` is the configured number of days

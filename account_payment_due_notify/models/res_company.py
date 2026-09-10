@@ -156,26 +156,32 @@ class ResCompany(models.Model):
             return
         lines = self.env["account.move.line"].search(self._get_payment_due_notify_base_domain())
 
+        # A run only triggers a send when at least one line is genuinely
+        # new (not yet notified), but the email itself always lists every
+        # line matching that day, sent or not -- otherwise a document
+        # added later in the day would trigger a follow-up email showing
+        # just that one document, reading as "this is the only thing due
+        # today" when others were already notified earlier.
         first_lines = lines.filtered(
             lambda l: (l.date_maturity - today).days == self.payment_due_notify_days_first
-            and not l.payment_due_notice_1_sent
         )
-        if first_lines:
+        new_first_lines = first_lines.filtered(lambda l: not l.payment_due_notice_1_sent)
+        if new_first_lines:
             self._send_payment_due_notice_digest(
                 first_lines, self.payment_due_notify_days_first, partner_ids
             )
-            first_lines.write({"payment_due_notice_1_sent": fields.Datetime.now()})
+            new_first_lines.write({"payment_due_notice_1_sent": fields.Datetime.now()})
 
         if self.payment_due_notify_second_enabled:
             second_lines = lines.filtered(
                 lambda l: (l.date_maturity - today).days == self.payment_due_notify_days_second
-                and not l.payment_due_notice_2_sent
             )
-            if second_lines:
+            new_second_lines = second_lines.filtered(lambda l: not l.payment_due_notice_2_sent)
+            if new_second_lines:
                 self._send_payment_due_notice_digest(
                     second_lines, self.payment_due_notify_days_second, partner_ids
                 )
-                second_lines.write({"payment_due_notice_2_sent": fields.Datetime.now()})
+                new_second_lines.write({"payment_due_notice_2_sent": fields.Datetime.now()})
 
     def _send_payment_due_notice_digest(self, notice_lines, days, partner_ids):
         """Send a single email/notification listing every line in

@@ -23,6 +23,23 @@ class AccountMoveLine(models.Model):
         "this journal item. Empty means it has not been sent yet.",
     )
 
+    def write(self, vals):
+        if "date_maturity" in vals:
+            new_date = fields.Date.to_date(vals["date_maturity"])
+            # A due date correction (e.g. reset to draft, fix the date,
+            # re-post) must make the line eligible for notices again --
+            # otherwise it stays silently unnotified under its new date
+            # forever, since the old notice was sent for a date that no
+            # longer applies.
+            already_notified = self.filtered(
+                lambda l: l.date_maturity != new_date
+                and (l.payment_due_notice_1_sent or l.payment_due_notice_2_sent)
+            )
+            if already_notified:
+                already_notified.payment_due_notice_1_sent = False
+                already_notified.payment_due_notice_2_sent = False
+        return super().write(vals)
+
     def _get_payment_due_notice_document_label(self):
         self.ensure_one()
         move = self.move_id

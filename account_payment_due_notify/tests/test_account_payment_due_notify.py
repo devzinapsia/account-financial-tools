@@ -109,6 +109,41 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         self.company._send_payment_due_notices(today)
         self.assertEqual(len(self._get_notify_messages()), 1)
 
+    def test_new_document_triggers_full_picture_not_just_the_delta(self):
+        # A second run that finds one genuinely new document must still
+        # send the complete picture for that day (both documents), not
+        # just the new one -- otherwise it reads as "this is the only
+        # thing due today" when something else was already notified.
+        today = fields.Date.today()
+        move_a, line_a = self._create_payable_bill(today + timedelta(days=3))
+        self.company._send_payment_due_notices(today)
+        self.assertTrue(line_a.payment_due_notice_1_sent)
+        first_sent_at = line_a.payment_due_notice_1_sent
+
+        move_b, line_b = self._create_payable_bill(today + timedelta(days=3))
+        self.company._send_payment_due_notices(today)
+        self.assertTrue(line_b.payment_due_notice_1_sent)
+        # The already-notified line keeps its original timestamp.
+        self.assertEqual(line_a.payment_due_notice_1_sent, first_sent_at)
+
+        messages = self._get_notify_messages().sorted("id")
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(messages[1].body.count("Journal Entry"), 2)
+
+    def test_changing_due_date_resets_notice_tracking(self):
+        today = fields.Date.today()
+        move, line = self._create_payable_bill(today + timedelta(days=3))
+        self.company._send_payment_due_notices(today)
+        self.assertTrue(line.payment_due_notice_1_sent)
+
+        line.date_maturity = today + timedelta(days=5)
+        self.assertFalse(line.payment_due_notice_1_sent)
+
+        # Writing the same date again must not spuriously reset it.
+        line.payment_due_notice_1_sent = fields.Datetime.now()
+        line.date_maturity = today + timedelta(days=5)
+        self.assertTrue(line.payment_due_notice_1_sent)
+
     def test_digest_has_icon_link_and_no_signature(self):
         today = fields.Date.today()
         move, line = self._create_payable_bill(today + timedelta(days=3))
