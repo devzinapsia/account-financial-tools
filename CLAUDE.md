@@ -174,17 +174,21 @@ repo you're in before doing anything:
     right and is self-contained, but tested in real clients (Outlook)
     and confirmed broken: the image fails to load, leaving a
     broken-image box with the `alt` text showing next to it.
-- Zinapsia's standard for "open this record" links inside an email body
-  is therefore a **plain Unicode arrow character**, not an image —
-  `↗` (U+2197 NORTH EAST ARROW) as the link's visible text, e.g.:
+- Zinapsia's standard for "open this record" links inside an email body:
+  make the record's own text (document number, name, etc.) the
+  hyperlink itself — underlined, standard `<a>` styling, no icon at all:
   ```python
   from markupsafe import Markup
 
-  link = Markup('<a href="%s" title="%s">↗</a>') % (url, "view document")
+  link = Markup('<a href="%s" title="%s">%s</a>') % (url, "view document", label)
   ```
-  Plain text always renders, in every client, with no asset to fail to
-  load — reuse this exact character across modules rather than
-  reintroducing an image-based icon.
+  Simpler to read and doesn't cost extra column width, and was preferred
+  over an icon once tried (feedback: "más natural... no ocupa espacio").
+  Only reach for a separate `↗` (U+2197 NORTH EAST ARROW) as plain link
+  text when there's no natural label to hyperlink (e.g. a bare "view"
+  action with nothing else in that cell) — never an image/icon font for
+  either case; both were tried and failed to render in real clients (see
+  above).
 
 ### View development rules
 - Never assume a view id, menu id, or xpath target from memory — confirm it
