@@ -88,7 +88,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_weekly_summary_enabled
 #: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_weekly_summary_enabled
 msgid "Send a weekly payment due summary (Mondays)"
-msgstr "Enviar resumen semanal de vencimiento (los lunes)"
+msgstr "Enviar resumen semanal de vencimientos (los lunes)"
 
 #. module: account_payment_due_notify
 #: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_weekly_summary_enabled
