@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.account.payment.due.notify</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='print_vendor_checks_setting_container']" position="inside">
+                <setting id="payment_due_notify_setting" string="Payment due notifications"
+                    help="Notify configured users before a payable journal item becomes due">
+                    <field name="payment_due_notify_enabled"/>
+                    <div class="content-group" invisible="not payment_due_notify_enabled">
+                        <div class="row mt8">
+                            <label for="payment_due_notify_days_first" class="col-lg-6 o_light_label"/>
+                            <field name="payment_due_notify_days_first"/>
+                        </div>
+                        <div class="mt8 d-flex">
+                            <field name="payment_due_notify_second_enabled"/>
+                            <div>
+                                <label for="payment_due_notify_second_enabled"/><br/>
+                            </div>
+                        </div>
+                        <div class="row mt8" invisible="not payment_due_notify_second_enabled">
+                            <label for="payment_due_notify_days_second" class="col-lg-6 o_light_label"/>
+                            <field name="payment_due_notify_days_second"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="payment_due_notify_time" class="col-lg-6 o_light_label"/>
+                            <field name="payment_due_notify_time" widget="float_time"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="payment_due_notify_tz" class="col-lg-6 o_light_label"/>
+                            <field name="payment_due_notify_tz"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="payment_due_notify_user_ids" class="col-lg-6 o_light_label"/>
+                            <field name="payment_due_notify_user_ids" widget="many2many_tags"
+                                domain="[('share', '=', False)]"/>
+                        </div>
+                        <div class="row mt8">
+                            <label for="payment_due_notify_balance_account_ids" class="col-lg-6 o_light_label"/>
+                            <field name="payment_due_notify_balance_account_ids" widget="many2many_tags"
+                                domain="[('account_type', '=', 'asset_cash'), ('active', '=', True)]"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

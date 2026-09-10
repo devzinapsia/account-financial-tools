@@ -1,0 +1,270 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_due_notify
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-09 00:00+0000\n"
+"PO-Revision-Date: 2026-09-09 00:00+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_account_move_line__payment_due_notice_1_sent
+msgid "First payment due notice sent"
+msgstr "Primer aviso de vencimiento enviado"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_account_move_line__payment_due_notice_1_sent
+msgid ""
+"Date and time the first payment due notice was sent for this journal "
+"item. Empty means it has not been sent yet."
+msgstr ""
+"Fecha y hora en que se envió el primer aviso de vencimiento para este "
+"apunte contable. Vacío significa que todavía no se envió."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_account_move_line__payment_due_notice_2_sent
+msgid "Second payment due notice sent"
+msgstr "Segundo aviso de vencimiento enviado"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_account_move_line__payment_due_notice_2_sent
+msgid ""
+"Date and time the second payment due notice was sent for this journal "
+"item. Empty means it has not been sent yet."
+msgstr ""
+"Fecha y hora en que se envió el segundo aviso de vencimiento para este "
+"apunte contable. Vacío significa que todavía no se envió."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_enabled
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_enabled
+msgid "Notify on payment due dates"
+msgstr "Notifica ante vencimientos de pago"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_enabled
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_enabled
+msgid ""
+"Automatically notify the users configured below before a payable journal "
+"item (vendor bill, vendor credit note, or manual entry with a payable "
+"line and a vendor contact) reaches its due date."
+msgstr ""
+"Notifica automáticamente a los usuarios configurados debajo antes de que "
+"un apunte contable a pagar (factura de proveedor, nota de crédito de "
+"proveedor, o asiento manual con una línea a pagar y un contacto tipo "
+"proveedor) llegue a su fecha de vencimiento."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_days_first
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_days_first
+msgid "Days before due date (first notice)"
+msgstr "Días antes del vencimiento - primer aviso"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_days_first
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_days_first
+msgid ""
+"Number of days before the due date to send the first notice. 0 means the "
+"same day it is due."
+msgstr ""
+"Cantidad de días antes del vencimiento para enviar el primer aviso. 0 "
+"significa el mismo día del vencimiento."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_second_enabled
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_second_enabled
+msgid "Send a second notice"
+msgstr "Enviar un segundo aviso"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_second_enabled
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_second_enabled
+msgid ""
+"If unchecked, only the first notice above is ever sent; the days "
+"configured for the second notice are not evaluated at all."
+msgstr ""
+"Si está destildado, solo se envía el primer aviso; los días configurados "
+"para el segundo aviso no se evalúan en absoluto."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_days_second
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_days_second
+msgid "Days before due date (second notice)"
+msgstr "Días antes del vencimiento - segundo aviso"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_days_second
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_days_second
+msgid ""
+"Number of days before the due date to send the second notice. 0 means "
+"the same day it is due. Only used if 'Send a second notice' is checked."
+msgstr ""
+"Cantidad de días antes del vencimiento para enviar el segundo aviso. 0 "
+"significa el mismo día del vencimiento. Solo se usa si 'Enviar un "
+"segundo aviso' está tildado."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_time
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_time
+msgid "Notification time"
+msgstr "Hora aproximada de envío"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_time
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_time
+msgid ""
+"Approximate local time of day, in the timezone below, at which notices "
+"are sent. The check runs every 30 minutes, so the actual send time can "
+"be up to 30 minutes later."
+msgstr ""
+"Hora local aproximada, en el huso horario configurado debajo, en la que "
+"se envían los avisos. La verificación corre cada 30 minutos, por lo que "
+"la hora real de envío puede ser hasta 30 minutos más tarde."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_tz
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_tz
+msgid "Notification timezone"
+msgstr "Huso horario a considerar"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_tz
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_tz
+msgid ""
+"Timezone used to evaluate the notification time above. Never assumed "
+"from the server; set it explicitly if it is not suggested automatically "
+"when you enable this feature."
+msgstr ""
+"Huso horario usado para evaluar la hora de notificación de arriba. "
+"Nunca se asume el del servidor; complételo manualmente si no se sugiere "
+"automáticamente al activar esta funcionalidad."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_user_ids
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_user_ids
+msgid "Users to notify"
+msgstr "Usuarios a notificar"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_user_ids
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_user_ids
+msgid ""
+"Users notified before a payable journal item becomes due. This list is "
+"global per company; it does not vary by vendor or journal."
+msgstr ""
+"Usuarios notificados antes de que venza un apunte contable a pagar. "
+"Esta lista es única y global por compañía; no varía según el proveedor "
+"ni el diario."
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_balance_account_ids
+#: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_balance_account_ids
+msgid "Accounts to report balance"
+msgstr "Cuentas para informar saldo"
+
+#. module: account_payment_due_notify
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_company__payment_due_notify_balance_account_ids
+#: model:ir.model.fields,help:account_payment_due_notify.field_res_config_settings__payment_due_notify_balance_account_ids
+msgid ""
+"Optional accounts (normally of type Bank and Cash) whose current "
+"balance is added at the foot of every notification email, as a quick "
+"reference for whether there are enough funds to pay. Leave empty to "
+"not include any balance information."
+msgstr ""
+"Cuentas opcionales (normalmente de tipo Banco y efectivo) cuyo saldo "
+"actual se agrega al pie de cada correo de notificación, como "
+"referencia rápida para saber si hay fondos suficientes para pagar. "
+"Déjelo vacío para no incluir información de saldos."
+
+#. module: account_payment_due_notify
+#: model_terms:ir.ui.view,arch_db:account_payment_due_notify.res_config_settings_view_form
+msgid "Payment due notifications"
+msgstr "Notificaciones de vencimientos de pago"
+
+#. module: account_payment_due_notify
+#: model_terms:ir.ui.view,arch_db:account_payment_due_notify.res_config_settings_view_form
+msgid "Notify configured users before a payable journal item becomes due"
+msgstr ""
+"Notifica a los usuarios configurados antes de que venza un comprobante a "
+"pagar"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/account_move_line.py:0
+msgid "Journal Entry %s"
+msgstr "Asiento contable %s"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/account_move_line.py:0
+msgid "view document"
+msgstr "ver comprobante"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Payables due today"
+msgstr "Vencimientos a pagar hoy"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Payables due in %(days)s days"
+msgstr "Vencimientos a pagar en %(days)s días"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "The following payable documents are due today."
+msgstr "Los siguientes comprobantes a pagar vencen hoy."
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "The following payable documents are due in %(days)s days."
+msgstr "Los siguientes comprobantes a pagar vencen en %(days)s días."
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Vendor"
+msgstr "Proveedor"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Document"
+msgstr "Comprobante"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Due date"
+msgstr "Vencimiento"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Amount"
+msgstr "Importe"
+
+#. module: account_payment_due_notify
+#. odoo-python
+#: code:addons/account_payment_due_notify/models/res_company.py:0
+msgid "Account balances (for reference):"
+msgstr "Saldos de cuentas (a modo de referencia):"
