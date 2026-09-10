@@ -160,36 +160,31 @@ repo you're in before doing anything:
    translations, on every field/menu/action label added.
 
 ### Icons for links inside outgoing emails
-- Email clients don't load Odoo's own icon font, so a link to a record
-  inside a notification email body needs its icon self-contained — an
-  inline SVG embedded as a `data:image/svg+xml` URI in an `<img>` tag,
-  never a `<i class="fa-...">` glyph (renders as nothing/a broken glyph
-  outside the Odoo web client).
-- Zinapsia's standard icon for "open this record" links in an email body
-  is the "external link" glyph (a square with an arrow exiting to the
-  upper right) — reuse this exact snippet across modules instead of
-  inventing a new icon each time:
+- An outgoing email is a static HTML document opened in a third-party
+  mail client (Outlook, Gmail, etc.) — a completely different rendering
+  environment from the live Odoo web client. This means TWO things that
+  look like reasonable icon choices both fail there, so don't reach for
+  either:
+  - A `<i class="fa-...">`/`icon="fa-..."` glyph, or copying one from an
+    Odoo **view** (e.g. a list view's `<button icon="fa-external-link"/>`,
+    as in `arca_bills_comparation`'s results grid) — that works there
+    only because it's rendered by the live web client, which has Font
+    Awesome loaded; an email has none of that.
+  - An inline SVG embedded as a `data:image/svg+xml` `<img>` — looks
+    right and is self-contained, but tested in real clients (Outlook)
+    and confirmed broken: the image fails to load, leaving a
+    broken-image box with the `alt` text showing next to it.
+- Zinapsia's standard for "open this record" links inside an email body
+  is therefore a **plain Unicode arrow character**, not an image —
+  `↗` (U+2197 NORTH EAST ARROW) as the link's visible text, e.g.:
   ```python
   from markupsafe import Markup
 
-  _EXTERNAL_LINK_ICON_SRC = Markup(
-      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' "
-      "viewBox='0 0 24 24' width='14' height='14' fill='none' "
-      "stroke='%2300A0A9' stroke-width='2' stroke-linecap='round' "
-      "stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 "
-      "0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 "
-      "9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E"
-  )
+  link = Markup('<a href="%s" title="%s">↗</a>') % (url, "view document")
   ```
-  Use it as `<img src="%s" width="14" height="14" style="vertical-align:
-  middle;"/>` with `_EXTERNAL_LINK_ICON_SRC` as the `%s`, wrapped in an
-  `<a href="...">`. It must stay a `Markup` instance (not a plain `str`)
-  right up to the point where it's substituted into another
-  `Markup(...) % (...)` template: the literal single quotes inside the
-  SVG source get HTML-escaped into `&#39;` — silently corrupting the
-  data URI so the icon never renders — if it's still a plain string when
-  substituted, since markupsafe only skips escaping for args that are
-  already `Markup`.
+  Plain text always renders, in every client, with no asset to fail to
+  load — reuse this exact character across modules rather than
+  reintroducing an image-based icon.
 
 ### View development rules
 - Never assume a view id, menu id, or xpath target from memory — confirm it
