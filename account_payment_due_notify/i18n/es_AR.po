@@ -17,34 +17,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_payment_due_notify
-#: model:ir.model.fields,field_description:account_payment_due_notify.field_account_move_line__payment_due_notice_1_sent
-msgid "First payment due notice sent"
-msgstr "Primer aviso de vencimiento enviado"
-
-#. module: account_payment_due_notify
-#: model:ir.model.fields,help:account_payment_due_notify.field_account_move_line__payment_due_notice_1_sent
-msgid ""
-"Date and time the first payment due notice was sent for this journal "
-"item. Empty means it has not been sent yet."
-msgstr ""
-"Fecha y hora en que se envió el primer aviso de vencimiento para este "
-"apunte contable. Vacío significa que todavía no se envió."
-
-#. module: account_payment_due_notify
-#: model:ir.model.fields,field_description:account_payment_due_notify.field_account_move_line__payment_due_notice_2_sent
-msgid "Second payment due notice sent"
-msgstr "Segundo aviso de vencimiento enviado"
-
-#. module: account_payment_due_notify
-#: model:ir.model.fields,help:account_payment_due_notify.field_account_move_line__payment_due_notice_2_sent
-msgid ""
-"Date and time the second payment due notice was sent for this journal "
-"item. Empty means it has not been sent yet."
-msgstr ""
-"Fecha y hora en que se envió el segundo aviso de vencimiento para este "
-"apunte contable. Vacío significa que todavía no se envió."
-
-#. module: account_payment_due_notify
 #: model:ir.model.fields,field_description:account_payment_due_notify.field_res_company__payment_due_notify_enabled
 #: model:ir.model.fields,field_description:account_payment_due_notify.field_res_config_settings__payment_due_notify_enabled
 msgid "Notify on payment due dates"

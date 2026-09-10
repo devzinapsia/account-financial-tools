@@ -150,38 +150,35 @@ class ResCompany(models.Model):
         ]
 
     def _send_payment_due_notices(self, today):
+        """Send, unconditionally, whatever currently matches each notice's
+        day offset -- no per-document "already sent" tracking. A company
+        whose notification time only matches once a day (the normal case)
+        naturally sends each notice once per relevant day; if the time is
+        reconfigured mid-day, or the check is run again by hand, the same
+        set is simply sent again, same as a fresh run.
+        """
         self.ensure_one()
         partner_ids = self.payment_due_notify_user_ids.partner_id.ids
         if not partner_ids:
             return
         lines = self.env["account.move.line"].search(self._get_payment_due_notify_base_domain())
 
-        # A run only triggers a send when at least one line is genuinely
-        # new (not yet notified), but the email itself always lists every
-        # line matching that day, sent or not -- otherwise a document
-        # added later in the day would trigger a follow-up email showing
-        # just that one document, reading as "this is the only thing due
-        # today" when others were already notified earlier.
         first_lines = lines.filtered(
             lambda l: (l.date_maturity - today).days == self.payment_due_notify_days_first
         )
-        new_first_lines = first_lines.filtered(lambda l: not l.payment_due_notice_1_sent)
-        if new_first_lines:
+        if first_lines:
             self._send_payment_due_notice_digest(
                 first_lines, self.payment_due_notify_days_first, partner_ids
             )
-            new_first_lines.write({"payment_due_notice_1_sent": fields.Datetime.now()})
 
         if self.payment_due_notify_second_enabled:
             second_lines = lines.filtered(
                 lambda l: (l.date_maturity - today).days == self.payment_due_notify_days_second
             )
-            new_second_lines = second_lines.filtered(lambda l: not l.payment_due_notice_2_sent)
-            if new_second_lines:
+            if second_lines:
                 self._send_payment_due_notice_digest(
                     second_lines, self.payment_due_notify_days_second, partner_ids
                 )
-                new_second_lines.write({"payment_due_notice_2_sent": fields.Datetime.now()})
 
     def _send_payment_due_notice_digest(self, notice_lines, days, partner_ids):
         """Send a single email/notification listing every line in

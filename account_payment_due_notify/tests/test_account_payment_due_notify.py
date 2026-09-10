@@ -88,12 +88,10 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         self.assertTrue(self.company._payment_due_notify_in_window(in_window))
         self.assertFalse(self.company._payment_due_notify_in_window(out_of_window))
 
-    def test_first_notice_sent_as_single_digest_and_not_duplicated(self):
+    def test_first_notice_sent_as_single_digest(self):
         today = fields.Date.today()
         move, line = self._create_payable_bill(today + timedelta(days=3))
         self.company._send_payment_due_notices(today)
-        self.assertTrue(line.payment_due_notice_1_sent)
-        self.assertFalse(line.payment_due_notice_2_sent)
 
         messages = self._get_notify_messages()
         self.assertEqual(len(messages), 1)
@@ -105,44 +103,17 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         # already stated in the bold header line instead.
         self.assertNotIn(">Due date<", messages.body)
 
-        # Running again must not send a second, duplicate message.
-        self.company._send_payment_due_notices(today)
-        self.assertEqual(len(self._get_notify_messages()), 1)
-
-    def test_new_document_triggers_full_picture_not_just_the_delta(self):
-        # A second run that finds one genuinely new document must still
-        # send the complete picture for that day (both documents), not
-        # just the new one -- otherwise it reads as "this is the only
-        # thing due today" when something else was already notified.
-        today = fields.Date.today()
-        move_a, line_a = self._create_payable_bill(today + timedelta(days=3))
-        self.company._send_payment_due_notices(today)
-        self.assertTrue(line_a.payment_due_notice_1_sent)
-        first_sent_at = line_a.payment_due_notice_1_sent
-
-        move_b, line_b = self._create_payable_bill(today + timedelta(days=3))
-        self.company._send_payment_due_notices(today)
-        self.assertTrue(line_b.payment_due_notice_1_sent)
-        # The already-notified line keeps its original timestamp.
-        self.assertEqual(line_a.payment_due_notice_1_sent, first_sent_at)
-
-        messages = self._get_notify_messages().sorted("id")
-        self.assertEqual(len(messages), 2)
-        self.assertEqual(messages[1].body.count("Journal Entry"), 2)
-
-    def test_changing_due_date_resets_notice_tracking(self):
+    def test_running_again_resends_whatever_still_matches(self):
+        # No per-document tracking: a repeated run for the same day is
+        # not deduplicated, by design -- it simply sends the same
+        # currently-matching set again, exactly like a fresh run. This
+        # matters when the notification time is reconfigured mid-day, or
+        # when the check is triggered by hand more than once.
         today = fields.Date.today()
         move, line = self._create_payable_bill(today + timedelta(days=3))
         self.company._send_payment_due_notices(today)
-        self.assertTrue(line.payment_due_notice_1_sent)
-
-        line.date_maturity = today + timedelta(days=5)
-        self.assertFalse(line.payment_due_notice_1_sent)
-
-        # Writing the same date again must not spuriously reset it.
-        line.payment_due_notice_1_sent = fields.Datetime.now()
-        line.date_maturity = today + timedelta(days=5)
-        self.assertTrue(line.payment_due_notice_1_sent)
+        self.company._send_payment_due_notices(today)
+        self.assertEqual(len(self._get_notify_messages()), 2)
 
     def test_digest_has_icon_link_and_no_signature(self):
         today = fields.Date.today()
@@ -174,8 +145,6 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         move_2, line_2 = self._create_payable_bill(today + timedelta(days=3))
         self.company._send_payment_due_notices(today)
 
-        self.assertTrue(line_1.payment_due_notice_1_sent)
-        self.assertTrue(line_2.payment_due_notice_1_sent)
         messages = self._get_notify_messages()
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages.body.count("Journal Entry"), 2)
@@ -185,15 +154,12 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         today = fields.Date.today()
         move, line = self._create_payable_bill(today)
         self.company._send_payment_due_notices(today)
-        self.assertFalse(line.payment_due_notice_2_sent)
         self.assertFalse(self._get_notify_messages())
 
     def test_second_notice_sent_when_enabled(self):
         today = fields.Date.today()
         move, line = self._create_payable_bill(today)
         self.company._send_payment_due_notices(today)
-        self.assertTrue(line.payment_due_notice_2_sent)
-        self.assertFalse(line.payment_due_notice_1_sent)
         self.assertEqual(
             self._get_notify_messages().subject,
             f"Payables due today in {self.company.name}",
@@ -210,7 +176,7 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         )
         payment_register.action_create_payments()
         self.company._send_payment_due_notices(today)
-        self.assertFalse(line.payment_due_notice_1_sent)
+        self.assertFalse(self._get_notify_messages())
 
     def test_balance_section_included_when_configured(self):
         bank_account = self.company_data["default_journal_bank"].default_account_id

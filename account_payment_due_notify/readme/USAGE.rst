@@ -8,31 +8,27 @@ it does, it looks at every posted, unreconciled payable journal item with
 a vendor and a due date, and for each one:
 
 * If the number of days left until the due date matches the configured
-  first-notice value, and the first notice has not been sent yet, it
-  sends the first notice.
+  first-notice value, it sends the first notice.
 * If a second notice is enabled and the number of days left matches the
-  configured second-notice value, and the second notice has not been
-  sent yet, it sends the second notice.
+  configured second-notice value, it sends the second notice.
 
 Both checks are independent, so a document can receive both notices in
-separate runs, or even on the same day if the two configured values
-coincide. Each notice is sent once per document: sending it stamps the
-document with the date and time it was sent, so it is never sent twice.
-A document that gets reconciled or paid before its turn comes up simply
-stops matching the criteria above, so no further notices go out for it.
-If a document's due date changes after a notice was already sent for it
-(e.g. reset to draft, corrected, and posted again), that stamp is
-cleared, so it becomes eligible for a fresh notice under the new date.
+the same run if the two configured values coincide. There is no
+per-document "already notified" tracking: each run simply sends
+whatever currently matches, in full, as if it were the first time. In
+practice this means each notice normally goes out once, since a
+document's days-left count only equals a given configured value on one
+specific day -- but if the notification time is reconfigured mid-day,
+or the check is triggered by hand more than once, the same set is sent
+again rather than being silently skipped; there is nothing to get stuck
+if a due date is corrected later, either (reset to draft, fix the date,
+post again -- the next run picks it up under the new date with no
+extra step). A document that gets reconciled or paid before its turn
+comes up simply stops matching the criteria above.
 
 All documents due on the same run for the same notice are sent as a
 **single email**, not one email per document -- if five bills are due
 in 3 days, that is one email listing all five, not five separate ones.
-A run only sends an email when at least one document is genuinely new
-(not yet notified), but that email always lists **every** document due
-that day for that notice, sent before or not -- so a document added
-later in the day triggers a follow-up email with the complete picture,
-never one that reads as "this is the only thing due today" in
-isolation from what was already notified earlier.
 
 Its subject is **"Vencimientos a pagar hoy en <company>"** when the
 notice is for the same day, or **"Vencimientos a pagar en ## días en
@@ -53,9 +49,9 @@ Monday through the following Sunday, sorted ascending by due date (with
 the due date as its own first column, since unlike the daily digest a
 week can span several different dates). Its subject is
 **"Vencimientos a pagar esta semana (##-##-#### a ##-##-####) en
-<company>"**. It is independent of the first/second notice tracking:
-it does not mark any document as notified, and is only sent once per
-Monday regardless of how many cron runs fall in that day's window.
+<company>"**. Unlike the daily notices, it does track (per company)
+the last Monday it was sent for, so it only goes out once per Monday
+even if the check runs more than once in that day's window.
 
 Each notice is sent through the standard Odoo notification system, so
 every configured user gets it by email or as an internal notification
