@@ -38,8 +38,8 @@ every document in that batch, and ``<company>`` this company's name.
 The body starts with a bold **"Comprobantes a pagar:"** line (the date
 is already in the subject, so it is not repeated here), then a table
 with, for every document in that batch, the vendor, its type and number
-(with a small external-link icon to it), the reference, and the amount
-due, right-aligned; if any **Accounts to report balance** are
+(itself a hyperlink to the document, underlined), the reference, and
+the amount due, right-aligned; if any **Accounts to report balance** are
 configured, their current balance (name only, no account code) is added
 at the foot of the email under a bold **"Saldo de bancos y efectivo"**
 heading, also right-aligned.

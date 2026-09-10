@@ -26,16 +26,10 @@ class AccountMoveLine(models.Model):
             )
         return _("Journal Entry %s", move.name)
 
-    def _get_payment_due_notice_link(self):
-        """A small "open external link" arrow linking to the document.
-        A plain Unicode character, not an image: an inline SVG data URI
-        looked correct but real mail clients (tested: Outlook) block or
-        fail to load it, leaving a broken-image box with the alt text
-        showing next to it. Unlike a `fa-external-link` button in an
-        Odoo view (rendered by the live web client, which has the icon
-        font), an email is a static HTML document opened in a
-        third-party client with none of that -- so only plain text is
-        guaranteed to render.
+    def _get_payment_due_notice_document_link(self):
+        """The document type/number itself as the hyperlink (underlined,
+        no separate icon/arrow) -- more natural to read and doesn't take
+        up extra column width.
         """
         self.ensure_one()
         move = self.move_id
@@ -43,7 +37,11 @@ class AccountMoveLine(models.Model):
             move.get_base_url(),
             move.id,
         )
-        return Markup('<a href="%s" title="%s">↗</a>') % (url, _("view document"))
+        return Markup('<a href="%s" title="%s">%s</a>') % (
+            url,
+            _("view document"),
+            self._get_payment_due_notice_document_label(),
+        )
 
     def _get_payment_due_notice_amount(self):
         self.ensure_one()
@@ -66,12 +64,8 @@ class AccountMoveLine(models.Model):
             )
         cells.append(Markup('<td style="%s">%s</td>') % (_CELL_STYLE, self.partner_id.name))
         cells.append(
-            Markup('<td style="%s">%s %s</td>')
-            % (
-                _CELL_STYLE,
-                self._get_payment_due_notice_document_label(),
-                self._get_payment_due_notice_link(),
-            )
+            Markup('<td style="%s">%s</td>')
+            % (_CELL_STYLE, self._get_payment_due_notice_document_link())
         )
         cells.append(
             Markup('<td style="%s">%s</td>') % (_CELL_STYLE, self.move_id.ref or "")

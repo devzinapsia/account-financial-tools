@@ -120,17 +120,22 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         self.company._send_payment_due_notices(today)
         self.assertEqual(len(self._get_notify_messages()), 2)
 
-    def test_digest_has_icon_link_and_no_signature(self):
+    def test_digest_document_is_a_hyperlink_and_no_signature(self):
         today = fields.Date.today()
         move, line = self._create_payable_bill(today + timedelta(days=3))
         self.company._send_payment_due_notices(today)
 
         message = self._get_notify_messages()
-        # A plain Unicode arrow, not an <img>: real mail clients failed to
-        # load an inline SVG data URI, leaving a broken-image box.
-        self.assertIn("↗", message.body)
+        # The document label itself is the link (no separate icon/arrow
+        # or <img>, which real mail clients failed to render reliably).
         self.assertNotIn("<img", message.body)
-        self.assertIn(f'id={move.id}&model=account.move', message.body)
+        self.assertRegex(
+            message.body,
+            # "&" in the URL is correctly HTML-escaped to "&amp;" -- it is
+            # a literal query-string separator here, not markup.
+            r'<a href="[^"]*id=%s&amp;model=account\.move[^"]*"[^>]*>Journal Entry'
+            % move.id,
+        )
         self.assertFalse(message.email_add_signature)
 
     def test_digest_uses_company_language_not_acting_user_language(self):
