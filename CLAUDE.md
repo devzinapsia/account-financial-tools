@@ -273,7 +273,13 @@ repo you're in before doing anything:
   references for both `field_<company_table>__<name>` and
   `field_<other_table>__<name>` under the same msgid, or the settings
   screen quietly stays in English while the underlying company field
-  translates fine.
+  translates fine. The same non-inheritance applies to `domain=`: a
+  `related=` Many2many/Many2one on `res.config.settings` does NOT pick
+  up the target field's `domain=` either — repeat it explicitly on the
+  related field too, or a picker on the settings screen (e.g. an
+  "accounts to include" field restricted to active bank/cash accounts
+  on `res.company`) silently offers everything, archived records
+  included, even though the company field's own domain is correct.
 - `self.assertRaises(...)` in Odoo's `TransactionCase` wraps the call in a
   cursor savepoint that rolls back once the expected exception is caught —
   this erases every change the code made before raising, not just the
