@@ -194,6 +194,24 @@ class TestAccountPaymentDueNotify(AccountTestInvoicingCommon):
         self.company._send_payment_due_notices(today)
         self.assertFalse(self._get_notify_messages())
 
+    def test_balance_account_domain_excludes_archived_accounts(self):
+        bank_account = self.company_data["default_journal_bank"].default_account_id
+        bank_account.active = False
+        # Bypass the ORM's own default active filtering so this actually
+        # proves the field's own domain is what excludes archived
+        # accounts, not just the ORM's implicit active_test behavior.
+        AccountNoActiveTest = self.env["account.account"].with_context(active_test=False)
+        for model, field_name in (
+            (self.env["res.company"], "payment_due_notify_balance_account_ids"),
+            (self.env["res.config.settings"], "payment_due_notify_balance_account_ids"),
+        ):
+            domain = model._fields[field_name].domain
+            found = AccountNoActiveTest.search(domain + [("id", "=", bank_account.id)])
+            self.assertFalse(
+                found,
+                f"{model._name}.{field_name}'s domain should exclude archived accounts",
+            )
+
     def test_balance_section_included_when_configured(self):
         bank_account = self.company_data["default_journal_bank"].default_account_id
         self.company.payment_due_notify_balance_account_ids = [Command.set([bank_account.id])]

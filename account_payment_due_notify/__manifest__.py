@@ -1,6 +1,6 @@
 {
     "name": "Notificaciones de vencimientos de pago",
-    "version": "19.0.1.4.3",
+    "version": "19.0.1.4.4",
     "summary": "Notifica automáticamente a los usuarios configurados antes "
     "de que venzan comprobantes a pagar.",
     "author": "Zinapsia",

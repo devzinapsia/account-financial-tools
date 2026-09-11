@@ -24,10 +24,14 @@ class ResConfigSettings(models.TransientModel):
         related="company_id.payment_due_notify_time", readonly=False
     )
     payment_due_notify_user_ids = fields.Many2many(
-        related="company_id.payment_due_notify_user_ids", readonly=False
+        related="company_id.payment_due_notify_user_ids",
+        readonly=False,
+        domain=[("share", "=", False)],
     )
     payment_due_notify_balance_account_ids = fields.Many2many(
-        related="company_id.payment_due_notify_balance_account_ids", readonly=False
+        related="company_id.payment_due_notify_balance_account_ids",
+        readonly=False,
+        domain=[("account_type", "=", "asset_cash"), ("active", "=", True)],
     )
     # Not a plain related field: get_values()/set_values() below suggest a
     # default from the company's country when nothing is stored yet, which
