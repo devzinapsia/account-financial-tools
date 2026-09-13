@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mejoras a ARCA IVA Simple - Zinapsia</title>
+</head>
+<body>
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <h2 class="oe_slogan" style="color: #714B67; font-weight: bold;">Mejoras a ARCA IVA Simple</h2>
+                <h3 class="oe_slogan">Fix the "Concepto" determination on ARCA's IVA Simple purchase report</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <p class="oe_mt32" style="font-size: 1.2em; text-align: justify;">
+                    Odoo Enterprise's <code>l10n_ar_reports_simple</code> module exports the
+                    ARCA "IVA Simple" report, mandatory in Argentina since November 2025.
+                    Its purchase files determine each line's "Concepto" (Bien / Locación /
+                    Servicio / Bien de Uso) using only 2 account tags, and blindly default
+                    to Concepto 1 (Bien) for any line without a product or tag - even though
+                    those lines are almost always services. This module fixes that fallback
+                    and adds the 2 missing account tags, so all 4 ARCA concepts can be set
+                    explicitly.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container oe_dark">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <h3 class="oe_mt32" style="color: #714B67;">Key Features</h3>
+                <ul style="list-style-type: square; line-height: 2;">
+                    <li><strong>2 new account tags:</strong> Bienes and Servicios, alongside the existing Locaciones and Bienes de Uso.</li>
+                    <li><strong>Corrected fallback:</strong> a purchase line with no product and no tag now defaults to Concepto 3 (Servicio) instead of Concepto 1 (Bien).</li>
+                    <li><strong>Data integrity:</strong> a constraint prevents assigning more than one of the 4 concept tags to the same account.</li>
+                    <li><strong>Scoped fix:</strong> only the purchase Concepto logic changes; the sales files and the report's export workflow are untouched.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <p class="text-center" style="margin-top: 50px; font-style: italic;">
+                    Developed by <strong>Zinapsia</strong> for Odoo 19.
+                </p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
