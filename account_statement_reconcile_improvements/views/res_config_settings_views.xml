@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.account.statement.reconcile.improvements</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='print_vendor_checks_setting_container']" position="inside">
+                <setting id="bank_statement_auto_reconcile_to_check_setting"
+                    string="Auto-reconciled bank statement lines"
+                    help="Statement lines reconciled automatically on import or by a reconciliation model">
+                    <field name="bank_statement_auto_reconcile_to_check"/>
+                    <label for="bank_statement_auto_reconcile_to_check" class="fw-normal me-1"
+                        string="Flag them as to check instead of fully reviewed"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

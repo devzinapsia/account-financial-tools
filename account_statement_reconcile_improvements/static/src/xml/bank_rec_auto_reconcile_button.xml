@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="account_statement_reconcile_improvements.BankRecKanbanControlPanel"
+       t-inherit="account_accountant.BankRecKanbanControlPanel" t-inherit-mode="primary">
+        <xpath expr="//div[hasclass('o_control_panel_actions')]" position="inside">
+            <button class="btn btn-secondary" t-on-click="actionAutoReconcileUnassigned"
+                    title="For unreconciled lines with no partner, look for a unique open invoice/payment matching on date and amount, and reconcile it">
+                Auto-reconcile unassigned
+            </button>
+        </xpath>
+    </t>
+</templates>

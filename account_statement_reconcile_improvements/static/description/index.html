@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mejoras a conciliación bancaria - Zinapsia</title>
+</head>
+<body>
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <h2 class="oe_slogan" style="color: #714B67; font-weight: bold;">Mejoras a conciliación bancaria</h2>
+                <h3 class="oe_slogan">Enhancements to the bank statement file import and reconciliation process</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <p class="oe_mt32" style="font-size: 1.2em; text-align: justify;">
+                    Improves bank statement file import and reconciliation for
+                    Argentine banks: remembers the column mapping per journal,
+                    always attaches the imported file, blocks re-importing the
+                    same file or overlapping duplicate lines, recognizes a
+                    CUIT in a free-text legend column to assign the partner,
+                    and adds a button to auto-reconcile unassigned lines by
+                    date and amount.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container oe_dark">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <h3 class="oe_mt32" style="color: #714B67;">Key Features</h3>
+                <ul style="list-style-type: square; line-height: 2;">
+                    <li><strong>Per-journal import mapping</strong> that actually survives across banks and imports.</li>
+                    <li><strong>Duplicate protection:</strong> same file blocked outright, overlapping lines skipped and reported.</li>
+                    <li><strong>CUIT recognition</strong> in free-text bank legends, with the correct company matched even when its own contacts share the same VAT.</li>
+                    <li><strong>Auto-reconcile unassigned</strong> button for lines with no partner, matched by date and amount.</li>
+                    <li><strong>Safe statement deletion:</strong> explicit warning, then a clean unreconcile instead of orphaned lines.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <p class="text-center" style="margin-top: 50px; font-style: italic;">
+                    Developed by <strong>Zinapsia</strong> for Odoo 19.
+                </p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

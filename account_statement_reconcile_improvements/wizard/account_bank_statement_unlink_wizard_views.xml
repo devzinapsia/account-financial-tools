@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_bank_statement_unlink_wizard_form" model="ir.ui.view">
+        <field name="name">account.bank.statement.unlink.wizard.form</field>
+        <field name="model">account.bank.statement.unlink.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="statement_ids" invisible="1"/>
+                <div class="alert alert-warning" role="alert">
+                    Deleting these statements will unreconcile and delete all
+                    of their statement lines, including reconciled ones,
+                    reopening the matched invoices/payments as pending. This
+                    cannot be undone.
+                </div>
+                <footer>
+                    <button name="action_confirm_unlink" type="object"
+                            string="Delete anyway" class="btn-danger"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_account_bank_statement_unlink_wizard" model="ir.actions.act_window">
+        <field name="name">Review and confirm</field>
+        <field name="res_model">account.bank.statement.unlink.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
