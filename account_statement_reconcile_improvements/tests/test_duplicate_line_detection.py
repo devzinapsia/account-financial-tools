@@ -1,5 +1,3 @@
-import base64
-
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.tests import tagged
 
@@ -7,13 +5,19 @@ from odoo.tests import tagged
 @tagged("post_install", "-at_install")
 class TestDuplicateLineDetection(AccountTestInvoicingCommon):
     """3.4: importing a file that overlaps with an already-imported statement
-    must not crash, and must report the skipped duplicate rows - regression
-    test for a real bug found by hand-testing: the duplicate count was
-    stashed on `self` inside _parse_import_data, but
-    account_bank_statement_import_csv's execute_import() calls super() on
-    self.with_context(...), a *different* recordset than the one
-    execute_import() itself runs on, so reading it back crashed with
-    AttributeError instead of just being silently wrong.
+    must not crash, and must report the skipped duplicate rows.
+
+    Regression test for two real bugs found by hand-testing in production:
+    1. The duplicate count was stashed on `self` inside _parse_import_data,
+       but account_bank_statement_import_csv's execute_import() calls
+       super() on self.with_context(...), a *different* recordset than the
+       one execute_import() itself runs on - crashed server-side with
+       AttributeError instead of just being silently wrong.
+    2. Once fixed server-side, the notice was added to res['messages'] -
+       base_import's own blocking-error channel, where every entry is
+       expected to carry a 'rows': {'from', 'to'} pair - which crashed the
+       JS client instead (_groupErrorsByField reading `.rows.to` off an
+       entry with no `rows`).
     """
 
     @classmethod
@@ -59,13 +63,28 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
             options=options,
             dryrun=True,
         )
+
+        # Must not be reported through res['messages']: that channel is
+        # base_import's own blocking-error pipeline and expects every entry
+        # to carry a 'rows': {'from', 'to'} pair - putting a plain notice
+        # there is what crashed the JS client (_groupErrorsByField reading
+        # `.rows.to` off an entry that has no `rows`).
         messages = result.get('messages') or []
         self.assertFalse(
             any(m.get('type') == 'error' for m in messages),
             f"Unexpected error(s) in dryrun import result: {messages}",
         )
-        warning_messages = [m['message'] for m in messages if m.get('type') == 'warning']
+        for message in messages:
+            self.assertIn('rows', message, f"message dict missing 'rows', would crash the JS client: {message}")
+
+        # The duplicate-skip notice must instead go out as a non-blocking
+        # bus notification (self.env.user._bus_send('simple_notification', ...)).
+        # _bus_send() only queues the row in cr.precommit (flushed to the
+        # bus.bus table on commit, which TransactionCase tests never do) -
+        # so it's checked directly on that in-memory queue instead of the
+        # bus.bus table.
+        queued_bus_values = self.env.cr.precommit.data.get("bus.bus.values", [])
         self.assertTrue(
-            any('1' in m and 'duplicate' in m.lower() for m in warning_messages),
-            f"Expected a duplicate-row warning mentioning 1 skipped row, got: {warning_messages}",
+            any('duplicate' in value['message'].lower() for value in queued_bus_values),
+            f"Expected a queued bus 'simple_notification' about the skipped duplicate row, got: {queued_bus_values}",
         )

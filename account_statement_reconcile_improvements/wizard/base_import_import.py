@@ -231,7 +231,14 @@ class Base_ImportImport(models.TransientModel):
 
         duplicate_count = options.get('_bank_stmt_duplicate_lines_skipped', 0)
         if duplicate_count:
-            res.setdefault('messages', []).append({
+            # Not added to res['messages']: that channel is base_import's
+            # own blocking-error pipeline (every entry is expected to carry
+            # a 'rows': {'from', 'to'} pair, and adding anything to it makes
+            # the wizard treat the whole import as failed - stopImport() and
+            # a "danger" banner - which is not what a skipped-duplicate
+            # notice should do). A bus notification is the safe, native way
+            # to show a non-blocking toast instead.
+            self.env.user._bus_send('simple_notification', {
                 'type': 'warning',
                 'message': _(
                     "%(count)s row(s) were not imported: they match an "
@@ -241,7 +248,6 @@ class Base_ImportImport(models.TransientModel):
                     "sure they are not.",
                     count=duplicate_count,
                 ),
-                'record': False,
             })
 
         if dryrun or not options.get('bank_stmt_import') or not res.get('ids'):
