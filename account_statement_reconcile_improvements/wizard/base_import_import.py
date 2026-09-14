@@ -1,7 +1,7 @@
 import hashlib
 import unicodedata
 
-from odoo import _, models
+from odoo import models
 from odoo.addons.base_import.models.base_import import FIELDS_RECURSION_LIMIT
 
 from ..tools.ar_id_extraction import extract_cuit
@@ -50,7 +50,7 @@ class Base_ImportImport(models.TransientModel):
             fields_list.append({
                 'id': _AR_IDENTIFICATION_FIELD,
                 'name': _AR_IDENTIFICATION_FIELD,
-                'string': _("Contact (CUIT in free-text legend)"),
+                'string': self.env._("Contact (CUIT in free-text legend)"),
                 'required': False,
                 'fields': [],
                 'type': 'char',
@@ -184,35 +184,43 @@ class Base_ImportImport(models.TransientModel):
         # id from the CUIT match): a plainly-mapped 'partner_id' column is
         # still raw text/external-id at this pipeline stage (many2one
         # resolution happens later, in model.load()), so it can't be
-        # compared against the field directly here.
+        # compared against the field directly here. When the user maps the
+        # contact column some other way (directly to Partner, or an older
+        # statement imported before this module existed at all), we don't
+        # know its resolved partner - matching on date+amount only, instead
+        # of assuming partner_id=False, is what actually catches those
+        # duplicates instead of silently missing them.
         partner_index = import_fields.index('partner_id/.id') if 'partner_id/.id' in import_fields else None
 
         StatementLine = self.env['account.bank.statement.line']
         precision = journal.currency_id.decimal_places
         kept_rows = []
-        duplicate_count = 0
+        duplicate_details = []
         for row in data:
             try:
                 date_value = row[date_index]
                 amount_value = round(float(row[amount_index] or 0.0), precision)
-                partner_value = row[partner_index] if partner_index is not None else False
-                existing = StatementLine.search([
+                domain = [
                     ('journal_id', '=', journal.id),
                     ('date', '=', date_value),
-                    ('partner_id', '=', partner_value or False),
-                ])
-                is_duplicate = any(round(line.amount, precision) == amount_value for line in existing)
+                ]
+                if partner_index is not None:
+                    domain.append(('partner_id', '=', row[partner_index] or False))
+                existing = StatementLine.search(domain)
+                matches = existing.filtered(lambda line, amount_value=amount_value, precision=precision: (
+                    round(line.amount, precision) == amount_value
+                ))
             except (TypeError, ValueError):
                 # Never silently drop a row because our own dedup check
                 # choked on an unexpected value shape - worst case it just
                 # doesn't get flagged as a probable duplicate.
-                is_duplicate = False
-            if is_duplicate:
-                duplicate_count += 1
+                matches = StatementLine
+            if matches:
+                duplicate_details.append((date_value, amount_value, matches[0]))
                 continue
             kept_rows.append(row)
 
-        if duplicate_count:
+        if duplicate_details:
             # Stashed on `options` (mutated in place, same dict object all
             # the way through the call chain) rather than on `self`:
             # account_bank_statement_import_csv's execute_import() calls
@@ -220,7 +228,7 @@ class Base_ImportImport(models.TransientModel):
             # object than the one this method runs on, so anything stored
             # on `self` here would never be visible to execute_import()'s
             # own `self` afterwards.
-            options['_bank_stmt_duplicate_lines_skipped'] = duplicate_count
+            options['_bank_stmt_duplicate_lines_detail'] = duplicate_details
         return kept_rows
 
     # -------------------------------------------------------------------
@@ -229,25 +237,38 @@ class Base_ImportImport(models.TransientModel):
     def execute_import(self, fields, columns, options, dryrun=False):
         res = super().execute_import(fields, columns, options, dryrun=dryrun)
 
-        duplicate_count = options.get('_bank_stmt_duplicate_lines_skipped', 0)
-        if duplicate_count:
+        duplicate_details = options.get('_bank_stmt_duplicate_lines_detail') or []
+        if duplicate_details:
             # Not added to res['messages']: that channel is base_import's
             # own blocking-error pipeline (every entry is expected to carry
             # a 'rows': {'from', 'to'} pair, and adding anything to it makes
             # the wizard treat the whole import as failed - stopImport() and
             # a "danger" banner - which is not what a skipped-duplicate
             # notice should do). A bus notification is the safe, native way
-            # to show a non-blocking toast instead.
+            # to show a non-blocking toast instead. `sticky` keeps it on
+            # screen (it doesn't auto-dismiss) since it can list many rows.
+            max_detail_lines = 20
+            detail_lines = [
+                self.env._(
+                    "- %(date)s, %(amount)s: matches existing line in statement \"%(statement)s\"",
+                    date=date_value, amount=amount_value, statement=existing_line.statement_id.display_name,
+                )
+                for date_value, amount_value, existing_line in duplicate_details[:max_detail_lines]
+            ]
+            if len(duplicate_details) > max_detail_lines:
+                detail_lines.append(self.env._("... and %(count)s more", count=len(duplicate_details) - max_detail_lines))
+            message = self.env._(
+                "%(count)s row(s) were not imported: they match an existing "
+                "statement line for this journal on the same date, partner "
+                "and amount (probable duplicate). Re-run with the "
+                "duplicate-lines check disabled if you are sure they are not.",
+                count=len(duplicate_details),
+            ) + "\n" + "\n".join(detail_lines)
             self.env.user._bus_send('simple_notification', {
                 'type': 'warning',
-                'message': _(
-                    "%(count)s row(s) were not imported: they match an "
-                    "existing statement line for this journal on the same "
-                    "date, partner and amount (probable duplicate). Re-run "
-                    "with the duplicate-lines check disabled if you are "
-                    "sure they are not.",
-                    count=duplicate_count,
-                ),
+                'sticky': True,
+                'title': self.env._("Probable duplicate rows skipped"),
+                'message': message,
             })
 
         if dryrun or not options.get('bank_stmt_import') or not res.get('ids'):
@@ -284,7 +305,7 @@ class Base_ImportImport(models.TransientModel):
             if statement.attachment_ids:
                 continue
             self.env['ir.attachment'].create({
-                'name': self.file_name or _("Bank statement import file"),
+                'name': self.file_name or self.env._("Bank statement import file"),
                 'raw': self.file,
                 'res_model': 'account.bank.statement',
                 'res_id': statement.id,

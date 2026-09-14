@@ -1,4 +1,4 @@
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import RedirectWarning, UserError
 
 
@@ -37,7 +37,7 @@ class AccountBankStatement(models.Model):
                 ('import_file_hash', '=', import_file_hash),
             ], limit=1)
             if duplicate:
-                raise UserError(_(
+                raise UserError(self.env._(
                     "This file was already imported for this journal as "
                     "statement %(name)s, on %(date)s by %(user)s. Import "
                     "blocked to avoid duplicating transactions.",
@@ -56,7 +56,7 @@ class AccountBankStatement(models.Model):
                     '.action_account_bank_statement_unlink_wizard'
                 ).id
                 raise RedirectWarning(
-                    _(
+                    self.env._(
                         "Deleting %(count)s statement(s) will unreconcile and "
                         "delete %(lines)s reconciled statement line(s), "
                         "reopening their matched invoices/payments as "
@@ -65,7 +65,7 @@ class AccountBankStatement(models.Model):
                         lines=len(reconciled_lines),
                     ),
                     action,
-                    _("Review and confirm"),
+                    self.env._("Review and confirm"),
                     {'default_statement_ids': [(6, 0, self.ids)]},
                 )
         # The warning above was already shown (or explicitly bypassed via

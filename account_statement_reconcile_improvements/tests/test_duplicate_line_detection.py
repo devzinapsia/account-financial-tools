@@ -1,3 +1,5 @@
+import json
+
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.tests import tagged
 
@@ -88,3 +90,51 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
             any('duplicate' in value['message'].lower() for value in queued_bus_values),
             f"Expected a queued bus 'simple_notification' about the skipped duplicate row, got: {queued_bus_values}",
         )
+        # The notice must be sticky (won't auto-dismiss) and detail which
+        # existing statement each skipped row matched - a plain "N rows
+        # skipped" toast that vanishes in a couple seconds isn't actionable.
+        self.assertTrue(
+            any(
+                json.loads(value['message'])['payload'].get('sticky')
+                and 'Existing Statement' in json.loads(value['message'])['payload'].get('message', '')
+                for value in queued_bus_values
+            ),
+            f"Expected a sticky notification detailing the matched existing statement, got: {queued_bus_values}",
+        )
+
+    def test_duplicate_is_caught_even_when_partner_is_not_self_resolved(self):
+        """Regression test for the real bug reported after deploy: an
+        existing line whose partner was set some other way (a plain
+        'partner_id' mapping, or a statement imported before this module
+        existed at all) was never flagged as a duplicate, because the
+        dedup check only trusted a partner value it resolved itself and
+        otherwise assumed partner_id=False - silently missing real
+        duplicates instead of catching them. It must now fall back to
+        matching on date+amount alone when partner isn't self-resolved.
+        """
+        self.env['account.bank.statement'].create({
+            'name': 'Existing Statement With Partner',
+            'journal_id': self.bank_journal.id,
+            'line_ids': [(0, 0, {
+                'date': '2026-02-10',
+                'payment_ref': 'Already imported, with partner',
+                'partner_id': self.partner_a.id,
+                'amount': 500.0,
+                'journal_id': self.bank_journal.id,
+            })],
+        })
+        csv_content = "Fecha,Importe\n2026-02-10,500.0\n"
+        wizard = self._create_wizard(csv_content)
+        result = wizard.execute_import(
+            fields=['date', 'amount'],
+            columns=['Fecha', 'Importe'],
+            options={
+                'has_headers': True,
+                'bank_stmt_import': True,
+                'quoting': '"',
+                'separator': ',',
+                'encoding': 'utf-8',
+            },
+            dryrun=True,
+        )
+        self.assertFalse(result.get('ids'), "The duplicate row should have been skipped, not imported")

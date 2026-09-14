@@ -67,7 +67,15 @@ acá para que queden trazables:
   distinto. La comparación se hace contra el mismo diario bancario (no
   contra todos los diarios de la empresa), ya que el caso real que motiva
   esto es reimportar un período que se solapa con uno ya importado para
-  esa misma cuenta.
+  esa misma cuenta. El contacto solo se usa en la comparación cuando el
+  módulo lo resolvió él mismo (vía el campo de CUIT en texto libre): si el
+  contacto se mapeó de otra forma (directo a Partner, o un extracto viejo
+  importado antes de que este módulo existiera), no hay forma de saber con
+  qué contacto quedó esa línea existente, así que la comparación cae a
+  fecha+importe solamente. Es una decisión deliberada a favor de no dejar
+  pasar duplicados reales (falso positivo ocasional, recuperable con
+  ``options['bank_stmt_force_duplicate_lines']``) antes que arriesgarse a
+  no detectar uno real (que sí es un problema serio de datos contables).
 - **CUIT con múltiples contactos**: al buscar por CUIT, se descartan
   primero los contactos con ``parent_id`` seteado (sucursales/personas de
   contacto que heredaron el CUIT de la empresa madre). Si después de ese
@@ -101,11 +109,15 @@ acá para que queden trazables:
   OWL de previsualización nativo de ``base_import`` - una tarea de
   frontend bastante más grande que el resto del módulo. Por decisión
   explícita, se implementó en cambio: exclusión automática de duplicados
-  por defecto + un mensaje de advertencia indicando cuántas filas se
-  omitieron, con un único interruptor todo-o-nada
+  por defecto + una notificación (toast) persistente (``sticky``, no se
+  cierra sola) detallando fecha/importe de cada fila omitida y a qué
+  extracto existente coincide, con un único interruptor todo-o-nada
   (``options['bank_stmt_force_duplicate_lines']``) para forzar la
-  importación completa cuando se está seguro de que no son duplicados. La
-  grilla interactiva queda como posible mejora futura.
+  importación completa cuando se está seguro de que no son duplicados. No
+  se usa el canal de errores nativo de ``base_import`` (``res['messages']``)
+  para esto: cada entrada ahí debe traer un rango de filas (``rows``), y
+  agregar una entrada sin ese formato rompe el cliente web (visto en
+  producción). La grilla interactiva queda como posible mejora futura.
 
 Reconciliation model vs. custom button (point 3.8 analysis)
 =============================================================

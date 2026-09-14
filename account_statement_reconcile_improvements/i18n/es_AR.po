@@ -195,3 +195,21 @@ msgstr "Línea(s) conciliada(s) automáticamente: "
 msgid "No matching open item found for any of those lines."
 msgstr ""
 "No se encontró un comprobante pendiente que coincida para esas líneas."
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid ""
+"- %(date)s, %(amount)s: matches existing line in statement \"%(statement)s\""
+msgstr ""
+"- %(date)s, %(amount)s: coincide con una línea existente en el extracto "
+"\"%(statement)s\""
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "... and %(count)s more"
+msgstr "... y %(count)s más"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Probable duplicate rows skipped"
+msgstr "Filas probablemente duplicadas omitidas"
