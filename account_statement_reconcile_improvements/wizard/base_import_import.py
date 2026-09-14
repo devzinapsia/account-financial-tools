@@ -213,7 +213,14 @@ class Base_ImportImport(models.TransientModel):
             kept_rows.append(row)
 
         if duplicate_count:
-            self._bank_stmt_duplicate_lines_skipped = duplicate_count
+            # Stashed on `options` (mutated in place, same dict object all
+            # the way through the call chain) rather than on `self`:
+            # account_bank_statement_import_csv's execute_import() calls
+            # super() on self.with_context(...), a *different* recordset
+            # object than the one this method runs on, so anything stored
+            # on `self` here would never be visible to execute_import()'s
+            # own `self` afterwards.
+            options['_bank_stmt_duplicate_lines_skipped'] = duplicate_count
         return kept_rows
 
     # -------------------------------------------------------------------
@@ -222,7 +229,7 @@ class Base_ImportImport(models.TransientModel):
     def execute_import(self, fields, columns, options, dryrun=False):
         res = super().execute_import(fields, columns, options, dryrun=dryrun)
 
-        duplicate_count = getattr(self, '_bank_stmt_duplicate_lines_skipped', 0)
+        duplicate_count = options.get('_bank_stmt_duplicate_lines_skipped', 0)
         if duplicate_count:
             res.setdefault('messages', []).append({
                 'type': 'warning',
