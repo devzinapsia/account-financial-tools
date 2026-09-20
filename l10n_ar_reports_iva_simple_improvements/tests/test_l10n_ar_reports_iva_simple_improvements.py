@@ -18,8 +18,8 @@ class TestL10nArReportsSimpleImprovements(TestArCommon):
         super().setUpClass()
         cls.lease_tag = cls.env.ref("l10n_ar_reports_simple.tag_leases_rentals_account")
         cls.fixed_asset_tag = cls.env.ref("l10n_ar_reports_simple.tag_fixed_asset_account")
-        cls.goods_tag = cls.env.ref("l10n_ar_reports_simple_improvements.tag_goods_account")
-        cls.services_tag = cls.env.ref("l10n_ar_reports_simple_improvements.tag_services_account")
+        cls.goods_tag = cls.env.ref("l10n_ar_reports_iva_simple_improvements.tag_goods_account")
+        cls.services_tag = cls.env.ref("l10n_ar_reports_iva_simple_improvements.tag_services_account")
 
         # A purchase VAT tax whose group's AFIP code is one of the codes the
         # query filters on ('3', '4', '5', '6', '8', '9')

@@ -88,8 +88,8 @@ class L10n_ArTaxReportHandler(models.AbstractModel):
             """,
             lease_tag_id=self.env.ref("l10n_ar_reports_simple.tag_leases_rentals_account").id,
             fixed_tag_id=self.env.ref("l10n_ar_reports_simple.tag_fixed_asset_account").id,
-            services_tag_id=self.env.ref("l10n_ar_reports_simple_improvements.tag_services_account").id,
-            goods_tag_id=self.env.ref("l10n_ar_reports_simple_improvements.tag_goods_account").id,
+            services_tag_id=self.env.ref("l10n_ar_reports_iva_simple_improvements.tag_services_account").id,
+            goods_tag_id=self.env.ref("l10n_ar_reports_iva_simple_improvements.tag_goods_account").id,
             move_ids=move_ids,
         )
 

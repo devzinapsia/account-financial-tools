@@ -1,6 +1,6 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* l10n_ar_reports_simple_improvements
+# 	* l10n_ar_reports_iva_simple_improvements
 #
 msgid ""
 msgstr ""
@@ -16,8 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#. module: l10n_ar_reports_simple_improvements
+#. module: l10n_ar_reports_iva_simple_improvements
 #. odoo-python
-#: code:addons/l10n_ar_reports_simple_improvements/models/account_account.py:0
+#: code:addons/l10n_ar_reports_iva_simple_improvements/models/account_account.py:0
 msgid "Account %(account)s has more than one ARCA IVA Simple concept tag assigned (%(tags)s). Only one of Locaciones / Bienes de Uso / Bienes / Servicios can be set on the same account."
 msgstr "La cuenta %(account)s tiene más de una etiqueta de concepto de IVA Simple ARCA asignada (%(tags)s). Solo se puede establecer una entre Locaciones / Bienes de Uso / Bienes / Servicios en la misma cuenta."

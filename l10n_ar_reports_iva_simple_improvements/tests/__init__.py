@@ -1,0 +1,1 @@
+from . import test_l10n_ar_reports_iva_simple_improvements
