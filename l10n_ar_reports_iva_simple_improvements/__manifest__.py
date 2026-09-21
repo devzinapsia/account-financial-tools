@@ -1,6 +1,6 @@
 {
     "name": "Mejoras a ARCA IVA Simple",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "summary": "Corrige la determinación del Concepto en las compras del reporte IVA Simple de ARCA",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",

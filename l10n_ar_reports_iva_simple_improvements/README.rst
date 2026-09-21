@@ -30,7 +30,8 @@ priority (highest to lowest):
 #. Account tagged *Bienes de Uso* → Concepto 4
 #. Account tagged *Servicios* (new) → Concepto 3
 #. Account tagged *Bienes* (new) → Concepto 1
-#. No tag, but the line has a product: ``type == 'consu'`` → Concepto 1,
+#. No tag, but the line has a product: ``type == 'consu'`` or
+   ``type == 'combo'`` (Point of Sale combo) → Concepto 1,
    ``type == 'service'`` → Concepto 3
 #. No tag and no product → Concepto 3 (Servicio). This is the bug fix:
    upstream falls back to Concepto 1 here.

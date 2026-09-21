@@ -22,7 +22,8 @@ class L10n_ArTaxReportHandler(models.AbstractModel):
         column mapping) and only changes:
         - the tag lookup, extended to the 2 new tags this module adds (Goods, Services),
         - the CASE that derives the concept, with the new priority order (Locaciones >
-          Bienes de Uso > Servicios > Bienes > product type > fallback),
+          Bienes de Uso > Servicios > Bienes > product type - 'combo' products count as
+          Bien - > fallback),
         - the ORDER BY used by the DISTINCT ON, extended with the same priority, to keep
           a stable pick if an account improperly carries more than one concept tag (this
           is blocked by a constraint on account.account - see account_account.py - so
@@ -47,6 +48,7 @@ class L10n_ArTaxReportHandler(models.AbstractModel):
                             WHEN tag_rel.account_account_tag_id = %(goods_tag_id)s THEN 1
                             WHEN pt.type = 'consu' THEN 1
                             WHEN pt.type = 'service' THEN 3
+                            WHEN pt.type = 'combo' THEN 1
                             ELSE 3
                         END as concept,
                         btg.l10n_ar_vat_afip_code AS rate_code

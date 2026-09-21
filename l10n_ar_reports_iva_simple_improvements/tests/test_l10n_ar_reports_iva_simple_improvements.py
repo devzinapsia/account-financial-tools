@@ -45,6 +45,19 @@ class TestL10nArReportsSimpleImprovements(TestArCommon):
         cls.product_consu = cls.env["product.product"].create({"name": "Test Good", "type": "consu"})
         cls.product_service = cls.env["product.product"].create({"name": "Test Service", "type": "service"})
 
+        # 'combo' is a 3rd valid product.template type (Point of Sale combos), besides 'consu'
+        # and 'service' - a combo needs at least 1 combo choice with at least 1 item to pass
+        # product's own constraints
+        cls.combo = cls.env["product.combo"].create({
+            "name": "Test Combo",
+            "combo_item_ids": [Command.create({"product_id": cls.product_consu.id})],
+        })
+        cls.product_combo = cls.env["product.product"].create({
+            "name": "Test Combo Product",
+            "type": "combo",
+            "combo_ids": [Command.set(cls.combo.ids)],
+        })
+
     def _create_purchase_move(self, account, product=None, price_unit=1000.0):
         line_vals = {
             "price_unit": price_unit,
@@ -102,6 +115,11 @@ class TestL10nArReportsSimpleImprovements(TestArCommon):
         """The bug fix: previously this fell back to Concepto 1 (Bien); now Concepto 3 (Servicio)."""
         move = self._create_purchase_move(self.account_no_tag)
         self.assertEqual(self._get_concept(move), "3")
+
+    def test_product_combo_without_tag(self):
+        """product.type 'combo' (Point of Sale combos), no account tag -> Concepto 1 (Bien)."""
+        move = self._create_purchase_move(self.account_no_tag, product=self.product_combo)
+        self.assertEqual(self._get_concept(move), "1")
 
     def test_constraint_blocks_more_than_one_concept_tag(self):
         """An account can't carry 2 of the 4 ARCA concept tags at the same time."""
