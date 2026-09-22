@@ -235,6 +235,13 @@ class Base_ImportImport(models.TransientModel):
     # 3.1 (save), 3.2, 3.7 (to_check tail)
     # -------------------------------------------------------------------
     def execute_import(self, fields, columns, options, dryrun=False):
+        # Captured before calling super(): account_bank_statement_import_csv
+        # unconditionally creates a new account.bank.statement after import
+        # (even with an empty line_ids, e.g. when every row was filtered out
+        # as a probable duplicate) - this id boundary lets us find and clean
+        # up that specific statement afterwards without guessing by name.
+        last_statement_id = self.env['account.bank.statement'].search([], order='id desc', limit=1).id or 0
+
         res = super().execute_import(fields, columns, options, dryrun=dryrun)
 
         duplicate_details = options.get('_bank_stmt_duplicate_lines_detail') or []
@@ -271,7 +278,17 @@ class Base_ImportImport(models.TransientModel):
                 'message': message,
             })
 
-        if dryrun or not options.get('bank_stmt_import') or not res.get('ids'):
+        if dryrun or not options.get('bank_stmt_import'):
+            return res
+
+        if not res.get('ids'):
+            # Every row was filtered out (e.g. all probable duplicates) or
+            # the file had nothing to import: remove the empty statement
+            # account_bank_statement_import_csv still created, instead of
+            # leaving a useless zero-line statement behind.
+            self.env['account.bank.statement'].search([
+                ('id', '>', last_statement_id),
+            ]).filtered(lambda s: not s.line_ids).unlink()
             return res
 
         journal = self._get_bank_stmt_import_journal()

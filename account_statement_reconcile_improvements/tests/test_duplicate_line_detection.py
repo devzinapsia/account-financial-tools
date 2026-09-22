@@ -138,3 +138,36 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
             dryrun=True,
         )
         self.assertFalse(result.get('ids'), "The duplicate row should have been skipped, not imported")
+
+    def test_real_import_with_only_duplicate_rows_leaves_no_empty_statement(self):
+        """account_bank_statement_import_csv unconditionally creates a new
+        account.bank.statement after import, even with an empty line_ids -
+        e.g. when every row was filtered out as a probable duplicate. A
+        real (non-dryrun) import where every row is a duplicate must not
+        leave that useless, zero-line statement behind.
+        """
+        statement_count_before = self.env['account.bank.statement'].search_count([
+            ('journal_id', '=', self.bank_journal.id),
+        ])
+        csv_content = "Fecha,Importe\n2026-01-05,100.0\n"
+        wizard = self._create_wizard(csv_content)
+        result = wizard.execute_import(
+            fields=['date', 'amount'],
+            columns=['Fecha', 'Importe'],
+            options={
+                'has_headers': True,
+                'bank_stmt_import': True,
+                'quoting': '"',
+                'separator': ',',
+                'encoding': 'utf-8',
+            },
+            dryrun=False,
+        )
+        self.assertFalse(result.get('ids'), "The duplicate row should have been skipped, not imported")
+        statement_count_after = self.env['account.bank.statement'].search_count([
+            ('journal_id', '=', self.bank_journal.id),
+        ])
+        self.assertEqual(
+            statement_count_before, statement_count_after,
+            "No new (empty) statement should remain when every row was a probable duplicate",
+        )

@@ -25,6 +25,8 @@ Import improvements
   duplicate and is not imported; the import result reports how many rows
   were skipped this way. See "Decisiones de diseño" for the exact matching
   rule and for why this doesn't offer a per-row checkbox in the preview.
+  If every row in the file turns out to be a duplicate, no empty statement
+  is left behind either (native Odoo would otherwise still create one).
 - **CUIT recognition in a free-text legend column.** A new "Contact (CUIT
   in free-text legend)" field can be mapped from the bank's own
   description/legend column; if exactly one valid Argentine CUIT is found
