@@ -3,7 +3,11 @@ from odoo.exceptions import RedirectWarning, UserError
 
 
 class AccountBankStatement(models.Model):
-    _inherit = 'account.bank.statement'
+    # mail.thread is added so the chatter actually stores/shows messages -
+    # the native form view (account_accountant.view_bank_statement_form_bank_rec_widget)
+    # already has a <chatter/> widget, but it silently renders empty without
+    # this mixin. Used to post the rejected-duplicate-rows table on import.
+    _inherit = ['account.bank.statement', 'mail.thread']
 
     import_file_hash = fields.Char(
         string="Import File Hash",

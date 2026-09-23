@@ -213,3 +213,32 @@ msgstr "... y %(count)s más"
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Probable duplicate rows skipped"
 msgstr "Filas probablemente duplicadas omitidas"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Date"
+msgstr "Fecha"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Amount"
+msgstr "Importe"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Description"
+msgstr "Descripción"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Contact"
+msgstr "Contacto"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid ""
+"%(count)s row(s) were not imported: they matched an existing statement line "
+"on the same date, partner and amount (probable duplicate)."
+msgstr ""
+"%(count)s fila(s) no se importaron: coinciden con una línea de extracto ya "
+"existente en la misma fecha, contacto e importe (probable duplicado)."

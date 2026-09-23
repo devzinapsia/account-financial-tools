@@ -171,3 +171,40 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
             statement_count_before, statement_count_after,
             "No new (empty) statement should remain when every row was a probable duplicate",
         )
+
+    def test_real_import_with_mixed_rows_posts_rejected_rows_to_chatter(self):
+        """When a real (non-dryrun) import produces at least one imported
+        line, any rejected probable-duplicate rows must be listed on the
+        resulting statement's chatter (date, amount, description, contact)
+        - not just the transient toast, which the user might miss and which
+        only fires on "Probar" anyway.
+        """
+        csv_content = "Fecha,Etiqueta,Importe\n2026-01-05,Duplicate row,100.0\n2026-01-06,New row,250.0\n"
+        wizard = self._create_wizard(csv_content)
+        result = wizard.execute_import(
+            fields=['date', 'payment_ref', 'amount'],
+            columns=['Fecha', 'Etiqueta', 'Importe'],
+            options={
+                'has_headers': True,
+                'bank_stmt_import': True,
+                'quoting': '"',
+                'separator': ',',
+                'encoding': 'utf-8',
+            },
+            dryrun=False,
+        )
+        self.assertEqual(len(result.get('ids') or []), 1, "Only the new row should have been imported")
+
+        imported_line = self.env['account.bank.statement.line'].browse(result['ids'])
+        statement = imported_line.statement_id
+        messages = statement.message_ids
+        self.assertTrue(messages, "Expected a chatter message on the resulting statement")
+        table_message = next((m for m in messages if 'were not imported' in (m.body or '')), None)
+        self.assertIsNotNone(table_message, f"Expected a chatter message listing the rejected row, got: {[m.body for m in messages]}")
+        self.assertIn('2026-01-05', table_message.body)
+        self.assertIn('100.0', table_message.body)
+        # The rejected *incoming* row's own description ("Duplicate row")
+        # must show, not the pre-existing line's ("Already imported") -
+        # they're two different records with the same date/amount.
+        self.assertIn('Duplicate row', table_message.body)
+        self.assertNotIn('Already imported', table_message.body)

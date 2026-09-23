@@ -1,6 +1,8 @@
 import hashlib
 import unicodedata
 
+from markupsafe import Markup
+
 from odoo import models
 from odoo.addons.base_import.models.base_import import FIELDS_RECURSION_LIMIT
 
@@ -191,8 +193,10 @@ class Base_ImportImport(models.TransientModel):
         # of assuming partner_id=False, is what actually catches those
         # duplicates instead of silently missing them.
         partner_index = import_fields.index('partner_id/.id') if 'partner_id/.id' in import_fields else None
+        payment_ref_index = import_fields.index('payment_ref') if 'payment_ref' in import_fields else None
 
         StatementLine = self.env['account.bank.statement.line']
+        Partner = self.env['res.partner']
         precision = journal.currency_id.decimal_places
         kept_rows = []
         duplicate_details = []
@@ -216,7 +220,16 @@ class Base_ImportImport(models.TransientModel):
                 # doesn't get flagged as a probable duplicate.
                 matches = StatementLine
             if matches:
-                duplicate_details.append((date_value, amount_value, matches[0]))
+                partner_name = False
+                if partner_index is not None and row[partner_index]:
+                    partner_name = Partner.browse(row[partner_index]).display_name
+                duplicate_details.append({
+                    'date': date_value,
+                    'amount': amount_value,
+                    'payment_ref': row[payment_ref_index] if payment_ref_index is not None else False,
+                    'partner_name': partner_name,
+                    'existing_line': matches[0],
+                })
                 continue
             kept_rows.append(row)
 
@@ -245,7 +258,7 @@ class Base_ImportImport(models.TransientModel):
         res = super().execute_import(fields, columns, options, dryrun=dryrun)
 
         duplicate_details = options.get('_bank_stmt_duplicate_lines_detail') or []
-        if duplicate_details:
+        if duplicate_details and dryrun:
             # Not added to res['messages']: that channel is base_import's
             # own blocking-error pipeline (every entry is expected to carry
             # a 'rows': {'from', 'to'} pair, and adding anything to it makes
@@ -254,13 +267,17 @@ class Base_ImportImport(models.TransientModel):
             # notice should do). A bus notification is the safe, native way
             # to show a non-blocking toast instead. `sticky` keeps it on
             # screen (it doesn't auto-dismiss) since it can list many rows.
+            # Only shown on "Probar" (dryrun): the real import instead posts
+            # the full detail to the resulting statement's chatter (below),
+            # which is more useful once there's an actual record to attach it to.
             max_detail_lines = 20
             detail_lines = [
                 self.env._(
                     "- %(date)s, %(amount)s: matches existing line in statement \"%(statement)s\"",
-                    date=date_value, amount=amount_value, statement=existing_line.statement_id.display_name,
+                    date=detail['date'], amount=detail['amount'],
+                    statement=detail['existing_line'].statement_id.display_name,
                 )
-                for date_value, amount_value, existing_line in duplicate_details[:max_detail_lines]
+                for detail in duplicate_details[:max_detail_lines]
             ]
             if len(duplicate_details) > max_detail_lines:
                 detail_lines.append(self.env._("... and %(count)s more", count=len(duplicate_details) - max_detail_lines))
@@ -298,7 +315,48 @@ class Base_ImportImport(models.TransientModel):
         self._save_bank_statement_import_profile(journal, columns, fields, options)
         self._attach_import_file(statements)
         lines.filtered('is_reconciled')._flag_as_to_check_if_configured()
+        if duplicate_details:
+            self._post_rejected_rows_chatter_note(statements, duplicate_details)
         return res
+
+    def _post_rejected_rows_chatter_note(self, statements, duplicate_details):
+        """At least one row was actually imported (real, non-dryrun import),
+        but some rows were skipped as probable duplicates - leave a table of
+        what was rejected on the resulting statement's chatter, so it's not
+        just a toast the user might have missed.
+        """
+        rows_html = "".join(
+            Markup(
+                "<tr><td>{date}</td><td>{amount}</td><td>{payment_ref}</td><td>{partner}</td></tr>"
+            ).format(
+                date=detail['date'],
+                amount=detail['amount'],
+                payment_ref=detail['payment_ref'] or '',
+                partner=detail['partner_name'] or '',
+            )
+            for detail in duplicate_details
+        )
+        body = Markup(
+            "<p>{intro}</p>"
+            "<table class=\"table table-sm\">"
+            "<thead><tr><th>{col_date}</th><th>{col_amount}</th><th>{col_description}</th><th>{col_partner}</th></tr></thead>"
+            "<tbody>{rows}</tbody>"
+            "</table>"
+        ).format(
+            intro=self.env._(
+                "%(count)s row(s) were not imported: they matched an existing "
+                "statement line on the same date, partner and amount "
+                "(probable duplicate).",
+                count=len(duplicate_details),
+            ),
+            col_date=self.env._("Date"),
+            col_amount=self.env._("Amount"),
+            col_description=self.env._("Description"),
+            col_partner=self.env._("Contact"),
+            rows=rows_html,
+        )
+        for statement in statements:
+            statement.message_post(body=body)
 
     def _save_bank_statement_import_profile(self, journal, columns, fields, options):
         if not journal or not options.get('has_headers'):
