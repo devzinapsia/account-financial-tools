@@ -90,16 +90,18 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
             any('duplicate' in value['message'].lower() for value in queued_bus_values),
             f"Expected a queued bus 'simple_notification' about the skipped duplicate row, got: {queued_bus_values}",
         )
-        # The notice must be sticky (won't auto-dismiss) and detail which
-        # existing statement each skipped row matched - a plain "N rows
+        # The notice must be sticky (won't auto-dismiss) - a plain "N rows
         # skipped" toast that vanishes in a couple seconds isn't actionable.
+        # It's deliberately kept short (just the count), not an itemized
+        # per-row list: a real case with 42 duplicate rows made that
+        # unreadable crammed into a toast - full per-row detail is instead
+        # posted to the resulting statement's chatter on the real import.
         self.assertTrue(
             any(
                 json.loads(value['message'])['payload'].get('sticky')
-                and 'Existing Statement' in json.loads(value['message'])['payload'].get('message', '')
                 for value in queued_bus_values
             ),
-            f"Expected a sticky notification detailing the matched existing statement, got: {queued_bus_values}",
+            f"Expected a sticky notification about the skipped duplicate row, got: {queued_bus_values}",
         )
 
     def test_duplicate_is_caught_even_when_partner_is_not_self_resolved(self):
@@ -170,6 +172,17 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         self.assertEqual(
             statement_count_before, statement_count_after,
             "No new (empty) statement should remain when every row was a probable duplicate",
+        )
+        # Without this, clicking "Importar" directly (skipping "Probar") on
+        # an all-duplicates file looked like it silently did nothing.
+        queued_bus_values = self.env.cr.precommit.data.get("bus.bus.values", [])
+        self.assertTrue(
+            any(
+                json.loads(value['message'])['payload'].get('sticky')
+                and 'nothing was imported' in json.loads(value['message'])['payload'].get('message', '').lower()
+                for value in queued_bus_values
+            ),
+            f"Expected a sticky 'nothing imported' notification, got: {queued_bus_values}",
         )
 
     def test_real_import_with_mixed_rows_posts_rejected_rows_to_chatter(self):

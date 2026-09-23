@@ -267,31 +267,25 @@ class Base_ImportImport(models.TransientModel):
             # notice should do). A bus notification is the safe, native way
             # to show a non-blocking toast instead. `sticky` keeps it on
             # screen (it doesn't auto-dismiss) since it can list many rows.
-            # Only shown on "Probar" (dryrun): the real import instead posts
-            # the full detail to the resulting statement's chatter (below),
-            # which is more useful once there's an actual record to attach it to.
-            max_detail_lines = 20
-            detail_lines = [
-                self.env._(
-                    "- %(date)s, %(amount)s: matches existing line in statement \"%(statement)s\"",
-                    date=detail['date'], amount=detail['amount'],
-                    statement=detail['existing_line'].statement_id.display_name,
-                )
-                for detail in duplicate_details[:max_detail_lines]
-            ]
-            if len(duplicate_details) > max_detail_lines:
-                detail_lines.append(self.env._("... and %(count)s more", count=len(duplicate_details) - max_detail_lines))
+            # Only shown on "Probar" (dryrun): kept short on purpose - a
+            # per-row itemized list (one line per duplicate) is unreadable
+            # in a toast once there are more than a handful of rows (a real
+            # case had 42). The real import instead posts the full detail
+            # as a proper table on the resulting statement's chatter
+            # (below), once there's an actual record to attach it to.
             message = self.env._(
-                "%(count)s row(s) were not imported: they match an existing "
-                "statement line for this journal on the same date, partner "
-                "and amount (probable duplicate). Re-run with the "
-                "duplicate-lines check disabled if you are sure they are not.",
+                "%(count)s row(s) will not be imported: they match an "
+                "existing statement line for this journal on the same "
+                "date, partner and amount (probable duplicate). Import to "
+                "see the full list on the statement's chatter, or re-run "
+                "with the duplicate-lines check disabled if you are sure "
+                "they are not.",
                 count=len(duplicate_details),
-            ) + "\n" + "\n".join(detail_lines)
+            )
             self.env.user._bus_send('simple_notification', {
                 'type': 'warning',
                 'sticky': True,
-                'title': self.env._("Probable duplicate rows skipped"),
+                'title': self.env._("Probable duplicate rows"),
                 'message': message,
             })
 
@@ -306,6 +300,22 @@ class Base_ImportImport(models.TransientModel):
             self.env['account.bank.statement'].search([
                 ('id', '>', last_statement_id),
             ]).filtered(lambda s: not s.line_ids).unlink()
+            # Without this, clicking "Importar" straight (skipping "Probar")
+            # on a file that's entirely duplicates looks like nothing
+            # happened at all - the wizard just closes with no feedback.
+            if duplicate_details:
+                self.env.user._bus_send('simple_notification', {
+                    'type': 'warning',
+                    'sticky': True,
+                    'title': self.env._("Nothing imported"),
+                    'message': self.env._(
+                        "All %(count)s row(s) in the file match an existing "
+                        "statement line for this journal on the same date, "
+                        "partner and amount (probable duplicates) - nothing "
+                        "was imported.",
+                        count=len(duplicate_details),
+                    ),
+                })
             return res
 
         journal = self._get_bank_stmt_import_journal()

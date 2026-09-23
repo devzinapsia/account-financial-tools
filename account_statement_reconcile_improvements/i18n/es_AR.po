@@ -118,18 +118,6 @@ msgid "Bank statement import file"
 msgstr "Archivo de importación de extracto bancario"
 
 #. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
-msgid ""
-"%(count)s row(s) were not imported: they match an existing statement line "
-"for this journal on the same date, partner and amount (probable duplicate). "
-"Re-run with the duplicate-lines check disabled if you are sure they are not."
-msgstr ""
-"%(count)s fila(s) no se importaron: coinciden con una línea de extracto ya "
-"existente para este diario en la misma fecha, contacto e importe (probable "
-"duplicado). Volvé a ejecutar con la verificación de duplicados desactivada "
-"si estás seguro de que no lo son."
-
-#. module: account_statement_reconcile_improvements
 #: model:ir.model,name:account_statement_reconcile_improvements.model_account_bank_statement_unlink_wizard
 msgid "Confirm deleting bank statement(s) with reconciled lines"
 msgstr "Confirmar la eliminación de extracto(s) con líneas conciliadas"
@@ -198,24 +186,6 @@ msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
-msgid ""
-"- %(date)s, %(amount)s: matches existing line in statement \"%(statement)s\""
-msgstr ""
-"- %(date)s, %(amount)s: coincide con una línea existente en el extracto "
-"\"%(statement)s\""
-
-#. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
-msgid "... and %(count)s more"
-msgstr "... y %(count)s más"
-
-#. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
-msgid "Probable duplicate rows skipped"
-msgstr "Filas probablemente duplicadas omitidas"
-
-#. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Date"
 msgstr "Fecha"
 
@@ -242,3 +212,38 @@ msgid ""
 msgstr ""
 "%(count)s fila(s) no se importaron: coinciden con una línea de extracto ya "
 "existente en la misma fecha, contacto e importe (probable duplicado)."
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Probable duplicate rows"
+msgstr "Filas probablemente duplicadas"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid ""
+"%(count)s row(s) will not be imported: they match an existing statement line"
+" for this journal on the same date, partner and amount (probable duplicate)."
+" Import to see the full list on the statement's chatter, or re-run with the "
+"duplicate-lines check disabled if you are sure they are not."
+msgstr ""
+"%(count)s fila(s) no se importarán: coinciden con una línea de extracto ya "
+"existente para este diario en la misma fecha, contacto e importe (probable "
+"duplicado). Importá para ver el listado completo en el chatter del extracto,"
+" o volvé a ejecutar con la verificación de duplicados desactivada si estás "
+"seguro de que no lo son."
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Nothing imported"
+msgstr "No se importó nada"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid ""
+"All %(count)s row(s) in the file match an existing statement line for this "
+"journal on the same date, partner and amount (probable duplicates) - nothing"
+" was imported."
+msgstr ""
+"Las %(count)s fila(s) del archivo coinciden con una línea de extracto ya "
+"existente para este diario en la misma fecha, contacto e importe (probables "
+"duplicados) - no se importó nada."
