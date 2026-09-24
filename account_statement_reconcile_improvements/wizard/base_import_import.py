@@ -43,6 +43,22 @@ def _normalize_header_cell(value):
 class Base_ImportImport(models.TransientModel):
     _inherit = 'base_import.import'
 
+    def _t(self, source, **kwargs):
+        """Translate using the current user's own saved language
+        preference (res.users.lang), not whatever 'lang' happens to be in
+        this environment's context.
+
+        base_import's own JS calls execute_import() via orm.silent (see
+        @base_import/import_model.js _callImport) instead of a plain
+        orm.call() - unlike the latter, it does not forward the session's
+        user_context, so self.env.context['lang'] is empty for this
+        specific RPC regardless of the user's language setting, and
+        self.env._() renders in English no matter what. Forcing 'lang'
+        from the user's own field (a plain read, unaffected by the
+        request's context) sidesteps that entirely.
+        """
+        return self.with_context(lang=self.env.user.lang).env._(source, **kwargs)
+
     # -------------------------------------------------------------------
     # 3.5/3.6/3.7 - CUIT/DNI virtual mapping field
     # -------------------------------------------------------------------
@@ -52,7 +68,7 @@ class Base_ImportImport(models.TransientModel):
             fields_list.append({
                 'id': _AR_IDENTIFICATION_FIELD,
                 'name': _AR_IDENTIFICATION_FIELD,
-                'string': self.env._("Contact (CUIT in free-text legend)"),
+                'string': self._t("Contact (CUIT in free-text legend)"),
                 'required': False,
                 'fields': [],
                 'type': 'char',
@@ -273,7 +289,7 @@ class Base_ImportImport(models.TransientModel):
             # case had 42). The real import instead posts the full detail
             # as a proper table on the resulting statement's chatter
             # (below), once there's an actual record to attach it to.
-            message = self.env._(
+            message = self._t(
                 "%(count)s row(s) will not be imported: they match an "
                 "existing statement line for this journal on the same "
                 "date, partner and amount (probable duplicate). Import to "
@@ -285,7 +301,7 @@ class Base_ImportImport(models.TransientModel):
             self.env.user._bus_send('simple_notification', {
                 'type': 'warning',
                 'sticky': True,
-                'title': self.env._("Probable duplicate rows"),
+                'title': self._t("Probable duplicate rows"),
                 'message': message,
             })
 
@@ -307,8 +323,8 @@ class Base_ImportImport(models.TransientModel):
                 self.env.user._bus_send('simple_notification', {
                     'type': 'warning',
                     'sticky': True,
-                    'title': self.env._("Nothing imported"),
-                    'message': self.env._(
+                    'title': self._t("Nothing imported"),
+                    'message': self._t(
                         "All %(count)s row(s) in the file match an existing "
                         "statement line for this journal on the same date, "
                         "partner and amount (probable duplicates) - nothing "
@@ -353,16 +369,16 @@ class Base_ImportImport(models.TransientModel):
             "<tbody>{rows}</tbody>"
             "</table>"
         ).format(
-            intro=self.env._(
+            intro=self._t(
                 "%(count)s row(s) were not imported: they matched an existing "
                 "statement line on the same date, partner and amount "
                 "(probable duplicate).",
                 count=len(duplicate_details),
             ),
-            col_date=self.env._("Date"),
-            col_amount=self.env._("Amount"),
-            col_description=self.env._("Description"),
-            col_partner=self.env._("Contact"),
+            col_date=self._t("Date"),
+            col_amount=self._t("Amount"),
+            col_description=self._t("Description"),
+            col_partner=self._t("Contact"),
             rows=rows_html,
         )
         for statement in statements:
@@ -390,7 +406,7 @@ class Base_ImportImport(models.TransientModel):
             if statement.attachment_ids:
                 continue
             self.env['ir.attachment'].create({
-                'name': self.file_name or self.env._("Bank statement import file"),
+                'name': self.file_name or self._t("Bank statement import file"),
                 'raw': self.file,
                 'res_model': 'account.bank.statement',
                 'res_id': statement.id,

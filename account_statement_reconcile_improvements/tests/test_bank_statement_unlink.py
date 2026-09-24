@@ -53,10 +53,20 @@ class TestBankStatementUnlink(AccountTestInvoicingCommon):
     def test_unlink_confirmed_reopens_the_invoice_and_removes_the_lines(self):
         invoice, statement = self._create_reconciled_statement()
         statement_id = statement.id
+        line_id = statement.line_ids.id
 
         statement.with_context(statement_unlink_confirmed=True).unlink()
 
         self.assertFalse(self.env['account.bank.statement'].browse(statement_id).exists())
+        # Regression test: account.bank.statement.line's own statement_id
+        # field has no ondelete='cascade' (a plain Many2one), so deleting
+        # the statement alone only detached the line (statement_id -> False)
+        # instead of actually removing it - it kept showing up, unreconciled,
+        # in the bank reconciliation widget.
+        self.assertFalse(
+            self.env['account.bank.statement.line'].browse(line_id).exists(),
+            "The statement line itself should be deleted, not just detached from the statement.",
+        )
         self.assertFalse(
             invoice.line_ids.filtered(lambda l: l.account_type == 'asset_receivable').reconciled,
             "The invoice's receivable line should be open again after the statement is deleted.",
@@ -74,5 +84,7 @@ class TestBankStatementUnlink(AccountTestInvoicingCommon):
                 'journal_id': self.bank_journal.id,
             })],
         })
+        line_id = statement.line_ids.id
         statement.unlink()
         self.assertFalse(statement.exists())
+        self.assertFalse(self.env['account.bank.statement.line'].browse(line_id).exists())
