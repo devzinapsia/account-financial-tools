@@ -2,6 +2,7 @@ import json
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.tests import tagged
+from odoo.tools.misc import format_date
 
 
 @tagged("post_install", "-at_install")
@@ -214,7 +215,6 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         self.assertTrue(messages, "Expected a chatter message on the resulting statement")
         table_message = next((m for m in messages if 'were not imported' in (m.body or '')), None)
         self.assertIsNotNone(table_message, f"Expected a chatter message listing the rejected row, got: {[m.body for m in messages]}")
-        self.assertIn('2026-01-05', table_message.body)
         self.assertIn('100.0', table_message.body)
         # The rejected *incoming* row's own description ("Duplicate row")
         # must show, not the pre-existing line's ("Already imported") -
@@ -226,5 +226,24 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         # HTML-escaped all over again by the outer Markup(...).format() -
         # the <tr><td> tags showed up as literal escaped text in the
         # chatter instead of an actual rendered table.
-        self.assertIn('<tr><td>2026-01-05</td>', table_message.body)
+        formatted_date = format_date(self.env, '2026-01-05', lang_code=self.env.user.lang)
+        self.assertIn(f'<tr><td>{formatted_date}</td>', table_message.body)
         self.assertNotIn('&lt;tr&gt;', table_message.body)
+        # Regression test: the date was shown as the raw ISO string
+        # ('YYYY-MM-DD') instead of the user's own locale format (the one
+        # used everywhere else in the UI, e.g. the reconciliation widget).
+        self.assertNotIn('<tr><td>2026-01-05</td>', table_message.body)
+
+        # A mixed import (some rows imported, some skipped as duplicates)
+        # otherwise looked fully successful in the native toast, with no
+        # hint that anything was skipped unless the user checked the
+        # chatter.
+        queued_bus_values = self.env.cr.precommit.data.get("bus.bus.values", [])
+        self.assertTrue(
+            any(
+                '1 row(s) imported' in json.loads(value['message'])['payload'].get('message', '')
+                and '1 row(s) ignored' in json.loads(value['message'])['payload'].get('message', '')
+                for value in queued_bus_values
+            ),
+            f"Expected a notification summarizing both the imported and ignored counts, got: {queued_bus_values}",
+        )

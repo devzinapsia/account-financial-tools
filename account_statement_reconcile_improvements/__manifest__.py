@@ -1,6 +1,6 @@
 {
     "name": "Mejoras a conciliación bancaria",
-    "version": "19.0.1.1.2",
+    "version": "19.0.1.1.3",
     "summary": "Enhancements to the bank statement file import and reconciliation process.",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",

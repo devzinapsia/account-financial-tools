@@ -42,17 +42,6 @@ msgstr ""
 "movimientos."
 
 #. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
-msgid ""
-"Deleting %(count)s statement(s) will unreconcile and delete %(lines)s "
-"reconciled statement line(s), reopening their matched invoices/payments as "
-"pending. This cannot be undone."
-msgstr ""
-"Eliminar %(count)s extracto(s) desconciliará y eliminará %(lines)s línea(s) "
-"conciliada(s), volviendo a dejar pendientes las facturas/pagos que tenían "
-"asociados. Esta acción no se puede deshacer."
-
-#. module: account_statement_reconcile_improvements
 #: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_account_journal__bank_statement_import_profile
 msgid "Bank Statement Import Profile"
 msgstr "Perfil de importación de extracto bancario"
@@ -149,12 +138,6 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
-#: model:ir.actions.act_window,name:account_statement_reconcile_improvements.action_account_bank_statement_unlink_wizard
-msgid "Review and confirm"
-msgstr "Revisar y confirmar"
-
-#. module: account_statement_reconcile_improvements
 #: code:addons/account_statement_reconcile_improvements/static/src/js/bank_rec_auto_reconcile_button.js:0
 msgid "Auto-reconcile unassigned"
 msgstr "Conciliar sin asignar automáticamente"
@@ -247,3 +230,32 @@ msgstr ""
 "Las %(count)s fila(s) del archivo coinciden con una línea de extracto ya "
 "existente para este diario en la misma fecha, contacto e importe (probables "
 "duplicados) - no se importó nada."
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Import successful"
+msgstr "Importación exitosa"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid ""
+"%(imported)s row(s) imported. %(ignored)s row(s) ignored as probable "
+"duplicates - see the statement's chatter for the full list."
+msgstr ""
+"%(imported)s fila(s) importadas. %(ignored)s fila(s) ignoradas por ser "
+"probables duplicados - ver el listado completo en el chatter del extracto."
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
+msgid "This statement has reconciled lines."
+msgstr "Este extracto tiene líneas conciliadas."
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
+msgid "Continue"
+msgstr "Continuar"
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.actions.act_window,name:account_statement_reconcile_improvements.action_account_bank_statement_unlink_wizard
+msgid "Confirm statement deletion"
+msgstr "Confirmar eliminación del extracto"

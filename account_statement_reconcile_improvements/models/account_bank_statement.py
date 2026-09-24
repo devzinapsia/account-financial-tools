@@ -76,17 +76,17 @@ class AccountBankStatement(models.Model):
                     'account_statement_reconcile_improvements'
                     '.action_account_bank_statement_unlink_wizard'
                 ).id
+                # Kept short on purpose: the actual consequences (which
+                # gets unreconciled/deleted, that it can't be undone) are
+                # spelled out in the wizard this redirects to, which also
+                # offers a real Cancel button - repeating that whole
+                # explanation here first was redundant, and "Review and
+                # confirm" as this button's label was actively misleading
+                # (nothing here is reviewable, it's a second warning).
                 raise RedirectWarning(
-                    self._t(
-                        "Deleting %(count)s statement(s) will unreconcile and "
-                        "delete %(lines)s reconciled statement line(s), "
-                        "reopening their matched invoices/payments as "
-                        "pending. This cannot be undone.",
-                        count=len(self),
-                        lines=len(reconciled_lines),
-                    ),
+                    self._t("This statement has reconciled lines."),
                     action,
-                    self._t("Review and confirm"),
+                    self._t("Continue"),
                     {'default_statement_ids': [(6, 0, self.ids)]},
                 )
         # The warning above was already shown (or explicitly bypassed via

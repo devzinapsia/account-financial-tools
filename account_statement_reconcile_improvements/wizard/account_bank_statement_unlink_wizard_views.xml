@@ -23,7 +23,7 @@
     </record>
 
     <record id="action_account_bank_statement_unlink_wizard" model="ir.actions.act_window">
-        <field name="name">Review and confirm</field>
+        <field name="name">Confirm statement deletion</field>
         <field name="res_model">account.bank.statement.unlink.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>

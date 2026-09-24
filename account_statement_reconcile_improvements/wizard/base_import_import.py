@@ -5,6 +5,7 @@ from markupsafe import Markup
 
 from odoo import models
 from odoo.addons.base_import.models.base_import import FIELDS_RECURSION_LIMIT
+from odoo.tools.misc import format_date
 
 from ..tools.ar_id_extraction import extract_cuit
 
@@ -343,6 +344,22 @@ class Base_ImportImport(models.TransientModel):
         lines.filtered('is_reconciled')._flag_as_to_check_if_configured()
         if duplicate_details:
             self._post_rejected_rows_chatter_note(statements, duplicate_details)
+            # base_import's own success notification only mentions the rows
+            # that were imported - without this, a mixed import (some rows
+            # imported, some skipped as duplicates) looked fully successful
+            # unless the user thought to check the statement's chatter.
+            self.env.user._bus_send('simple_notification', {
+                'type': 'success',
+                'sticky': False,
+                'title': self._t("Import successful"),
+                'message': self._t(
+                    "%(imported)s row(s) imported. %(ignored)s row(s) ignored "
+                    "as probable duplicates - see the statement's chatter for "
+                    "the full list.",
+                    imported=len(res['ids']),
+                    ignored=len(duplicate_details),
+                ),
+            })
         return res
 
     def _post_rejected_rows_chatter_note(self, statements, duplicate_details):
@@ -357,11 +374,17 @@ class Base_ImportImport(models.TransientModel):
         # Markup(...).format(rows=rows_html, ...) below - the <tr><td> tags
         # showed up as literal escaped text in the chatter instead of an
         # actual table.
+        # lang_code passed explicitly (not left to the environment's context)
+        # for the same reason as _t(): this call chain can be reached with
+        # an empty/wrong 'lang' in context, which would silently fall back
+        # to the ISO 'YYYY-MM-DD' default instead of the user's own locale
+        # format (e.g. the dd/mm/yyyy shown everywhere else in the UI).
+        lang_code = self.env.user.lang
         rows_html = Markup("").join(
             Markup(
                 "<tr><td>{date}</td><td>{amount}</td><td>{payment_ref}</td><td>{partner}</td></tr>"
             ).format(
-                date=detail['date'],
+                date=format_date(self.env, detail['date'], lang_code=lang_code),
                 amount=detail['amount'],
                 payment_ref=detail['payment_ref'] or '',
                 partner=detail['partner_name'] or '',
