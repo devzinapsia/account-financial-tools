@@ -259,3 +259,8 @@ msgstr "Continuar"
 #: model:ir.actions.act_window,name:account_statement_reconcile_improvements.action_account_bank_statement_unlink_wizard
 msgid "Confirm statement deletion"
 msgstr "Confirmar eliminación del extracto"
+
+#. module: account_statement_reconcile_improvements
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "And %(count)s more row(s)..."
+msgstr "Y %(count)s registro(s) más..."

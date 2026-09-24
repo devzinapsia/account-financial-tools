@@ -247,3 +247,46 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
             ),
             f"Expected a notification summarizing both the imported and ignored counts, got: {queued_bus_values}",
         )
+
+    def test_chatter_table_is_capped_at_50_rows_with_a_count_note_for_the_rest(self):
+        """A real import with a large number of duplicate rows must not post
+        an equally huge table to the chatter - cap it and note the rest.
+        """
+        row_count = 55
+        self.env['account.bank.statement'].create({
+            'name': 'Existing Statement For Cap Test',
+            'journal_id': self.bank_journal.id,
+            'line_ids': [(0, 0, {
+                'date': '2026-03-01',
+                'payment_ref': f'Duplicate {i}',
+                'amount': 100.0 + i,
+                'journal_id': self.bank_journal.id,
+            }) for i in range(row_count)],
+        })
+        csv_lines = [f"2026-03-01,Duplicate {i},{100.0 + i}" for i in range(row_count)]
+        csv_lines.append("2026-03-02,New row,999.0")
+        csv_content = "Fecha,Etiqueta,Importe\n" + "\n".join(csv_lines) + "\n"
+        wizard = self._create_wizard(csv_content)
+        result = wizard.execute_import(
+            fields=['date', 'payment_ref', 'amount'],
+            columns=['Fecha', 'Etiqueta', 'Importe'],
+            options={
+                'has_headers': True,
+                'bank_stmt_import': True,
+                'quoting': '"',
+                'separator': ',',
+                'encoding': 'utf-8',
+            },
+            dryrun=False,
+        )
+        self.assertEqual(len(result.get('ids') or []), 1, "Only the new row should have been imported")
+
+        imported_line = self.env['account.bank.statement.line'].browse(result['ids'])
+        statement = imported_line.statement_id
+        table_message = next((m for m in statement.message_ids if 'were not imported' in (m.body or '')), None)
+        self.assertIsNotNone(table_message, "Expected a chatter message listing the rejected rows")
+        self.assertEqual(
+            table_message.body.count('<tr><td>'), 50,
+            "The table must be capped at 50 rows even when there are more duplicates",
+        )
+        self.assertIn(f'And {row_count - 50} more row(s)...', table_message.body)

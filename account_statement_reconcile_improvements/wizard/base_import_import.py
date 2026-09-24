@@ -15,6 +15,11 @@ from ..tools.ar_id_extraction import extract_cuit
 # resolve it to a partner - see res.partner._find_unique_partner_by_cuit().
 _AR_IDENTIFICATION_FIELD = 'x_ar_partner_identification'
 
+# A real import with hundreds of duplicate rows would otherwise post a
+# chatter message with an equally huge table - capped for readability, with
+# a note for the remainder instead of silently dropping them.
+_CHATTER_TABLE_ROW_LIMIT = 50
+
 # Row shape heuristics used to find where the real header row starts in
 # files that have leading metadata/title rows before it (e.g. BBVA exports).
 _HEADER_DATE_KEYWORDS = ('fecha',)
@@ -380,6 +385,8 @@ class Base_ImportImport(models.TransientModel):
         # to the ISO 'YYYY-MM-DD' default instead of the user's own locale
         # format (e.g. the dd/mm/yyyy shown everywhere else in the UI).
         lang_code = self.env.user.lang
+        shown_details = duplicate_details[:_CHATTER_TABLE_ROW_LIMIT]
+        remaining_count = len(duplicate_details) - len(shown_details)
         rows_html = Markup("").join(
             Markup(
                 "<tr><td>{date}</td><td>{amount}</td><td>{payment_ref}</td><td>{partner}</td></tr>"
@@ -389,14 +396,20 @@ class Base_ImportImport(models.TransientModel):
                 payment_ref=detail['payment_ref'] or '',
                 partner=detail['partner_name'] or '',
             )
-            for detail in duplicate_details
+            for detail in shown_details
         )
+        more_note = Markup(
+            "<p>{note}</p>"
+        ).format(
+            note=self._t("And %(count)s more row(s)...", count=remaining_count),
+        ) if remaining_count else Markup("")
         body = Markup(
             "<p>{intro}</p>"
             "<table class=\"table table-sm\">"
             "<thead><tr><th>{col_date}</th><th>{col_amount}</th><th>{col_description}</th><th>{col_partner}</th></tr></thead>"
             "<tbody>{rows}</tbody>"
             "</table>"
+            "{more_note}"
         ).format(
             intro=self._t(
                 "%(count)s row(s) were not imported: they matched an existing "
@@ -409,6 +422,7 @@ class Base_ImportImport(models.TransientModel):
             col_description=self._t("Description"),
             col_partner=self._t("Contact"),
             rows=rows_html,
+            more_note=more_note,
         )
         for statement in statements:
             statement.message_post(body=body)
