@@ -351,7 +351,13 @@ class Base_ImportImport(models.TransientModel):
         what was rejected on the resulting statement's chatter, so it's not
         just a toast the user might have missed.
         """
-        rows_html = "".join(
+        # Markup("").join(...), not "".join(...): str.join() on an iterable
+        # of Markup chunks silently degrades the result back to a plain str,
+        # which then gets HTML-escaped all over again by the outer
+        # Markup(...).format(rows=rows_html, ...) below - the <tr><td> tags
+        # showed up as literal escaped text in the chatter instead of an
+        # actual table.
+        rows_html = Markup("").join(
             Markup(
                 "<tr><td>{date}</td><td>{amount}</td><td>{payment_ref}</td><td>{partner}</td></tr>"
             ).format(

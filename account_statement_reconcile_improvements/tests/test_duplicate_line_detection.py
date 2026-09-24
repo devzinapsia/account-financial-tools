@@ -221,3 +221,10 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         # they're two different records with the same date/amount.
         self.assertIn('Duplicate row', table_message.body)
         self.assertNotIn('Already imported', table_message.body)
+        # Regression test: "".join() on the per-row Markup chunks silently
+        # degraded the result back to a plain str, which then got
+        # HTML-escaped all over again by the outer Markup(...).format() -
+        # the <tr><td> tags showed up as literal escaped text in the
+        # chatter instead of an actual rendered table.
+        self.assertIn('<tr><td>2026-01-05</td>', table_message.body)
+        self.assertNotIn('&lt;tr&gt;', table_message.body)
