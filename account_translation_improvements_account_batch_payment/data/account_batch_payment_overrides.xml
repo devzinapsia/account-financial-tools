@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Records owned by account_batch_payment, renamed in place (customer
+        side only; the vendor menu keeps "Batch Payments"). Same approach as
+        account_translation_improvements' data/account_overrides.xml.
+    -->
+    <record id="account_batch_payment.menu_batch_payment_sales" model="ir.ui.menu">
+        <field name="name">Batch Collections</field>
+    </record>
+    <record id="account_batch_payment.action_batch_payment_in" model="ir.actions.act_window">
+        <field name="name">Batch Collections</field>
+    </record>
+
+    <!--
+        These records already have account_batch_payment's translations
+        ("Pagos por lotes", "Pagos por lote del cliente"), which a regular
+        po load never replaces: write this module's ones explicitly.
+    -->
+    <function model="ir.module.module" name="_account_translation_improvements_account_batch_payment_force_translations"/>
+
+</odoo>
