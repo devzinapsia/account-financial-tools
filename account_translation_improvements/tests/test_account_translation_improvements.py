@@ -42,6 +42,14 @@ class TestAccountTranslationImprovements(TransactionCase):
         arch = self.Move.with_context(lang=lang).get_view(view.id, view_type)["arch"]
         return etree.fromstring(arch)
 
+    def _skip_if_payment_buttons_replaced(self):
+        """ingadhoc's account_payment_financial_surcharge replaces the whole
+        condition/method of the payment buttons on purpose; that behavior is
+        tested by the glue module installed along with it."""
+        glue = "account_translation_improvements_account_payment_financial_surcharge"
+        if self.env["ir.module.module"].search([("name", "=", glue), ("state", "=", "installed")]):
+            self.skipTest("payment buttons replaced by %s" % glue)
+
     def _visible_payment_buttons(self, form, move_type, has_outstanding):
         values = {
             "state": "posted",
@@ -58,6 +66,7 @@ class TestAccountTranslationImprovements(TransactionCase):
         ]
 
     def test_form_buttons(self):
+        self._skip_if_payment_buttons_replaced()
         form = self._arch("account.view_move_form", "form")
         collect = form.xpath("//button[@id='account_invoice_collect_btn']")
         collect_secondary = form.xpath("//button[@id='account_invoice_collect_secondary_btn']")
@@ -87,6 +96,7 @@ class TestAccountTranslationImprovements(TransactionCase):
             )
 
     def test_form_one_button_per_move_type(self):
+        self._skip_if_payment_buttons_replaced()
         form = self._arch("account.view_move_form", "form")
         for has_outstanding in (False, True):
             for move_type in CUSTOMER_TYPES:

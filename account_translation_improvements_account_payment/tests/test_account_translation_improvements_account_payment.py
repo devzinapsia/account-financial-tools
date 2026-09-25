@@ -41,6 +41,12 @@ class TestAccountTranslationImprovementsAccountPayment(TransactionCase):
         return visible
 
     def test_authorized_transaction_hides_both_labels(self):
+        # ingadhoc's account_payment_financial_surcharge drops the authorized
+        # transactions condition from "Pay" on purpose; its glue module does
+        # the same on "Collect" and tests that behavior.
+        glue = "account_translation_improvements_account_payment_financial_surcharge"
+        if self.env["ir.module.module"].search([("name", "=", glue), ("state", "=", "installed")]):
+            self.skipTest("payment buttons replaced by %s" % glue)
         for has_outstanding in (False, True):
             for move_type, label in (
                 ("out_invoice", "Collect"),
