@@ -1,16 +1,25 @@
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
 import { _t } from "@web/core/l10n/translation";
-import { BankRecKanbanControlPanel } from "@account_accountant/components/bank_reconciliation/control_action/control_action";
+import { BankRecKanbanController } from "@account_accountant/components/bank_reconciliation/kanban_controller";
 
-patch(BankRecKanbanControlPanel.prototype, {
+// Patched onto BankRecKanbanController (the widget's Layout-level
+// controller), not BankRecKanbanControlPanel: that control panel's whole
+// action row - including account_accountant's own Receivable/Payable
+// buttons - lives inside <div t-if="selectedStatementLines.length">, and
+// the kanban mode of this widget has no checkbox/selection mechanism at
+// all, so that row can never actually render there. The chatter toggle
+// button (in kanban_controller.xml's "control-panel-navigation-additional"
+// slot) is the one part of this widget's control panel confirmed to
+// render unconditionally - this button reuses that same slot.
+patch(BankRecKanbanController.prototype, {
     setup() {
         super.setup();
-        this.orm = useService("orm");
+        this.notification = useService("notification");
     },
 
     async actionAutoReconcileUnassigned() {
-        const lineIds = this.env.model.root.records
+        const lineIds = this.model.root.records
             .filter((record) => !record.data.is_reconciled && !record.data.partner_id)
             .map((record) => record.data.id);
         if (!lineIds.length) {
@@ -28,6 +37,6 @@ patch(BankRecKanbanControlPanel.prototype, {
             ? _t("Line(s) reconciled automatically: ") + reconciledCount
             : _t("No matching open item found for any of those lines.");
         this.notification.add(message, { type: reconciledCount ? "success" : "info" });
-        this.env.model.load();
+        this.model.load();
     },
 });

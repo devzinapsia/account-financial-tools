@@ -9,6 +9,8 @@ class ResCompany(models.Model):
         default=True,
         help="When a bank statement line is reconciled automatically "
              "(by a reconciliation model, by the CUIT-based partner match "
-             "on import, or by the auto-reconcile button), keep it flagged "
-             "as \"to check\" instead of marking it fully reviewed.",
+             "on import, or by the auto-reconcile button) with no contact "
+             "backing the match, keep it flagged as \"to check\" instead of "
+             "marking it fully reviewed. Lines with a confirmed contact are "
+             "always treated as reviewed.",
     )
