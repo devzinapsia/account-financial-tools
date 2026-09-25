@@ -1,0 +1,31 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_ar_invoice_service_dates_required
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: \n"
+
+#. module: l10n_ar_invoice_service_dates_required
+#. odoo-python
+#: code:addons/l10n_ar_invoice_service_dates_required/models/account_move.py:0
+msgid "You must fill in the service billing period required by ARCA, in the Other Info tab."
+msgstr ""
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_dates_required
+msgid "Validate ARCA service period date entry"
+msgstr ""
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_dates_required
+msgid "When enabled, sales invoices posted through this journal with an ARCA concept of Services or Products and Services must have the service billing period (start/end dates) filled in."
+msgstr ""
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_dates_required
+msgid "ARCA service period dates required"
+msgstr ""

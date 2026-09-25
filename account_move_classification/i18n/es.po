@@ -63,10 +63,6 @@ msgstr "Clasificación"
 
 #. module: account_move_classification
 #: model:ir.actions.act_window,name:account_move_classification.action_account_move_classification
-msgid "Invoice Classifications"
-msgstr "Clasificaciones de comprobante"
-
-#. module: account_move_classification
 #: model:ir.ui.menu,name:account_move_classification.menu_account_move_classification
 msgid "Invoice Classifications"
 msgstr "Clasificaciones de comprobante"

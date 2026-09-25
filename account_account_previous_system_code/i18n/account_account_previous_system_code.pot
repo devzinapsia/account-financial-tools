@@ -1,0 +1,27 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_account_previous_system_code
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: \n"
+
+#. module: account_account_previous_system_code
+#: model:ir.model.fields,field_description:account_account_previous_system_code.field_account_account__previous_system_account_code
+#: model_terms:ir.ui.view,arch_db:account_account_previous_system_code.view_account_search_previous_system_code
+msgid "Previous system account code"
+msgstr ""
+
+#. module: account_account_previous_system_code
+#: model:ir.model.fields,help:account_account_previous_system_code.field_account_account__previous_system_account_code
+msgid "Code this account had in the system it was migrated from. Kept for reference (mappings, reconciliations, historical lookups)."
+msgstr ""
+
+#. module: account_account_previous_system_code
+#. odoo-python
+#: code:addons/account_account_previous_system_code/models/account_account.py:0
+msgid "The previous system account code \"%(code)s\" is already used by account \"%(account)s\"."
+msgstr ""
