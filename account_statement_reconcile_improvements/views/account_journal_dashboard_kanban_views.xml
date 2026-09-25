@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_journal_dashboard_kanban_view_auto_reconcile" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.auto.reconcile</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@id='all_transactions_btn']" position="after">
+                <button t-if="journal_type == 'bank'" type="object"
+                        name="action_auto_reconcile_by_amount_and_date"
+                        class="btn btn-secondary"
+                        title="For unreconciled lines with no partner, look for a unique open invoice/payment matching on date and amount, and reconcile it">
+                    Reconcile by date and amount
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

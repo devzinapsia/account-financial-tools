@@ -13,9 +13,16 @@ class AccountBankStatementLine(models.Model):
         as reviewed; the ones reconciled purely by date+amount, with no
         partner backing the match, are the ones worth a second look.
 
-        Shared by every automatic-reconciliation entry point this module
-        touches: the CUIT-based partner match on import, the auto-reconcile
-        button, and account.reconcile.model auto-triggered rules.
+        Called from the two entry points where "no partner backing the
+        match" is actually true of the match itself: account.reconcile.model
+        auto-triggered rules, and the auto-reconcile button. The CUIT-based
+        partner match on import never reconciles anything by itself (it only
+        sets partner_id), and every *other* native auto-reconcile strategy
+        account_accountant tries during import (exact amount, outstanding
+        account entries, payment reference) is left at whatever
+        account.move._compute_checked() already gives it - those aren't
+        instrumented here at all, so they keep their native "reviewed by
+        default" behavior.
 
         :param force: skip the "no confirmed contact" check and flag
             unconditionally (subject to the company setting). Needed by the

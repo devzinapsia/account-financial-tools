@@ -44,18 +44,23 @@ Reconciliation improvements
   from its CUIT no longer fails just because a company and its own child
   contacts (which inherit the company's VAT) all match the same number -
   only top-level contacts are considered, see "Decisiones de diseño".
-- **New "Auto-reconcile unassigned" button** on the bank reconciliation
-  screen: for unreconciled lines with no partner, it looks for a unique
-  open invoice/payment matching on date and amount and reconciles it.
+- **New "Reconcile by date and amount" button** on each bank/cash
+  journal's dashboard card, next to "Transactions": for every unreconciled
+  line of that journal with no partner (no selection needed - it always
+  applies to everything currently pending), it looks for a unique open
+  invoice/payment matching on date and amount and reconciles it.
 - **Deleting a bank statement no longer leaves orphaned lines** or
   invoices/payments stuck as reconciled: it now shows an explicit warning
   and, if confirmed, unreconciles every line first (reopening the matched
   invoices/payments) before deleting.
 - **A general setting** ("Auto-reconciled bank statement lines", in
-  Accounting settings) controls whether lines reconciled automatically
-  (by the CUIT match above, by the new button, or by an
-  ``account.reconcile.model`` with automatic validation) are flagged "to
-  check" instead of fully reviewed. Enabled by default.
+  Accounting settings) controls whether a line reconciled with no
+  confirmed contact backing the match - by the new button, or by an
+  ``account.reconcile.model`` rule with no partner condition - is flagged
+  "to check" instead of fully reviewed. A line whose partner was already
+  established some other way (the CUIT match above, a reconcile.model
+  rule that matched a specific partner) is reliable enough to count as
+  reviewed either way. Enabled by default.
 
 Decisiones de diseño
 =====================
@@ -137,8 +142,8 @@ amount and date only, no partner" natively. It doesn't cover this case:
   statement line.
 
 So a reconcile model cannot express "no partner, but there's a unique open
-item with the same date and amount" - the new "Auto-reconcile unassigned"
-button was implemented for that specific case. ``account.reconcile.model``
+item with the same date and amount" - the new "Reconcile by date and
+amount" button was implemented for that specific case. ``account.reconcile.model``
 remains the right tool for anything based on label/amount-range/partner
 rules, and this module also makes sure a reconcile model configured with
 "Automated" validation still respects the "to check" setting above.

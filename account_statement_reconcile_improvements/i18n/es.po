@@ -32,6 +32,7 @@ msgid "This bank statement file was already imported for this journal."
 msgstr "Este archivo de extracto bancario ya fue importado para este diario."
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
 msgid ""
 "This file was already imported for this journal as statement %(name)s, on "
@@ -100,11 +101,13 @@ msgid "Flag them as to check instead of fully reviewed"
 msgstr "Marcarlas a revisar en lugar de darlas por revisadas"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Contact (CUIT in free-text legend)"
 msgstr "Contacto (CUIT en leyenda de texto libre)"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Bank statement import file"
 msgstr "Archivo de importación de extracto bancario"
@@ -141,56 +144,31 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/static/src/js/bank_rec_auto_reconcile_button.js:0
-msgid "Auto-reconcile unassigned"
-msgstr "Conciliar sin asignar automáticamente"
-
-#. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/static/src/js/bank_rec_auto_reconcile_button.js:0
-msgid ""
-"For unreconciled lines with no partner, look for a unique open "
-"invoice/payment matching on date and amount, and reconcile it"
-msgstr ""
-"Para las líneas sin conciliar y sin contacto, busca una factura/pago "
-"pendiente único que coincida en fecha e importe, y la concilia"
-
-#. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/static/src/js/bank_rec_auto_reconcile_button.js:0
-msgid "No unassigned, unreconciled lines to process."
-msgstr "No hay líneas sin asignar ni conciliar para procesar."
-
-#. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/static/src/js/bank_rec_auto_reconcile_button.js:0
-msgid "Line(s) reconciled automatically: "
-msgstr "Línea(s) conciliada(s) automáticamente: "
-
-#. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/static/src/js/bank_rec_auto_reconcile_button.js:0
-msgid "No matching open item found for any of those lines."
-msgstr ""
-"No se encontró un comprobante pendiente que coincida para esas líneas."
-
-#. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Date"
 msgstr "Fecha"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Amount"
 msgstr "Importe"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Description"
 msgstr "Descripción"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Contact"
 msgstr "Contacto"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid ""
 "%(count)s row(s) were not imported: they matched an existing statement line "
@@ -200,11 +178,13 @@ msgstr ""
 "existente en la misma fecha, contacto e importe (probable duplicado)."
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Probable duplicate rows"
 msgstr "Filas probablemente duplicadas"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid ""
 "%(count)s row(s) will not be imported: they match an existing statement line"
@@ -219,11 +199,13 @@ msgstr ""
 "seguro de que no lo son."
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Nothing imported"
 msgstr "No se importó nada"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid ""
 "All %(count)s row(s) in the file match an existing statement line for this "
@@ -235,25 +217,13 @@ msgstr ""
 "duplicados) - no se importó nada."
 
 #. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
-msgid "Import successful"
-msgstr "Importación exitosa"
-
-#. module: account_statement_reconcile_improvements
-#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
-msgid ""
-"%(imported)s row(s) imported. %(ignored)s row(s) ignored as probable "
-"duplicates - see the statement's chatter for the full list."
-msgstr ""
-"%(imported)s fila(s) importadas. %(ignored)s fila(s) ignoradas por ser "
-"probables duplicados - ver el listado completo en el chatter del extracto."
-
-#. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
 msgid "This statement has reconciled lines."
 msgstr "Este extracto tiene líneas conciliadas."
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
 msgid "Continue"
 msgstr "Continuar"
@@ -264,6 +234,51 @@ msgid "Confirm statement deletion"
 msgstr "Confirmar eliminación del extracto"
 
 #. module: account_statement_reconcile_improvements
+#. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "And %(count)s more row(s)..."
 msgstr "Y %(count)s registro(s) más..."
+
+#. module: account_statement_reconcile_improvements
+#. odoo-python
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid ""
+"%(ignored)s row(s) were ignored as probable duplicates - see the statement's"
+" chatter for the full list."
+msgstr ""
+"%(ignored)s fila(s) fueron ignoradas por ser probables duplicados - ver el "
+"listado completo en el chatter del extracto."
+
+#. module: account_statement_reconcile_improvements
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.account_journal_dashboard_kanban_view_auto_reconcile
+msgid "Reconcile by date and amount"
+msgstr "Conciliar por fecha e importe"
+
+#. module: account_statement_reconcile_improvements
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.account_journal_dashboard_kanban_view_auto_reconcile
+msgid ""
+"For unreconciled lines with no partner, look for a unique open "
+"invoice/payment matching on date and amount, and reconcile it"
+msgstr ""
+"Para las líneas sin conciliar y sin contacto, busca una factura/pago "
+"pendiente único que coincida en fecha e importe, y la concilia"
+
+#. module: account_statement_reconcile_improvements
+#. odoo-python
+#: code:addons/account_statement_reconcile_improvements/models/account_journal.py:0
+msgid "Auto-reconcile by date and amount"
+msgstr "Conciliación automática por fecha e importe"
+
+#. module: account_statement_reconcile_improvements
+#. odoo-python
+#: code:addons/account_statement_reconcile_improvements/models/account_journal.py:0
+msgid "Line(s) reconciled automatically: %(count)s"
+msgstr "Línea(s) conciliada(s) automáticamente: %(count)s"
+
+#. module: account_statement_reconcile_improvements
+#. odoo-python
+#: code:addons/account_statement_reconcile_improvements/models/account_journal.py:0
+msgid "No matching open item found for any unassigned, unreconciled line."
+msgstr ""
+"No se encontró un comprobante pendiente que coincida para ninguna línea sin "
+"asignar ni conciliar."

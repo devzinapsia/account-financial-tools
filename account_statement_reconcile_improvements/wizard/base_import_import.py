@@ -214,6 +214,15 @@ class Base_ImportImport(models.TransientModel):
         # know its resolved partner - matching on date+amount only, instead
         # of assuming partner_id=False, is what actually catches those
         # duplicates instead of silently missing them.
+        #
+        # This applies per row, not just per import: even with the CUIT
+        # column mapped, extraction can fail for a specific row (no CUIT
+        # found in its legend, or no unique partner match) while the
+        # existing line it duplicates DOES have a partner (from an older
+        # import, or a row where extraction did work). Requiring
+        # partner_id=False on the existing line for a row whose own
+        # resolution simply failed missed exactly that case - a genuine
+        # duplicate with no partner data to compare got imported as new.
         partner_index = import_fields.index('partner_id/.id') if 'partner_id/.id' in import_fields else None
         payment_ref_index = import_fields.index('payment_ref') if 'payment_ref' in import_fields else None
 
@@ -230,8 +239,8 @@ class Base_ImportImport(models.TransientModel):
                     ('journal_id', '=', journal.id),
                     ('date', '=', date_value),
                 ]
-                if partner_index is not None:
-                    domain.append(('partner_id', '=', row[partner_index] or False))
+                if partner_index is not None and row[partner_index]:
+                    domain.append(('partner_id', '=', row[partner_index]))
                 existing = StatementLine.search(domain)
                 matches = existing.filtered(lambda line, amount_value=amount_value, precision=precision: (
                     round(line.amount, precision) == amount_value
@@ -346,22 +355,35 @@ class Base_ImportImport(models.TransientModel):
 
         self._save_bank_statement_import_profile(journal, columns, fields, options)
         self._attach_import_file(statements)
-        lines.filtered('is_reconciled')._flag_as_to_check_if_configured()
+        # No blanket to-check flagging here on purpose: account_accountant's
+        # own auto-reconcile step (_try_auto_reconcile_statement_lines) tries
+        # several strategies during import - matching by exact amount, by
+        # outstanding account entries, by payment reference, by reconcile
+        # model - and most of them don't set a partner at all. A blanket
+        # call here would have flagged every one of those as "to check" too,
+        # not just the reconcile.model matches it was meant for. Each
+        # mechanism handles its own flagging where it's actually reliable to
+        # judge: account.reconcile.model's own override (below in this
+        # module) already flags exactly the lines *it* reconciles, using the
+        # same partner-based criterion: everything else keeps whatever
+        # account.move._compute_checked() already gives it (reviewed by
+        # default), since the CUIT-based partner match itself never
+        # reconciles anything - it only sets partner_id for whichever of
+        # these mechanisms picks it up afterward.
         if duplicate_details:
             self._post_rejected_rows_chatter_note(statements, duplicate_details)
-            # base_import's own success notification only mentions the rows
-            # that were imported - without this, a mixed import (some rows
-            # imported, some skipped as duplicates) looked fully successful
-            # unless the user thought to check the statement's chatter.
+            # base_import's own success notification ("N row(s) imported
+            # successfully") already covers the imported count - repeating
+            # it here just stacked a second, mostly-redundant toast on top
+            # of the native one. This one only adds the part that native
+            # doesn't mention: how many were skipped as duplicates.
             self.env.user._bus_send('simple_notification', {
-                'type': 'success',
-                'sticky': False,
-                'title': self._t("Import successful"),
+                'type': 'warning',
+                'sticky': True,
+                'title': self._t("Probable duplicate rows"),
                 'message': self._t(
-                    "%(imported)s row(s) imported. %(ignored)s row(s) ignored "
-                    "as probable duplicates - see the statement's chatter for "
-                    "the full list.",
-                    imported=len(res['ids']),
+                    "%(ignored)s row(s) were ignored as probable duplicates "
+                    "- see the statement's chatter for the full list.",
                     ignored=len(duplicate_details),
                 ),
             })

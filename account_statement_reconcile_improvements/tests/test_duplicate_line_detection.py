@@ -142,6 +142,46 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         )
         self.assertFalse(result.get('ids'), "The duplicate row should have been skipped, not imported")
 
+    def test_duplicate_is_caught_when_cuit_extraction_fails_for_that_row(self):
+        """Regression test for a real bug reported after deploy: with the
+        CUIT column mapped, a row whose legend has no extractable CUIT
+        resolves to partner_id=False for *that row* - but the existing line
+        it duplicates might have a real partner (from an older import, or a
+        different row where extraction did work). Requiring
+        partner_id=False on the existing line missed exactly that case: a
+        genuine duplicate got imported as a new row instead of being
+        skipped.
+        """
+        self.env['account.bank.statement'].create({
+            'name': 'Existing Statement With Partner, No CUIT On Reimport',
+            'journal_id': self.bank_journal.id,
+            'line_ids': [(0, 0, {
+                'date': '2026-03-01',
+                'payment_ref': 'Deb. Autom. De Serv. OSDE',
+                'partner_id': self.partner_a.id,
+                'amount': 100.0,
+                'journal_id': self.bank_journal.id,
+            })],
+        })
+        # "OSDE" has no CUIT in it - extraction fails for this row, leaving
+        # its resolved partner_id at False, even though the CUIT column is
+        # mapped for the import as a whole.
+        csv_content = "Fecha,Etiqueta,Importe,Leyenda\n2026-03-01,Deb. Autom. De Serv. OSDE,100.0,OSDE\n"
+        wizard = self._create_wizard(csv_content)
+        result = wizard.execute_import(
+            fields=['date', 'payment_ref', 'amount', 'x_ar_partner_identification'],
+            columns=['Fecha', 'Etiqueta', 'Importe', 'Leyenda'],
+            options={
+                'has_headers': True,
+                'bank_stmt_import': True,
+                'quoting': '"',
+                'separator': ',',
+                'encoding': 'utf-8',
+            },
+            dryrun=True,
+        )
+        self.assertFalse(result.get('ids'), "The duplicate row should have been skipped, not imported")
+
     def test_real_import_with_only_duplicate_rows_leaves_no_empty_statement(self):
         """account_bank_statement_import_csv unconditionally creates a new
         account.bank.statement after import, even with an empty line_ids -
@@ -237,15 +277,16 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         # A mixed import (some rows imported, some skipped as duplicates)
         # otherwise looked fully successful in the native toast, with no
         # hint that anything was skipped unless the user checked the
-        # chatter.
+        # chatter. Deliberately doesn't repeat the imported count: base_import's
+        # own native toast already reports that, and stacking a second toast
+        # with the same number just looked like a duplicate notification.
         queued_bus_values = self.env.cr.precommit.data.get("bus.bus.values", [])
         self.assertTrue(
             any(
-                '1 row(s) imported' in json.loads(value['message'])['payload'].get('message', '')
-                and '1 row(s) ignored' in json.loads(value['message'])['payload'].get('message', '')
+                '1 row(s) were ignored as probable duplicates' in json.loads(value['message'])['payload'].get('message', '')
                 for value in queued_bus_values
             ),
-            f"Expected a notification summarizing both the imported and ignored counts, got: {queued_bus_values}",
+            f"Expected a notification about the ignored duplicate count, got: {queued_bus_values}",
         )
 
     def test_chatter_table_is_capped_at_50_rows_with_a_count_note_for_the_rest(self):

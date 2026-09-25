@@ -107,3 +107,60 @@ class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
         line._flag_as_to_check_if_configured()
 
         self.assertTrue(line.move_id.checked, "Nothing should be flagged when the setting is disabled")
+
+    def test_import_does_not_blanket_flag_lines_reconciled_by_native_strategies(self):
+        """Regression test: account_accountant's own auto-reconcile step
+        tries several strategies during import besides reconcile.model
+        (exact amount, outstanding account entries, payment reference), and
+        most of them don't set a partner at all. A blanket
+        _flag_as_to_check_if_configured() call after every import used to
+        flag every one of those "to check" too, not just the
+        reconcile.model matches it was meant for - a line the system
+        reconciled with no reconcile.model involved must be left at
+        whatever _compute_checked() already gives it (reviewed by default),
+        the same as if a reconcile.model rule had matched it with a
+        confirmed contact.
+        """
+        self._create_open_invoice(amount=100.0, date='2026-04-01')
+        csv_content = "Fecha,Importe\n2026-04-01,100.0\n"
+        wizard = self.env['base_import.import'].with_context(
+            default_journal_id=self.bank_journal.id,
+        ).create({
+            'res_model': 'account.bank.statement.line',
+            'file': csv_content.encode(),
+            'file_name': 'test_import.csv',
+            'file_type': 'text/csv',
+        })
+        result = wizard.execute_import(
+            fields=['date', 'amount'],
+            columns=['Fecha', 'Importe'],
+            options={
+                'has_headers': True,
+                'bank_stmt_import': True,
+                'quoting': '"',
+                'separator': ',',
+                'encoding': 'utf-8',
+            },
+            dryrun=False,
+        )
+        line = self.env['account.bank.statement.line'].browse(result['ids'])
+        if not line.is_reconciled:
+            self.skipTest("Native auto-reconcile didn't match this line in this environment")
+        self.assertFalse(line.partner_id, "This scenario is only meaningful when nothing set a partner")
+        self.assertTrue(line.move_id.checked, "A line the system reconciled with no reconcile.model involved must stay reviewed")
+
+    def test_journal_button_reconciles_every_pending_line_with_no_selection(self):
+        """The journal dashboard button applies to every unreconciled,
+        no-partner line of the journal - not just a manually selected
+        subset, since the bank reconciliation widget's own control panel
+        has no reachable selection mechanism in kanban mode to select from.
+        """
+        self._create_open_invoice(amount=100.0, date='2026-01-01')
+        self._create_open_invoice(amount=200.0, date='2026-01-02')
+        line1 = self._create_unreconciled_line(amount=100.0, date='2026-01-01')
+        line2 = self._create_unreconciled_line(amount=200.0, date='2026-01-02')
+
+        self.bank_journal.action_auto_reconcile_by_amount_and_date()
+
+        self.assertTrue(line1.is_reconciled)
+        self.assertTrue(line2.is_reconciled)
