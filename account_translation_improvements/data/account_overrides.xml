@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Records owned by the account module, renamed in place. Only the name
+        is overridden; account rewrites it on its own upgrade, and this module
+        (a dependent, so upgraded right after it) rewrites it back.
+    -->
+
+    <!-- Gear menu action on the move form: one label for both flows -->
+    <record id="account.action_move_force_register_payment" model="ir.actions.server">
+        <field name="name">Pay / Collect</field>
+    </record>
+
+    <!-- Customers > Payments -->
+    <record id="account.menu_action_account_payments_receivable" model="ir.ui.menu">
+        <field name="name">Collections</field>
+    </record>
+    <record id="account.action_account_payments" model="ir.actions.act_window">
+        <field name="name">Customer Collections</field>
+    </record>
+
+    <!-- Vendors > Refunds (the menu has no name of its own in account) -->
+    <record id="account.menu_action_move_in_refund_type" model="ir.ui.menu">
+        <field name="name">Credit Notes</field>
+    </record>
+    <record id="account.action_move_in_refund_type" model="ir.actions.act_window">
+        <field name="name">Credit Notes</field>
+    </record>
+
+    <!--
+        The records above are account's, so they already have account's
+        translations ("Pagar", "Pagos", "Pagos del cliente", "Reembolsos").
+        Loading this module's po files never replaces an existing
+        translation (only with the i18n overwrite option, which odoo.sh
+        doesn't use),
+        so the new names stayed untranslated in es_AR - checked on a real
+        database. This writes them with update_field_translations() for every
+        installed language, reading the values from this module's own po
+        files. It runs on every install and upgrade of this module (account
+        upgrades cascade to it too).
+    -->
+    <function model="ir.module.module" name="_account_translation_improvements_force_translations"/>
+
+</odoo>
