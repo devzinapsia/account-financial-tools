@@ -1,12 +1,12 @@
 {
-    'name': 'Prevent Draft on Electronic Invoices (AFIP)',
-    'version': '19.0.1.0.2',
+    'name': 'Impedir borrador en facturas electrónicas por web service (ARCA)',
+    'version': '19.0.1.1.0',
     'category': 'Accounting',
-    'summary': 'Evita que facturas con CAE vuelvan a estado borrador',
+    'summary': 'Evita que facturas autorizadas por web service de ARCA vuelvan a borrador',
     'author': 'Zinapsia',
     'website': 'https://www.zinapsia.com',
     'license': 'LGPL-3',
-    'depends': ['account', 'l10n_ar'], 
+    'depends': ['l10n_ar_edi'],
     'installable': True,
-    'auto_install': False,
+    'auto_install': True,
 }

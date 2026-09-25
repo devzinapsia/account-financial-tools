@@ -1,27 +1,32 @@
-from odoo import models, api, _
+from odoo import _, models
 from odoo.exceptions import ValidationError
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    def action_draft(self):
-        """ Sobreescribimos la acción de pasar a borrador """
-        self._check_afip_auth_code()
-        return super(AccountMove, self).action_draft()
-
     def button_draft(self):
-        """ Sobreescribimos el botón de la interfaz que llama al borrador """
         self._check_afip_auth_code()
-        return super(AccountMove, self).button_draft()
+        return super().button_draft()
 
     def _check_afip_auth_code(self):
-        """ Método privado para validar la presencia de CAE """
+        """Block resetting to draft customer invoices/credit notes that were
+        authorized by ARCA through a web service journal (WSFE, WSFEX, WSBFE,
+        or any other web service added by third-party modules).
+
+        Journals without a web service (online invoice, pre-printed, etc.)
+        are not blocked, even when a CAE was loaded manually on the invoice.
+        """
         for rec in self:
-            # Verificamos solo en facturas y notas de crédito de clientes
-            if rec.move_type in ['out_invoice', 'out_refund']:
-                # Usamos el nombre técnico exacto de tu captura: l10n_ar_afip_auth_code
-                if rec.l10n_ar_afip_auth_code:
-                    raise ValidationError(_(
-                        "Seguridad Zinapsia: No se puede pasar a borrador la factura %s "
-                        "porque ya posee CAE de AFIP (%s). Debe anularse mediante Nota de Crédito."
-                    ) % (rec.name, rec.l10n_ar_afip_auth_code))
+            if (
+                rec.move_type in ('out_invoice', 'out_refund')
+                and rec.journal_id.l10n_ar_afip_ws
+                and rec.l10n_ar_afip_auth_code
+            ):
+                raise ValidationError(_(
+                    "Invoice %(name)s cannot be reset to draft because it was "
+                    "authorized by ARCA through a web service (CAE %(cae)s). "
+                    "It must be cancelled with a credit note.",
+                    name=rec.name,
+                    cae=rec.l10n_ar_afip_auth_code,
+                ))

@@ -1,11 +1,12 @@
-# Prevent Draft on Electronic Invoices (Odoo V18/V19)
+# Impedir borrador en facturas electrónicas por web service (ARCA) — Odoo 19
 
 Este módulo desarrollado por **Zinapsia** añade una capa de seguridad crítica al flujo de facturación electrónica en Odoo 18. Su objetivo es garantizar la integridad legal de los comprobantes fiscales, impidiendo que documentos que ya poseen un **CAE (Código de Autorización Electrónico)** o autorización de AFIP puedan ser revertidos manualmente al estado "Borrador".
 
 ## 🚀 Funcionalidades Principales
 
 * **Bloqueo de Reversión:** Detecta intentos de ejecutar la acción "Cambiar a Borrador" en facturas y notas de crédito de clientes.
-* **Validación de CAE/Autorización:** El sistema verifica la presencia de datos en el campo de autorización electrónica (AFIP) antes de permitir cualquier cambio de estado.
+* **Solo diarios con web service:** El bloqueo aplica únicamente cuando el diario de la factura tiene un web service de ARCA (WSFE, WSFEX, WSBFE, o cualquier otro agregado por módulos de terceros, como WSMTXCA) **y** la factura tiene CAE.
+* **Diarios sin web service no se bloquean:** Las facturas de diarios "Factura en línea", preimpresos, etc. pueden volver a borrador aunque se les haya cargado un CAE manualmente (por ejemplo, comprobantes emitidos en un sistema externo).
 * **Mensajes de Error Informativos:** Si un usuario intenta resetear una factura validada ante el fisco, el sistema lanza una excepción clara indicando el nombre del documento y su respectivo CAE.
 * **Cumplimiento Fiscal:** Asegura que las correcciones de documentos autorizados se realicen exclusivamente mediante Notas de Crédito/Débito, manteniendo la trazabilidad exigida por los organismos fiscales.
 
