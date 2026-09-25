@@ -1,0 +1,45 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_translation_improvements
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 00:00+0000\n"
+"PO-Revision-Date: 2026-09-25 00:00+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_translation_improvements
+#: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_move_form
+#: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_out_credit_note_tree
+#: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_out_invoice_tree
+msgid "Collect"
+msgstr "Cobrar"
+
+#. module: account_translation_improvements
+#: model:ir.ui.menu,name:account.menu_action_account_payments_receivable
+msgid "Collections"
+msgstr "Cobros"
+
+#. module: account_translation_improvements
+#: model:ir.actions.act_window,name:account.action_move_in_refund_type
+#: model:ir.ui.menu,name:account.menu_action_move_in_refund_type
+msgid "Credit Notes"
+msgstr "Notas de crédito"
+
+#. module: account_translation_improvements
+#: model:ir.actions.act_window,name:account.action_account_payments
+msgid "Customer Collections"
+msgstr "Cobros de clientes"
+
+#. module: account_translation_improvements
+#: model:ir.actions.server,name:account.action_move_force_register_payment
+msgid "Pay / Collect"
+msgstr "Pagar / Cobrar"
