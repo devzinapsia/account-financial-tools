@@ -1,0 +1,25 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_prevent_draft
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-25 00:00+0000\n"
+"PO-Revision-Date: 2026-09-25 00:00+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_prevent_draft
+#. odoo-python
+#: code:addons/account_prevent_draft/models/account_move.py:0
+msgid ""
+"Invoice %(name)s cannot be reset to draft because it was authorized by ARCA "
+"through a web service (CAE %(cae)s). It must be cancelled with a credit note."
+msgstr ""
