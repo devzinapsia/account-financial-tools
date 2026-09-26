@@ -164,3 +164,23 @@ class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
 
         self.assertTrue(line1.is_reconciled)
         self.assertTrue(line2.is_reconciled)
+
+    def test_button_action_is_safe_to_run_again_with_nothing_left_pending(self):
+        """3.10: the button lives in the reconciliation screen's own cog
+        menu (Actions), not gated by a selection, so nothing stops a user
+        from triggering it again right after a first run that already
+        reconciled everything it could. A second call must be a no-op -
+        it must not error, and must not touch the lines it already
+        reconciled (they no longer have partner_id=False once reconciled,
+        so the search that feeds the button already excludes them, but this
+        is exactly the scenario worth a regression test for).
+        """
+        self._create_open_invoice(amount=100.0, date='2026-01-01')
+        line = self._create_unreconciled_line(amount=100.0, date='2026-01-01')
+
+        first_run_count = self.bank_journal.action_auto_reconcile_by_amount_and_date()
+        second_run_count = self.bank_journal.action_auto_reconcile_by_amount_and_date()
+
+        self.assertEqual(first_run_count, 1)
+        self.assertEqual(second_run_count, 0)
+        self.assertTrue(line.is_reconciled)

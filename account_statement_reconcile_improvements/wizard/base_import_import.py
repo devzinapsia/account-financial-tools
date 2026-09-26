@@ -295,16 +295,20 @@ class Base_ImportImport(models.TransientModel):
             # a 'rows': {'from', 'to'} pair, and adding anything to it makes
             # the wizard treat the whole import as failed - stopImport() and
             # a "danger" banner - which is not what a skipped-duplicate
-            # notice should do). A bus notification is the safe, native way
-            # to show a non-blocking toast instead. `sticky` keeps it on
-            # screen (it doesn't auto-dismiss) since it can list many rows.
-            # Only shown on "Probar" (dryrun): kept short on purpose - a
-            # per-row itemized list (one line per duplicate) is unreadable
-            # in a toast once there are more than a handful of rows (a real
-            # case had 42). The real import instead posts the full detail
-            # as a proper table on the resulting statement's chatter
-            # (below), once there's an actual record to attach it to.
-            message = self._t(
+            # notice should do). Relayed instead through this custom
+            # 'bank_stmt_duplicate_warning' key, which
+            # static/src/js/base_import_duplicate_warning.js picks up
+            # client-side and shows in the same reliable, synchronous
+            # message area base_import itself uses for "Everything seems
+            # valid." - unlike a bus notification (tried first), this
+            # appears immediately and isn't replayed later. Only shown on
+            # "Probar" (dryrun): kept short on purpose - a per-row itemized
+            # list (one line per duplicate) is unreadable once there are
+            # more than a handful of rows (a real case had 42). The real
+            # import instead posts the full detail as a proper table on the
+            # resulting statement's chatter (below), once there's an actual
+            # record to attach it to.
+            res['bank_stmt_duplicate_warning'] = self._t(
                 "%(count)s row(s) will not be imported: they match an "
                 "existing statement line for this journal on the same "
                 "date, partner and amount (probable duplicate). Import to "
@@ -313,12 +317,6 @@ class Base_ImportImport(models.TransientModel):
                 "they are not.",
                 count=len(duplicate_details),
             )
-            self.env.user._bus_send('simple_notification', {
-                'type': 'warning',
-                'sticky': True,
-                'title': self._t("Probable duplicate rows"),
-                'message': message,
-            })
 
         if dryrun or not options.get('bank_stmt_import'):
             return res
@@ -335,18 +333,13 @@ class Base_ImportImport(models.TransientModel):
             # on a file that's entirely duplicates looks like nothing
             # happened at all - the wizard just closes with no feedback.
             if duplicate_details:
-                self.env.user._bus_send('simple_notification', {
-                    'type': 'warning',
-                    'sticky': True,
-                    'title': self._t("Nothing imported"),
-                    'message': self._t(
-                        "All %(count)s row(s) in the file match an existing "
-                        "statement line for this journal on the same date, "
-                        "partner and amount (probable duplicates) - nothing "
-                        "was imported.",
-                        count=len(duplicate_details),
-                    ),
-                })
+                res['bank_stmt_duplicate_warning'] = self._t(
+                    "All %(count)s row(s) in the file match an existing "
+                    "statement line for this journal on the same date, "
+                    "partner and amount (probable duplicates) - nothing "
+                    "was imported.",
+                    count=len(duplicate_details),
+                )
             return res
 
         journal = self._get_bank_stmt_import_journal()
@@ -377,16 +370,11 @@ class Base_ImportImport(models.TransientModel):
             # it here just stacked a second, mostly-redundant toast on top
             # of the native one. This one only adds the part that native
             # doesn't mention: how many were skipped as duplicates.
-            self.env.user._bus_send('simple_notification', {
-                'type': 'warning',
-                'sticky': True,
-                'title': self._t("Probable duplicate rows"),
-                'message': self._t(
-                    "%(ignored)s row(s) were ignored as probable duplicates "
-                    "- see the statement's chatter for the full list.",
-                    ignored=len(duplicate_details),
-                ),
-            })
+            res['bank_stmt_duplicate_warning'] = self._t(
+                "%(ignored)s row(s) were ignored as probable duplicates "
+                "- see the statement's chatter for the full list.",
+                ignored=len(duplicate_details),
+            )
         return res
 
     def _post_rejected_rows_chatter_note(self, statements, duplicate_details):

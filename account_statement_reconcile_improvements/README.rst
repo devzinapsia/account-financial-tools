@@ -48,11 +48,13 @@ Reconciliation improvements
   from its CUIT no longer fails just because a company and its own child
   contacts (which inherit the company's VAT) all match the same number -
   only top-level contacts are considered, see "Decisiones de diseño".
-- **New "Reconcile by date and amount" button** on each bank/cash
-  journal's dashboard card, next to "Transactions": for every unreconciled
-  line of that journal with no partner (no selection needed - it always
-  applies to everything currently pending), it looks for a unique open
-  invoice/payment matching on date and amount and reconciles it.
+- **New "Reconcile by date and amount" entry** in the bank reconciliation
+  screen's own cog/Actions menu (⚙, next to "Find Duplicate Transactions"
+  when ``account_online_synchronization`` is installed): for every
+  unreconciled line of the journal being reconciled with no partner (no
+  selection needed - it always applies to everything currently pending),
+  it looks for a unique open invoice/payment matching on date and amount
+  and reconciles it.
 - **Deleting a bank statement no longer leaves orphaned lines** or
   invoices/payments stuck as reconciled: it now shows an explicit warning
   and, if confirmed, unreconciles every line first (reopening the matched
@@ -147,7 +149,7 @@ amount and date only, no partner" natively. It doesn't cover this case:
 
 So a reconcile model cannot express "no partner, but there's a unique open
 item with the same date and amount" - the new "Reconcile by date and
-amount" button was implemented for that specific case. ``account.reconcile.model``
+amount" cog menu entry was implemented for that specific case. ``account.reconcile.model``
 remains the right tool for anything based on label/amount-range/partner
 rules, and this module also makes sure a reconcile model configured with
 "Automated" validation still respects the "to check" setting above.
@@ -187,9 +189,10 @@ bank journal, **Upload**), with these differences:
 - Reimporting the exact same file for the same journal is rejected
   outright, with a reference to the statement that already has it.
 
-On the bank reconciliation screen, use the new **Auto-reconcile
-unassigned** button to try to match every unassigned, unreconciled line
-against a unique open invoice/payment with the same date and amount.
+On the bank reconciliation screen, use **Reconcile by date and amount**
+(⚙ cog menu, top right) to try to match every unassigned, unreconciled
+line of the journal being reconciled against a unique open
+invoice/payment with the same date and amount.
 
 Deleting a bank statement with reconciled lines now shows a confirmation
 warning before unreconciling and removing them.

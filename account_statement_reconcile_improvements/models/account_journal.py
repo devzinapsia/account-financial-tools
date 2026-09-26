@@ -19,17 +19,27 @@ class AccountJournal(models.Model):
     )
 
     def action_auto_reconcile_by_amount_and_date(self):
-        """3.7: button on this journal's dashboard card - for every
-        unreconciled, no-partner statement line of this journal, look for a
-        unique open invoice/payment matching on date and amount, and
-        reconcile it. No selection needed: it always applies to every line
-        currently pending, not just what happens to be loaded/visible.
+        """3.7: 'Reconcile by date and amount' entry in the bank
+        reconciliation screen's own cog/Actions menu (see
+        static/src/js/auto_reconcile_cog_menu.js) - for every unreconciled,
+        no-partner statement line of this journal, look for a unique open
+        invoice/payment matching on date and amount, and reconcile it. No
+        selection needed: it always applies to every line currently
+        pending, not just what happens to be loaded/visible.
 
-        This lives here, as a plain object-type kanban button, instead of
-        inside the bank reconciliation widget itself: that widget's own
-        control panel only renders its action row when something is
-        selected (a mechanism kanban mode doesn't even expose), so a button
-        meant to run with no selection could never actually show up there.
+        Not a plain <button> in that screen's own list/kanban view: Odoo
+        only renders an always-visible control-panel button via <header>,
+        which is gated on having a selection (a mechanism kanban mode
+        doesn't even expose) - not usable for an action that intentionally
+        never requires one. The cog menu is the one extension point that
+        supports an unconditional entry there (the same one
+        account_online_synchronization uses for its own "Find Duplicate/
+        Missing Transactions" entries).
+
+        Safe to trigger more than once in a row: a line this already
+        reconciled picks up a partner_id as a side effect
+        (set_line_bank_statement_line), so it drops out of the search
+        below on the next call - nothing left to touch, no error.
         """
         self.ensure_one()
         lines = self.env['account.bank.statement.line'].search([
@@ -49,3 +59,4 @@ class AccountJournal(models.Model):
             'title': self.env._("Auto-reconcile by date and amount"),
             'message': message,
         })
+        return reconciled_count

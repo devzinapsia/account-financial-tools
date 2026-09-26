@@ -12,9 +12,10 @@ bank journal, **Upload**), with these differences:
 - Reimporting the exact same file for the same journal is rejected
   outright, with a reference to the statement that already has it.
 
-On the bank reconciliation screen, use the new **Auto-reconcile
-unassigned** button to try to match every unassigned, unreconciled line
-against a unique open invoice/payment with the same date and amount.
+On the bank reconciliation screen, use **Reconcile by date and amount**
+(⚙ cog menu, top right) to try to match every unassigned, unreconciled
+line of the journal being reconciled against a unique open
+invoice/payment with the same date and amount.
 
 Deleting a bank statement with reconciled lines now shows a confirmation
 warning before unreconciling and removing them.

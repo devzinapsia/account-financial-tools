@@ -1,5 +1,3 @@
-import json
-
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.tests import tagged
 from odoo.tools.misc import format_date
@@ -80,30 +78,19 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         for message in messages:
             self.assertIn('rows', message, f"message dict missing 'rows', would crash the JS client: {message}")
 
-        # The duplicate-skip notice must instead go out as a non-blocking
-        # bus notification (self.env.user._bus_send('simple_notification', ...)).
-        # _bus_send() only queues the row in cr.precommit (flushed to the
-        # bus.bus table on commit, which TransactionCase tests never do) -
-        # so it's checked directly on that in-memory queue instead of the
-        # bus.bus table.
-        queued_bus_values = self.env.cr.precommit.data.get("bus.bus.values", [])
-        self.assertTrue(
-            any('duplicate' in value['message'].lower() for value in queued_bus_values),
-            f"Expected a queued bus 'simple_notification' about the skipped duplicate row, got: {queued_bus_values}",
-        )
-        # The notice must be sticky (won't auto-dismiss) - a plain "N rows
-        # skipped" toast that vanishes in a couple seconds isn't actionable.
-        # It's deliberately kept short (just the count), not an itemized
-        # per-row list: a real case with 42 duplicate rows made that
-        # unreadable crammed into a toast - full per-row detail is instead
-        # posted to the resulting statement's chatter on the real import.
-        self.assertTrue(
-            any(
-                json.loads(value['message'])['payload'].get('sticky')
-                for value in queued_bus_values
-            ),
-            f"Expected a sticky notification about the skipped duplicate row, got: {queued_bus_values}",
-        )
+        # The duplicate-skip notice must instead go out via the
+        # 'bank_stmt_duplicate_warning' key on the result dict, picked up
+        # client-side by static/src/js/base_import_duplicate_warning.js and
+        # shown in base_import's own reliable, synchronous in-page message
+        # area - not a bus notification (tried first, but unreliable: the
+        # bus is asynchronous/cross-session, so the message could show up
+        # late and got replayed on tab refocus instead of showing once,
+        # right after this call). It's deliberately kept short (just the
+        # count), not an itemized per-row list: a real case with 42
+        # duplicate rows made that unreadable - full per-row detail is
+        # instead posted to the resulting statement's chatter on the real
+        # import.
+        self.assertIn('duplicate', result.get('bank_stmt_duplicate_warning', '').lower())
 
     def test_duplicate_is_caught_even_when_partner_is_not_self_resolved(self):
         """Regression test for the real bug reported after deploy: an
@@ -216,14 +203,8 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         )
         # Without this, clicking "Importar" directly (skipping "Probar") on
         # an all-duplicates file looked like it silently did nothing.
-        queued_bus_values = self.env.cr.precommit.data.get("bus.bus.values", [])
-        self.assertTrue(
-            any(
-                json.loads(value['message'])['payload'].get('sticky')
-                and 'nothing was imported' in json.loads(value['message'])['payload'].get('message', '').lower()
-                for value in queued_bus_values
-            ),
-            f"Expected a sticky 'nothing imported' notification, got: {queued_bus_values}",
+        self.assertIn(
+            'nothing was imported', result.get('bank_stmt_duplicate_warning', '').lower(),
         )
 
     def test_real_import_with_mixed_rows_posts_rejected_rows_to_chatter(self):
@@ -280,13 +261,9 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         # chatter. Deliberately doesn't repeat the imported count: base_import's
         # own native toast already reports that, and stacking a second toast
         # with the same number just looked like a duplicate notification.
-        queued_bus_values = self.env.cr.precommit.data.get("bus.bus.values", [])
-        self.assertTrue(
-            any(
-                '1 row(s) were ignored as probable duplicates' in json.loads(value['message'])['payload'].get('message', '')
-                for value in queued_bus_values
-            ),
-            f"Expected a notification about the ignored duplicate count, got: {queued_bus_values}",
+        self.assertIn(
+            '1 row(s) were ignored as probable duplicates',
+            result.get('bank_stmt_duplicate_warning', ''),
         )
 
     def test_chatter_table_is_capped_at_50_rows_with_a_count_note_for_the_rest(self):
