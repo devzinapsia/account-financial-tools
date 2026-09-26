@@ -11,6 +11,12 @@ bank journal, **Upload**), with these differences:
   number of imported lines looks lower than expected.
 - Reimporting the exact same file for the same journal is rejected
   outright, with a reference to the statement that already has it.
+- If you're sure the flagged rows are *not* duplicates, check **Import
+  even if rows look like duplicates** in the import screen's options
+  sidebar (left side, under "Use first row as header") before importing
+  again. It's only shown for bank statement imports, and it's remembered
+  per journal like the column mapping - only when checked, though:
+  unchecking it goes back to the default (checking for duplicates).
 
 On the bank reconciliation screen, use **Reconcile by date and amount**
 (⚙ cog menu, top right) to try to match every unassigned, unreconciled

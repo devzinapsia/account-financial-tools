@@ -82,9 +82,10 @@ acá para que queden trazables:
   importado antes de que este módulo existiera), no hay forma de saber con
   qué contacto quedó esa línea existente, así que la comparación cae a
   fecha+importe solamente. Es una decisión deliberada a favor de no dejar
-  pasar duplicados reales (falso positivo ocasional, recuperable con
-  ``options['bank_stmt_force_duplicate_lines']``) antes que arriesgarse a
-  no detectar uno real (que sí es un problema serio de datos contables).
+  pasar duplicados reales (falso positivo ocasional, recuperable con el
+  checkbox "Import even if rows look like duplicates" del panel de
+  importación) antes que arriesgarse a no detectar uno real (que sí es un
+  problema serio de datos contables).
 - **CUIT con múltiples contactos**: al buscar por CUIT, se descartan
   primero los contactos con ``parent_id`` seteado (sucursales/personas de
   contacto que heredaron el CUIT de la empresa madre). Si después de ese
@@ -119,10 +120,13 @@ acá para que queden trazables:
   frontend bastante más grande que el resto del módulo. Por decisión
   explícita, se implementó en cambio: exclusión automática de duplicados
   por defecto + una notificación (toast) persistente (``sticky``, no se
-  cierra sola) detallando fecha/importe de cada fila omitida y a qué
-  extracto existente coincide, con un único interruptor todo-o-nada
-  (``options['bank_stmt_force_duplicate_lines']``) para forzar la
-  importación completa cuando se está seguro de que no son duplicados. No
+  cierra sola) con la cantidad de filas omitidas (el detalle fila por fila,
+  con fecha/importe/contacto y a qué línea existente coincide cada una, va
+  al chatter del extracto - una lista completa no entra legible en un
+  toast), con un único interruptor todo-o-nada (checkbox "Import even if
+  rows look like duplicates" en el panel de importación, recordado por
+  diario) para forzar la importación completa cuando se está seguro de que
+  no son duplicados. No
   se usa el canal de errores nativo de ``base_import`` (``res['messages']``)
   para esto: cada entrada ahí debe traer un rango de filas (``rows``), y
   agregar una entrada sin ese formato rompe el cliente web (visto en

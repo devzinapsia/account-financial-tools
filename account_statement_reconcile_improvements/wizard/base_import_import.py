@@ -37,6 +37,7 @@ _PROFILE_OPTION_KEYS = (
     'encoding', 'separator', 'quoting', 'sheet',
     'date_format', 'datetime_format',
     'float_thousand_separator', 'float_decimal_separator',
+    'bank_stmt_force_duplicate_lines',
 )
 
 
@@ -135,6 +136,22 @@ class Base_ImportImport(models.TransientModel):
         journal_id = self.env.context.get('default_journal_id')
         return self.env['account.journal'].browse(journal_id) if journal_id else self.env['account.journal']
 
+    def parse_preview(self, options, count=10):
+        # EXTENDS base_import - only for the one flag the import screen's
+        # own sidepanel checkbox needs prefilled from the saved profile
+        # (static/src/xml/force_duplicate_lines_option.xml): the checkbox
+        # doesn't exist client-side (and so isn't in `options` at all) until
+        # BaseImportModel.setOption() lazily creates it on first toggle -
+        # only inject the remembered value while that hasn't happened yet,
+        # so a value the user already changed in this session is never
+        # silently overwritten by an older saved one.
+        journal = self._get_bank_stmt_import_journal()
+        if journal and 'bank_stmt_force_duplicate_lines' not in options:
+            saved_options = (journal.bank_statement_import_profile or {}).get('options') or {}
+            if 'bank_stmt_force_duplicate_lines' in saved_options:
+                options['bank_stmt_force_duplicate_lines'] = saved_options['bank_stmt_force_duplicate_lines']
+        return super().parse_preview(options, count=count)
+
     def _get_mapping_suggestions(self, headers, header_types, fields_tree):
         suggestions = super()._get_mapping_suggestions(headers, header_types, fields_tree)
         journal = self._get_bank_stmt_import_journal()
@@ -142,9 +159,20 @@ class Base_ImportImport(models.TransientModel):
         if not saved_mapping:
             return suggestions
         for key, header in list(suggestions.keys()):
-            field_name = saved_mapping.get(header)
+            # 'in' (not truthiness): a header explicitly saved with a False
+            # value means the user deliberately left that column unmapped
+            # last time - that must be remembered too, not just overridden
+            # when it *was* mapped to something. Without this, a column
+            # intentionally left blank silently fell back to whatever the
+            # native fuzzy-match guessed next time, since there was no way
+            # to tell "never saved" apart from "saved as no mapping".
+            if header not in saved_mapping:
+                continue
+            field_name = saved_mapping[header]
             if field_name:
                 suggestions[(key, header)] = {'field_path': [field_name], 'distance': 0}
+            else:
+                del suggestions[(key, header)]
         return suggestions
 
     # -------------------------------------------------------------------
@@ -440,10 +468,15 @@ class Base_ImportImport(models.TransientModel):
     def _save_bank_statement_import_profile(self, journal, columns, fields, options):
         if not journal or not options.get('has_headers'):
             return
+        # field_name or False (not just skipping falsy ones): a column the
+        # user explicitly left unmapped ("Don't import") must be remembered
+        # as such too, not merely omitted - see _get_mapping_suggestions,
+        # which needs to tell "never saved" apart from "saved as no mapping"
+        # to keep honoring that choice on the next import for this journal.
         mapping = {
-            column_name: field_name
+            column_name: field_name or False
             for column_name, field_name in zip(columns, fields)
-            if column_name and field_name
+            if column_name
         }
         if not mapping:
             return

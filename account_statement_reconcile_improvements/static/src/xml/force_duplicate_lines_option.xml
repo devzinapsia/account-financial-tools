@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="ImportDataSidepanel" t-inherit-mode="extension">
+        <xpath expr="//CheckBox[@value='props.options.has_headers']" position="after">
+            <CheckBox t-if="props.options.bank_stmt_import"
+                      value="props.options.bank_stmt_force_duplicate_lines"
+                      onChange.bind="isChecked => this.props.onOptionChanged('bank_stmt_force_duplicate_lines', isChecked)">
+                Import even if rows look like duplicates
+            </CheckBox>
+        </xpath>
+    </t>
+</templates>

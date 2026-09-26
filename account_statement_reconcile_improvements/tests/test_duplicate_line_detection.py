@@ -92,6 +92,32 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
         # import.
         self.assertIn('duplicate', result.get('bank_stmt_duplicate_warning', '').lower())
 
+    def test_force_duplicate_lines_option_skips_the_check_entirely(self):
+        """The only way to import rows that look like duplicates on purpose
+        (a real, deliberate re-import) is options['bank_stmt_force_duplicate_lines']
+        - exposed in the UI as a checkbox in the import screen's sidepanel
+        (static/src/xml/force_duplicate_lines_option.xml, only shown for bank
+        statement imports). Regression test for the server-side bypass this
+        checkbox relies on.
+        """
+        csv_content = "Fecha,Importe\n2026-01-05,100.0\n"
+        wizard = self._create_wizard(csv_content)
+        result = wizard.execute_import(
+            fields=['date', 'amount'],
+            columns=['Fecha', 'Importe'],
+            options={
+                'has_headers': True,
+                'bank_stmt_import': True,
+                'bank_stmt_force_duplicate_lines': True,
+                'quoting': '"',
+                'separator': ',',
+                'encoding': 'utf-8',
+            },
+            dryrun=True,
+        )
+        self.assertTrue(result.get('ids'), "The duplicate row should have been imported anyway")
+        self.assertNotIn('bank_stmt_duplicate_warning', result)
+
     def test_duplicate_is_caught_even_when_partner_is_not_self_resolved(self):
         """Regression test for the real bug reported after deploy: an
         existing line whose partner was set some other way (a plain

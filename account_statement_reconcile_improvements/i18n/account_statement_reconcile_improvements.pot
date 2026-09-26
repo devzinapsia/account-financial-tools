@@ -6,14 +6,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"Language: es_AR\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Plural-Forms: \n"
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_account_bank_statement__import_file_hash
 msgid "Import File Hash"
-msgstr "Hash del archivo importado"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model.fields,help:account_statement_reconcile_improvements.field_account_bank_statement__import_file_hash
@@ -22,14 +21,11 @@ msgid ""
 "importing the exact same file for the same journal. Empty for statements not"
 " created by a file import."
 msgstr ""
-"SHA-256 del archivo de origen usado para importar este extracto, usado para "
-"bloquear la reimportación del mismo archivo para el mismo diario. Vacío para"
-" extractos no creados por importación de archivo."
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model.constraint,message:account_statement_reconcile_improvements.constraint_account_bank_statement__import_file_hash_uniq
 msgid "This bank statement file was already imported for this journal."
-msgstr "Este archivo de extracto bancario ya fue importado para este diario."
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
@@ -38,14 +34,11 @@ msgid ""
 "This file was already imported for this journal as statement %(name)s, on "
 "%(date)s by %(user)s. Import blocked to avoid duplicating transactions."
 msgstr ""
-"Este archivo ya fue importado para este diario como el extracto %(name)s, el"
-" %(date)s por %(user)s. Se bloqueó la importación para evitar duplicar "
-"movimientos."
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_account_journal__bank_statement_import_profile
 msgid "Bank Statement Import Profile"
-msgstr "Perfil de importación de extracto bancario"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model.fields,help:account_statement_reconcile_improvements.field_account_journal__bank_statement_import_profile
@@ -54,15 +47,12 @@ msgid ""
 "format options) for this journal, used to prefill the bank statement import "
 "wizard next time."
 msgstr ""
-"Campo técnico: configuración de la última importación exitosa (mapeo de "
-"columnas y opciones de formato del archivo) para este diario, usada para "
-"precargar el asistente de importación de extractos la próxima vez."
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_res_company__bank_statement_auto_reconcile_to_check
 #: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_res_config_settings__bank_statement_auto_reconcile_to_check
 msgid "Flag auto-reconciled statement lines to check"
-msgstr "Marcar a revisar las líneas de extracto conciliadas automáticamente"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model.fields,help:account_statement_reconcile_improvements.field_res_company__bank_statement_auto_reconcile_to_check
@@ -74,17 +64,11 @@ msgid ""
 "instead of marking it fully reviewed. Lines with a confirmed contact are "
 "always treated as reviewed."
 msgstr ""
-"Cuando una línea de extracto bancario se concilia automáticamente (por un "
-"modelo de conciliación, por el match de contacto vía CUIT al importar, o por"
-" el botón de conciliación automática) sin un contacto que respalde la "
-"coincidencia, mantenerla marcada \"a revisar\" en lugar de darla por "
-"revisada. Las líneas con un contacto confirmado siempre se consideran "
-"revisadas."
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
 msgid "Auto-reconciled bank statement lines"
-msgstr "Líneas de extracto conciliadas automáticamente"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
@@ -92,35 +76,33 @@ msgid ""
 "Statement lines reconciled automatically on import or by a reconciliation "
 "model"
 msgstr ""
-"Líneas de extracto conciliadas automáticamente al importar o por un modelo "
-"de conciliación"
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
 msgid "Flag them as to check instead of fully reviewed"
-msgstr "Marcarlas a revisar en lugar de darlas por revisadas"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Contact (CUIT in free-text legend)"
-msgstr "Contacto (CUIT en leyenda de texto libre)"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Bank statement import file"
-msgstr "Archivo de importación de extracto bancario"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model,name:account_statement_reconcile_improvements.model_account_bank_statement_unlink_wizard
 msgid "Confirm deleting bank statement(s) with reconciled lines"
-msgstr "Confirmar la eliminación de extracto(s) con líneas conciliadas"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_account_bank_statement_unlink_wizard__statement_ids
 msgid "Statements to delete"
-msgstr "Extractos a eliminar"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.view_account_bank_statement_unlink_wizard_form
@@ -129,43 +111,40 @@ msgid ""
 " lines, including reconciled ones, reopening the matched invoices/payments "
 "as pending. This cannot be undone."
 msgstr ""
-"Eliminar estos extractos desconciliará y eliminará todas sus líneas, "
-"incluidas las conciliadas, volviendo a dejar pendientes las facturas/pagos "
-"asociados. Esta acción no se puede deshacer."
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.view_account_bank_statement_unlink_wizard_form
 msgid "Delete anyway"
-msgstr "Eliminar de todos modos"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.view_account_bank_statement_unlink_wizard_form
 msgid "Cancel"
-msgstr "Cancelar"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Date"
-msgstr "Fecha"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Amount"
-msgstr "Importe"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Description"
-msgstr "Descripción"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Contact"
-msgstr "Contacto"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
@@ -174,14 +153,12 @@ msgid ""
 "%(count)s row(s) were not imported: they matched an existing statement line "
 "on the same date, partner and amount (probable duplicate)."
 msgstr ""
-"%(count)s fila(s) no se importaron: coinciden con una línea de extracto ya "
-"existente en la misma fecha, contacto e importe (probable duplicado)."
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Probable duplicate rows"
-msgstr "Filas probablemente duplicadas"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
@@ -192,17 +169,12 @@ msgid ""
 " Import to see the full list on the statement's chatter, or re-run with the "
 "duplicate-lines check disabled if you are sure they are not."
 msgstr ""
-"%(count)s fila(s) no se importarán: coinciden con una línea de extracto ya "
-"existente para este diario en la misma fecha, contacto e importe (probable "
-"duplicado). Importá para ver el listado completo en el chatter del extracto,"
-" o volvé a ejecutar con la verificación de duplicados desactivada si estás "
-"seguro de que no lo son."
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Nothing imported"
-msgstr "No se importó nada"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
@@ -212,32 +184,29 @@ msgid ""
 "journal on the same date, partner and amount (probable duplicates) - nothing"
 " was imported."
 msgstr ""
-"Las %(count)s fila(s) del archivo coinciden con una línea de extracto ya "
-"existente para este diario en la misma fecha, contacto e importe (probables "
-"duplicados) - no se importó nada."
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
 msgid "This statement has reconciled lines."
-msgstr "Este extracto tiene líneas conciliadas."
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
 msgid "Continue"
-msgstr "Continuar"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model:ir.actions.act_window,name:account_statement_reconcile_improvements.action_account_bank_statement_unlink_wizard
 msgid "Confirm statement deletion"
-msgstr "Confirmar eliminación del extracto"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "And %(count)s more row(s)..."
-msgstr "Y %(count)s registro(s) más..."
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
@@ -246,37 +215,31 @@ msgid ""
 "%(ignored)s row(s) were ignored as probable duplicates - see the statement's"
 " chatter for the full list."
 msgstr ""
-"%(ignored)s fila(s) fueron ignoradas por ser probables duplicados - ver el "
-"listado completo en el chatter del extracto."
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_journal.py:0
 msgid "Auto-reconcile by date and amount"
-msgstr "Conciliación automática por fecha e importe"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_journal.py:0
 msgid "Line(s) reconciled automatically: %(count)s"
-msgstr "Línea(s) conciliada(s) automáticamente: %(count)s"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_journal.py:0
 msgid "No matching open item found for any unassigned, unreconciled line."
 msgstr ""
-"No se encontró un comprobante pendiente que coincida para ninguna línea sin "
-"asignar ni conciliar."
 
 #. module: account_statement_reconcile_improvements
-#. odoo-javascript
 #: code:addons/account_statement_reconcile_improvements/static/src/xml/auto_reconcile_cog_menu.xml:0
 msgid "Reconcile by date and amount"
-msgstr "Conciliar por fecha e importe"
+msgstr ""
 
 #. module: account_statement_reconcile_improvements
-#. odoo-javascript
 #: code:addons/account_statement_reconcile_improvements/static/src/xml/force_duplicate_lines_option.xml:0
 msgid "Import even if rows look like duplicates"
-msgstr "Importar aunque haya filas que parezcan duplicadas"
+msgstr ""

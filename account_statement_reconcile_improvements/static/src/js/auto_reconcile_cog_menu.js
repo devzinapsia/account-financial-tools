@@ -36,12 +36,20 @@ export class AutoReconcileByAmountAndDate extends Component {
         } else if (context.default_journal_id) {
             activeIds = context.default_journal_id;
         }
-        return this.action.doActionButton({
+        await this.action.doActionButton({
             type: "object",
             resModel: "account.journal",
             name: "action_auto_reconcile_by_amount_and_date",
             resIds: activeIds,
         });
+        // doActionButton() only auto-refreshes the record/view that owns the
+        // widget it was clicked from (a form field, a list row, ...) - a cog
+        // menu entry isn't tied to any of those, so without this the
+        // reconciled lines only stopped showing as pending after a manual
+        // page refresh (F5). soft_reload is the native, documented way to
+        // reload the current controller in place, without a full browser
+        // reload.
+        return this.action.doAction({ type: "ir.actions.client", tag: "soft_reload" });
     }
 }
 
