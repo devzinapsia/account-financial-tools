@@ -106,14 +106,6 @@ msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.view_account_bank_statement_unlink_wizard_form
-msgid ""
-"Deleting these statements will unreconcile and delete all of their statement"
-" lines, including reconciled ones, reopening the matched invoices/payments "
-"as pending. This cannot be undone."
-msgstr ""
-
-#. module: account_statement_reconcile_improvements
-#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.view_account_bank_statement_unlink_wizard_form
 msgid "Delete anyway"
 msgstr ""
 
@@ -242,4 +234,12 @@ msgstr ""
 #. module: account_statement_reconcile_improvements
 #: code:addons/account_statement_reconcile_improvements/static/src/xml/force_duplicate_lines_option.xml:0
 msgid "Import even if rows look like duplicates"
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.view_account_bank_statement_unlink_wizard_form
+msgid ""
+"Deleting these statements will unreconcile and delete all of their statement"
+" lines, including reconciled ones, reopening the matched invoices/payments "
+"as pending. This cannot be undone."
 msgstr ""
