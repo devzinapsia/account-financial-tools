@@ -47,6 +47,23 @@ def _normalize_header_cell(value):
     return text.strip().lower()
 
 
+def _normalize_mapping_key(value):
+    """The saved profile's mapping must be looked up/stored under a key
+    that matches regardless of who is calling: base_import's own JS sends
+    `columns` to execute_import() already trimmed and lowercased (see
+    BaseImportModel.executeImport(), `e.name.trim().toLowerCase()`), while
+    _get_mapping_suggestions() is called with `headers` taken verbatim
+    from the file's own first row (parse_preview(), `headers =
+    preview.pop(0)`) - untouched case and whitespace. Without normalizing
+    both sides the same way, a header like "Origen" saved as explicitly
+    unmapped is stored under 'origen' but looked up under 'Origen' and
+    never matches, so the saved choice silently never applies - it only
+    looked like it worked for other columns whose native fuzzy-match
+    guess happened to agree with the saved mapping anyway.
+    """
+    return str(value or '').strip().lower()
+
+
 class Base_ImportImport(models.TransientModel):
     _inherit = 'base_import.import'
 
@@ -158,21 +175,35 @@ class Base_ImportImport(models.TransientModel):
         saved_mapping = (journal.bank_statement_import_profile or {}).get('mapping') if journal else None
         if not saved_mapping:
             return suggestions
-        for key, header in list(suggestions.keys()):
-            # 'in' (not truthiness): a header explicitly saved with a False
-            # value means the user deliberately left that column unmapped
-            # last time - that must be remembered too, not just overridden
-            # when it *was* mapped to something. Without this, a column
-            # intentionally left blank silently fell back to whatever the
-            # native fuzzy-match guessed next time, since there was no way
-            # to tell "never saved" apart from "saved as no mapping".
-            if header not in saved_mapping:
+        # Iterate over every header in the current file, not just the keys
+        # base_import's own _deduplicate_mapping_suggestions() left standing:
+        # that method does `del mapping_suggestions[header]` (not just clears
+        # the value) for every column that lost a same-field conflict to
+        # another column with a better native match - e.g. "Descripción"
+        # natively matching payment_ref with distance 0 makes it win over
+        # "Leyendas Adicionales 1" even when the saved profile says the
+        # latter should map there, deleting that column's key entirely
+        # before this method ever got a chance to restore it. Rebuilding the
+        # key ourselves for every header sidesteps that: it doesn't matter
+        # whether the native dedup already discarded it.
+        for index, header in enumerate(headers):
+            normalized_header = _normalize_mapping_key(header)
+            if normalized_header not in saved_mapping:
                 continue
-            field_name = saved_mapping[header]
+            field_name = saved_mapping[normalized_header]
+            key = (index, header)
             if field_name:
-                suggestions[(key, header)] = {'field_path': [field_name], 'distance': 0}
+                suggestions[key] = {'field_path': [field_name], 'distance': 0}
             else:
-                del suggestions[(key, header)]
+                # 'in' (not truthiness) above: a header explicitly saved with
+                # a False value means the user deliberately left that column
+                # unmapped last time - that must be remembered too, not just
+                # overridden when it *was* mapped to something. Without this,
+                # a column intentionally left blank silently fell back to
+                # whatever the native fuzzy-match guessed next time, since
+                # there was no way to tell "never saved" apart from "saved as
+                # no mapping".
+                suggestions.pop(key, None)
         return suggestions
 
     # -------------------------------------------------------------------
@@ -474,7 +505,7 @@ class Base_ImportImport(models.TransientModel):
         # which needs to tell "never saved" apart from "saved as no mapping"
         # to keep honoring that choice on the next import for this journal.
         mapping = {
-            column_name: field_name or False
+            _normalize_mapping_key(column_name): field_name or False
             for column_name, field_name in zip(columns, fields)
             if column_name
         }
