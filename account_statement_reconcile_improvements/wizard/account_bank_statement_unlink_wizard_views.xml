@@ -10,7 +10,7 @@
                 <div class="alert alert-warning" role="alert">Deleting these statements will unreconcile and delete all of their statement lines, including reconciled ones, reopening the matched invoices/payments as pending. This cannot be undone.</div>
                 <footer>
                     <button name="action_confirm_unlink" type="object"
-                            string="Delete anyway" class="btn-danger"/>
+                            string="Delete anyway" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

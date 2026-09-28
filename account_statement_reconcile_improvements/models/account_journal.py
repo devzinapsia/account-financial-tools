@@ -48,15 +48,26 @@ class AccountJournal(models.Model):
             ('partner_id', '=', False),
         ])
         reconciled_count = lines.action_auto_reconcile_unassigned_by_amount_and_date(lines.ids)
-        message = self.env._(
+        # Forced from the user's own saved language preference
+        # (res.users.lang), not whatever 'lang' happens to be in this
+        # environment's context: this action is triggered via the cog
+        # menu's doActionButton() -> call_button, which - unlike a plain
+        # orm.call() - doesn't always carry the same request-scoped
+        # context a regular form/list action would, leaving self.env._()
+        # rendering in English regardless of the user's language setting.
+        # See wizard/base_import_import.py's _t() for the same pattern,
+        # applied there for an analogous reason (base_import's own JS
+        # calling execute_import() via orm.silent).
+        translated_self = self.with_context(lang=self.env.user.lang)
+        message = translated_self.env._(
             "Line(s) reconciled automatically: %(count)s", count=reconciled_count,
-        ) if reconciled_count else self.env._(
+        ) if reconciled_count else translated_self.env._(
             "No matching open item found for any unassigned, unreconciled line."
         )
         self.env.user._bus_send('simple_notification', {
             'type': 'success' if reconciled_count else 'info',
             'sticky': False,
-            'title': self.env._("Auto-reconcile by date and amount"),
+            'title': translated_self.env._("Auto-reconcile by date and amount"),
             'message': message,
         })
         return reconciled_count
