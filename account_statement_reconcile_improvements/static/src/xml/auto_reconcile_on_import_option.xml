@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="ImportDataSidepanel" t-inherit-mode="extension">
+        <xpath expr="//CheckBox[@value='props.options.bank_stmt_force_duplicate_lines']" position="before">
+            <CheckBox t-if="props.options.bank_stmt_import"
+                      value="props.options.bank_stmt_auto_reconcile_by_contact_date_amount"
+                      onChange.bind="isChecked => this.props.onOptionChanged('bank_stmt_auto_reconcile_by_contact_date_amount', isChecked)">
+                Automatically reconcile when contact, date and amount match
+            </CheckBox>
+        </xpath>
+    </t>
+</templates>

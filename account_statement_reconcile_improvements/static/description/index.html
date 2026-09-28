@@ -19,12 +19,14 @@
             <div class="oe_span12">
                 <p class="oe_mt32" style="font-size: 1.2em; text-align: justify;">
                     Improves bank statement file import and reconciliation for
-                    Argentine banks: remembers the column mapping per journal,
-                    always attaches the imported file, blocks re-importing the
-                    same file or overlapping duplicate lines, recognizes a
-                    CUIT in a free-text legend column to assign the partner,
-                    and adds a button to auto-reconcile unassigned lines by
-                    date and amount.
+                    Argentine banks: remembers the column mapping and file
+                    format per journal, always attaches the imported file,
+                    blocks re-importing the same file or overlapping
+                    duplicate lines, recognizes a CUIT in a free-text legend
+                    column to assign the partner, and automatically
+                    reconciles lines by date, amount and (when known)
+                    contact - right after import, or on demand from the
+                    reconciliation screen's cog menu.
                 </p>
             </div>
         </div>
@@ -35,10 +37,11 @@
             <div class="oe_span12">
                 <h3 class="oe_mt32" style="color: #714B67;">Key Features</h3>
                 <ul style="list-style-type: square; line-height: 2;">
-                    <li><strong>Per-journal import mapping</strong> that actually survives across banks and imports.</li>
-                    <li><strong>Duplicate protection:</strong> same file blocked outright, overlapping lines skipped and reported.</li>
+                    <li><strong>Per-journal import mapping and file format</strong> that actually survives across banks and imports.</li>
+                    <li><strong>Duplicate protection:</strong> same file blocked outright, overlapping lines skipped and reported on the statement's chatter.</li>
+                    <li><strong>Bank exports with leading metadata rows</strong> (e.g. BBVA's account/period summary) are handled automatically.</li>
                     <li><strong>CUIT recognition</strong> in free-text bank legends, with the correct company matched even when its own contacts share the same VAT.</li>
-                    <li><strong>Auto-reconcile unassigned</strong> button for lines with no partner, matched by date and amount.</li>
+                    <li><strong>Automatic reconciliation</strong> by date, amount and (when known) contact - right after import, or on demand from the reconciliation screen's cog menu.</li>
                     <li><strong>Safe statement deletion:</strong> explicit warning, then a clean unreconcile instead of orphaned lines.</li>
                 </ul>
             </div>
