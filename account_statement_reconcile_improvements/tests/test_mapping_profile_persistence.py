@@ -150,6 +150,50 @@ class TestMappingProfilePersistence(AccountTestInvoicingCommon):
             f"differs from the saved key: {origen_suggestions}",
         )
 
+    def test_mapping_suggestions_resolve_the_journal_without_any_context(self):
+        """Regression test for the real root cause of "the saved mapping
+        never applies in production": base_import's own JS
+        (import_model.js) calls
+        orm.call("base_import.import", "parse_preview", [this.id, ...])
+        with NO context argument at all - unlike execute_import(), which
+        does pass one. Every mapping suggestion the user sees is computed
+        by parse_preview() -> _get_mapping_suggestions(), so
+        self.env.context.get('default_journal_id') is empty on every
+        single call that matters, even though the wizard *was* created
+        with that context - a context only seeds a field's default value
+        at create() time, it isn't "remembered" by later, unrelated RPCs
+        on the same record. _get_bank_stmt_import_journal() must resolve
+        the journal from a real field on the wizard (populated once, at
+        create() time, by that field's own default=) - not from
+        self.env.context, which is empty in the exact call that needs it.
+        """
+        wizard = self._create_wizard()
+        wizard._save_bank_statement_import_profile(
+            self.bank_journal,
+            columns=['Fecha', 'Importe', 'Origen'],
+            fields=['date', 'amount', False],
+            options={'has_headers': True},
+        )
+        # Re-browse with a context that carries no default_journal_id at
+        # all, exactly like the real parse_preview() RPC receives it -
+        # confirms the journal is resolved from the wizard's own stored
+        # field, not from whatever context this particular call happens
+        # to carry.
+        wizard_no_context = self.env['base_import.import'].browse(wizard.id)
+        fields_tree = wizard_no_context.get_fields_tree('account.bank.statement.line')
+        headers = ['Fecha', 'Importe', 'Origen']
+        suggestions = wizard_no_context._get_mapping_suggestions(
+            headers=headers,
+            header_types={(index, header): [] for index, header in enumerate(headers)},
+            fields_tree=fields_tree,
+        )
+        origen_suggestions = {key: value for key, value in suggestions.items() if key[1] == 'Origen'}
+        self.assertFalse(
+            origen_suggestions,
+            f"'Origen' was explicitly left unmapped, it must stay that way even when this call's "
+            f"own context carries no default_journal_id: {origen_suggestions}",
+        )
+
     def test_force_duplicate_lines_choice_is_remembered_per_journal(self):
         """The import screen's 'Import even if rows look like duplicates'
         checkbox doesn't exist client-side until it's toggled at least once

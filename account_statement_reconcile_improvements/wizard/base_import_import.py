@@ -3,7 +3,7 @@ import unicodedata
 
 from markupsafe import Markup
 
-from odoo import models
+from odoo import fields, models
 from odoo.addons.base_import.models.base_import import FIELDS_RECURSION_LIMIT
 from odoo.tools.misc import format_date
 
@@ -66,6 +66,25 @@ def _normalize_mapping_key(value):
 
 class Base_ImportImport(models.TransientModel):
     _inherit = 'base_import.import'
+
+    # 3.1 - persists the journal across every RPC this wizard receives,
+    # not just the one that creates it. base_import's own JS
+    # (import_model.js) calls orm.call("base_import.import", "parse_preview",
+    # [this.id, this.formattedImportOptions]) with NO context argument at
+    # all - unlike execute_import(), which does pass one. Every mapping
+    # suggestion the user sees while filling out the wizard is computed by
+    # parse_preview() -> _get_mapping_suggestions(), so
+    # self.env.context.get('default_journal_id') is always empty at the
+    # exact point this module needs it, even though the wizard *was*
+    # created with that context (default_journal_id only seeds a field's
+    # default value at create() time - it doesn't get "remembered" by the
+    # context of unrelated, later RPCs on the same record). A plain field,
+    # by contrast, is read from the database regardless of what context
+    # the current request happens to carry.
+    bank_stmt_journal_id = fields.Many2one(
+        'account.journal',
+        default=lambda self: self.env.context.get('default_journal_id'),
+    )
 
     def _t(self, source, **kwargs):
         """Translate using the current user's own saved language
@@ -150,6 +169,12 @@ class Base_ImportImport(models.TransientModel):
     def _get_bank_stmt_import_journal(self):
         if self.res_model != 'account.bank.statement.line':
             return self.env['account.journal']
+        if self.bank_stmt_journal_id:
+            return self.bank_stmt_journal_id
+        # Fallback for a wizard created before this field existed, or
+        # created directly with the context set (as every test in this
+        # module does) rather than through the real create() + field
+        # default path.
         journal_id = self.env.context.get('default_journal_id')
         return self.env['account.journal'].browse(journal_id) if journal_id else self.env['account.journal']
 
@@ -380,6 +405,23 @@ class Base_ImportImport(models.TransientModel):
         if dryrun or not options.get('bank_stmt_import'):
             return res
 
+        # Save the column mapping the user just confirmed BEFORE checking
+        # whether any row actually got imported: a real (non-dryrun) call
+        # to execute_import() means the user already clicked "Importar"
+        # with this exact mapping, regardless of whether every single row
+        # then turned out to be a probable duplicate and got filtered out
+        # below. Saving it only in the "at least one row imported" branch
+        # meant that re-importing a file that fully overlaps with data
+        # already in the journal (a common thing to do while testing, or
+        # while re-importing the same statement) silently skipped saving
+        # the profile entirely - so an explicit "leave this column
+        # unmapped" choice was never remembered, and the native
+        # suggestion for it (e.g. an exact field-label match) kept coming
+        # back on every subsequent import, forever, since this method
+        # never even got a chance to run.
+        journal = self._get_bank_stmt_import_journal()
+        self._save_bank_statement_import_profile(journal, columns, fields, options)
+
         if not res.get('ids'):
             # Every row was filtered out (e.g. all probable duplicates) or
             # the file had nothing to import: remove the empty statement
@@ -401,11 +443,9 @@ class Base_ImportImport(models.TransientModel):
                 )
             return res
 
-        journal = self._get_bank_stmt_import_journal()
         lines = self.env['account.bank.statement.line'].browse(res['ids'])
         statements = lines.statement_id
 
-        self._save_bank_statement_import_profile(journal, columns, fields, options)
         self._attach_import_file(statements)
         # No blanket to-check flagging here on purpose: account_accountant's
         # own auto-reconcile step (_try_auto_reconcile_statement_lines) tries

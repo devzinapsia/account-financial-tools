@@ -233,6 +233,43 @@ class TestDuplicateLineDetection(AccountTestInvoicingCommon):
             'nothing was imported', result.get('bank_stmt_duplicate_warning', '').lower(),
         )
 
+    def test_column_mapping_is_saved_even_when_every_row_is_a_duplicate(self):
+        """Regression test for the real bug reported after deploy: a real
+        (non-dryrun) import used to only save the per-journal column
+        mapping profile in the "at least one row imported" branch - so
+        re-importing a file that fully overlaps with data already in the
+        journal (all rows probable duplicates, a common thing to do while
+        testing, or while re-importing the same statement) silently
+        skipped saving the profile entirely. An explicit "leave this
+        column unmapped" choice was then never remembered, and the
+        native suggestion for it kept reappearing on every subsequent
+        import, forever - the profile must be saved regardless of
+        whether any row actually ended up imported.
+        """
+        csv_content = "Fecha,Importe\n2026-01-05,100.0\n"
+        wizard = self._create_wizard(csv_content)
+        result = wizard.execute_import(
+            fields=['date', 'amount'],
+            columns=['Fecha', 'Importe'],
+            options={
+                'has_headers': True,
+                'bank_stmt_import': True,
+                'quoting': '"',
+                'separator': ',',
+                'encoding': 'utf-8',
+            },
+            dryrun=False,
+        )
+        self.assertFalse(result.get('ids'), "The duplicate row should have been skipped, not imported")
+        self.assertEqual(
+            self.bank_journal.bank_statement_import_profile,
+            {
+                'mapping': {'fecha': 'date', 'importe': 'amount'},
+                'options': {'quoting': '"', 'encoding': 'utf-8', 'separator': ','},
+            },
+            "The column mapping must be saved even though every row was a probable duplicate",
+        )
+
     def test_real_import_with_mixed_rows_posts_rejected_rows_to_chatter(self):
         """When a real (non-dryrun) import produces at least one imported
         line, any rejected probable-duplicate rows must be listed on the
