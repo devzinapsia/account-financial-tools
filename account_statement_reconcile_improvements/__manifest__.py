@@ -1,6 +1,6 @@
 {
     "name": "Mejoras a conciliación bancaria",
-    "version": "19.0.1.2.0",
+    "version": "19.0.1.1.18",
     "summary": "Enhancements to the bank statement file import and reconciliation process.",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",
@@ -23,8 +23,6 @@
             "account_statement_reconcile_improvements/static/src/xml/auto_reconcile_cog_menu.xml",
             "account_statement_reconcile_improvements/static/src/js/force_duplicate_lines_option.js",
             "account_statement_reconcile_improvements/static/src/xml/force_duplicate_lines_option.xml",
-            "account_statement_reconcile_improvements/static/src/js/auto_reconcile_on_import_option.js",
-            "account_statement_reconcile_improvements/static/src/xml/auto_reconcile_on_import_option.xml",
         ],
     },
     "installable": True,

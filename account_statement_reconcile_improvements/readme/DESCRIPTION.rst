@@ -6,16 +6,12 @@ reconciliation widget (``account_accountant``).
 Import improvements
 ====================
 
-- **Column mapping and file format remembered per journal.** Odoo's own
-  mapping memory (``base_import.mapping``) is keyed only by target model,
-  globally across every bank/journal - two banks that happen to reuse the
-  same column header for a different meaning silently overwrite each
-  other's saved mapping. This module keeps its own snapshot per bank
-  journal instead: not just the column mapping, but also the file format
-  options native Odoo never remembers at all (encoding, separator,
-  decimal/thousand separator, sheet name), plus this module's own
-  checkboxes below - so reimporting for the same journal reliably prefills
-  everything, not just the mapping.
+- **Column mapping remembered per journal.** Odoo's own mapping memory
+  (``base_import.mapping``) is keyed only by target model, globally across
+  every bank/journal - two banks that happen to reuse the same column
+  header for a different meaning silently overwrite each other's saved
+  mapping. This module keeps its own mapping snapshot per bank journal, so
+  reimporting for the same journal reliably prefills the same mapping.
 - **The imported file is always attached** to the resulting bank statement
   (``ir.attachment``), not only when using OCR/digitalization.
 - **Re-importing the exact same file is blocked.** A SHA-256 of the file
@@ -27,32 +23,15 @@ Import improvements
   the same journal (any statement, any reconciliation state). A row whose
   date, partner and amount match an existing line is treated as a probable
   duplicate and is not imported; the import result reports how many rows
-  were skipped this way, and the full per-row detail (date, amount,
-  description, contact, and which existing line each one matches) is
-  posted to the resulting statement's chatter. See "Decisiones de diseño"
-  for the exact matching rule and for why this doesn't offer a per-row
-  checkbox in the preview. If every row in the file turns out to be a
-  duplicate, no empty statement is left behind either (native Odoo would
-  otherwise still create one). Check **Import even if rows look like
-  duplicates** in the import screen's options sidebar to force the import
-  through anyway - see "Usage" for details; remembered per journal like
-  everything else in this section.
+  were skipped this way. See "Decisiones de diseño" for the exact matching
+  rule and for why this doesn't offer a per-row checkbox in the preview.
+  If every row in the file turns out to be a duplicate, no empty statement
+  is left behind either (native Odoo would otherwise still create one).
 - **CUIT recognition in a free-text legend column.** A new "Contact (CUIT
   in free-text legend)" field can be mapped from the bank's own
   description/legend column; if exactly one valid Argentine CUIT is found
   in the text (checksum-validated), the corresponding partner is assigned
   automatically.
-- **Automatic reconciliation when contact, date and amount all match.**
-  After a real import, for every line still unreconciled once
-  Odoo's own native auto-reconcile step is done with it, this module looks
-  for a unique open invoice/payment matching on exact date and amount -
-  and, when the line already has a confirmed contact (from the CUIT match
-  above, or a column mapped directly to Contact), matching that same
-  partner too. Controlled by **Automatically reconcile when contact, date
-  and amount match** in the import screen's options sidebar - enabled by
-  default, remembered per journal. The same underlying logic is also
-  available on demand from the bank reconciliation screen's own cog menu
-  (see "Reconciliation improvements" below).
 - **Bank exports with leading metadata rows are handled automatically**
   (e.g. BBVA's account/period summary before the real column headers, or
   banks that interleave blank separator rows through the data) - no manual
@@ -68,13 +47,10 @@ Reconciliation improvements
 - **New "Reconcile by date and amount" entry** in the bank reconciliation
   screen's own cog/Actions menu (⚙, next to "Find Duplicate Transactions"
   when ``account_online_synchronization`` is installed): for every
-  unreconciled line of the journal being reconciled (no selection needed -
-  it always applies to everything currently pending), it looks for a
-  unique open invoice/payment matching on date and amount - and, when the
-  line already has a confirmed contact, that same partner too - and
-  reconciles it. The same logic also runs automatically right after a real
-  import; see "Automatic reconciliation when contact, date and amount all
-  match" above.
+  unreconciled line of the journal being reconciled with no partner (no
+  selection needed - it always applies to everything currently pending),
+  it looks for a unique open invoice/payment matching on date and amount
+  and reconciles it.
 - **Deleting a bank statement no longer leaves orphaned lines** or
   invoices/payments stuck as reconciled: it now shows an explicit warning
   and, if confirmed, unreconciles every line first (reopening the matched
@@ -137,18 +113,6 @@ acá para que queden trazables:
   conciliadas se muestra una advertencia explícita a nivel del extracto
   (no línea por línea); si se confirma, todas sus líneas se desconcilian
   sin más preguntas.
-- **Ambigüedad en la conciliación automática por contacto+fecha+importe**:
-  cuando la línea ya tiene un contacto confirmado, la búsqueda de la
-  factura/pago abierto se acota a ese mismo contacto (no a cualquier
-  contacto); si aun así hay más de un movimiento abierto que coincide en
-  fecha e importe para ese contacto, la línea queda sin conciliar - mismo
-  criterio "sin match único, no se toca" que ya se usaba para el caso sin
-  contacto. Cuando el contacto ya estaba confirmado ANTES de esta
-  conciliación (CUIT en texto libre, o una columna mapeada directo a
-  Contacto), la línea resultante no se marca "a revisar" - se considera lo
-  suficientemente confiable. Si el contacto no estaba confirmado y esta
-  acción se lo asigna como efecto colateral de conciliar, sí se marca "a
-  revisar" (igual que el comportamiento previo para el botón sin contacto).
 - **Duplicado de línea sin grilla interactiva**: la fila 3.4 del pedido
   original pedía una grilla de previsualización con un checkbox
   "Importar" por fila. Implementar eso requiere reconstruir el componente
@@ -189,10 +153,3 @@ amount" cog menu entry was implemented for that specific case. ``account.reconci
 remains the right tool for anything based on label/amount-range/partner
 rules, and this module also makes sure a reconcile model configured with
 "Automated" validation still respects the "to check" setting above.
-
-The same custom mechanism was later extended to also match on a confirmed
-partner (narrowing the open-item search to that contact, instead of
-requiring no partner at all) - see "Automatic reconciliation when contact,
-date and amount all match" above - since ``account.reconcile.model``'s own
-partner-based matching still can't express "match whatever amount an open
-item for this partner happens to have", only fixed thresholds/ranges.

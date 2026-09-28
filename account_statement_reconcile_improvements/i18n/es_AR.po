@@ -271,12 +271,6 @@ msgid "Import even if rows look like duplicates"
 msgstr "Importar aunque haya filas que parezcan duplicadas"
 
 #. module: account_statement_reconcile_improvements
-#. odoo-javascript
-#: code:addons/account_statement_reconcile_improvements/static/src/xml/auto_reconcile_on_import_option.xml:0
-msgid "Automatically reconcile when contact, date and amount match"
-msgstr "Conciliar automáticamente cuando coincida contacto, fecha e importe"
-
-#. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.view_account_bank_statement_unlink_wizard_form
 msgid ""
 "Deleting these statements will unreconcile and delete all of their statement"

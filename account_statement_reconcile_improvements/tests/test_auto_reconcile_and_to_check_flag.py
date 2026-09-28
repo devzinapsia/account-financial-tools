@@ -4,11 +4,10 @@ from odoo.tests import tagged
 
 @tagged("post_install", "-at_install")
 class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
-    """3.7 (auto-reconcile button, now also matching a confirmed contact -
-    not just no-partner lines) and 3.9 (flag auto-reconciled lines to
-    check) - a line with no confirmed contact backing the match must be
-    flagged to check; one whose partner was already confirmed (before this
-    action ran) must not be.
+    """3.7 (auto-reconcile unassigned button) and 3.9 (flag auto-reconciled
+    lines to check) - the button only ever matches lines with no partner, so
+    every line it reconciles must be flagged to check; a line reconciled some
+    other way that already has a confirmed contact must not be.
     """
 
     @classmethod
@@ -55,31 +54,9 @@ class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
         self.assertTrue(line.is_reconciled)
         self.assertTrue(invoice.line_ids.filtered(lambda l: l.account_type == 'asset_receivable').reconciled)
 
-    def test_button_reconciles_a_line_with_a_confirmed_partner_matching_that_same_contact(self):
-        """Regression test: a line with an already-confirmed contact (from
-        the CUIT-in-free-text match, or a column mapped directly to
-        Contact) used to be skipped outright by this action - now a
-        confirmed partner narrows the candidate search to that same
-        contact's own open items, instead of being a precondition for
-        skipping the line entirely.
-        """
-        invoice = self._create_open_invoice(amount=100.0, date='2026-01-01')
+    def test_button_skips_a_line_that_already_has_a_partner(self):
+        self._create_open_invoice(amount=100.0, date='2026-01-01')
         line = self._create_unreconciled_line(amount=100.0, date='2026-01-01', partner=self.partner_a)
-
-        reconciled_count = self.env['account.bank.statement.line'].action_auto_reconcile_unassigned_by_amount_and_date(line.ids)
-
-        self.assertEqual(reconciled_count, 1)
-        self.assertTrue(line.is_reconciled)
-        self.assertTrue(invoice.line_ids.filtered(lambda l: l.account_type == 'asset_receivable').reconciled)
-
-    def test_button_does_not_match_a_confirmed_partner_against_someone_elses_open_item(self):
-        """A confirmed contact must narrow the search to that contact's own
-        open items - an open invoice for a *different* partner with the
-        same date and amount must not be picked up.
-        """
-        self._create_open_invoice(amount=100.0, date='2026-01-01')  # belongs to partner_a
-        other_partner = self.env['res.partner'].create({'name': 'Someone Else'})
-        line = self._create_unreconciled_line(amount=100.0, date='2026-01-01', partner=other_partner)
 
         reconciled_count = self.env['account.bank.statement.line'].action_auto_reconcile_unassigned_by_amount_and_date(line.ids)
 
@@ -95,36 +72,6 @@ class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
 
         self.assertEqual(reconciled_count, 0)
         self.assertFalse(line.is_reconciled)
-
-    def test_button_does_nothing_when_no_unique_candidate_exists_for_a_confirmed_partner(self):
-        """Same ambiguity rule as the no-partner case, but narrowed to the
-        confirmed contact's own open items: two equally-matching open
-        invoices for that same partner must leave the line untouched, not
-        guess between them.
-        """
-        self._create_open_invoice(amount=100.0, date='2026-01-01')
-        self._create_open_invoice(amount=100.0, date='2026-01-01')
-        line = self._create_unreconciled_line(amount=100.0, date='2026-01-01', partner=self.partner_a)
-
-        reconciled_count = self.env['account.bank.statement.line'].action_auto_reconcile_unassigned_by_amount_and_date(line.ids)
-
-        self.assertEqual(reconciled_count, 0)
-        self.assertFalse(line.is_reconciled)
-
-    def test_line_reconciled_with_a_confirmed_partner_is_not_flagged_to_check(self):
-        """3.9: unlike the no-partner case, a match backed by a contact
-        that was already confirmed *before* this action ran (CUIT match on
-        import, or a column mapped directly to Contact) is reliable enough
-        to count as reviewed.
-        """
-        self._create_open_invoice(amount=100.0, date='2026-01-01')
-        line = self._create_unreconciled_line(amount=100.0, date='2026-01-01', partner=self.partner_a)
-        self.assertTrue(self.env.company.bank_statement_auto_reconcile_to_check, "Setting should default to on")
-
-        self.env['account.bank.statement.line'].action_auto_reconcile_unassigned_by_amount_and_date(line.ids)
-
-        self.assertTrue(line.is_reconciled)
-        self.assertTrue(line.move_id.checked, "A match backed by an already-confirmed contact must not be flagged to check")
 
     def test_line_reconciled_via_the_button_is_flagged_to_check(self):
         """Regression scope for 3.9: the button never has a confirmed
@@ -173,13 +120,6 @@ class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
         whatever _compute_checked() already gives it (reviewed by default),
         the same as if a reconcile.model rule had matched it with a
         confirmed contact.
-
-        The new auto-reconcile-on-import option is explicitly disabled
-        here: it would otherwise pick up this same line as a fallback
-        whenever the native strategies below don't reconcile it (by
-        design - see test_auto_reconcile_on_import_option.py), which would
-        defeat the point of this test - isolating whatever the *native*
-        strategies alone do.
         """
         self._create_open_invoice(amount=100.0, date='2026-04-01')
         csv_content = "Fecha,Importe\n2026-04-01,100.0\n"
@@ -200,7 +140,6 @@ class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
                 'quoting': '"',
                 'separator': ',',
                 'encoding': 'utf-8',
-                'bank_stmt_auto_reconcile_by_contact_date_amount': False,
             },
             dryrun=False,
         )

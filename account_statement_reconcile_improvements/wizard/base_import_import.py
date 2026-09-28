@@ -38,14 +38,7 @@ _PROFILE_OPTION_KEYS = (
     'date_format', 'datetime_format',
     'float_thousand_separator', 'float_decimal_separator',
     'bank_stmt_force_duplicate_lines',
-    'bank_stmt_auto_reconcile_by_contact_date_amount',
 )
-
-# Unlike bank_stmt_force_duplicate_lines (defaults to unchecked/False when
-# nothing was ever saved for a journal), this option defaults to True -
-# see parse_preview() below, which always injects a resolved value (saved
-# or this default) instead of only injecting it when something was saved.
-_AUTO_RECONCILE_OPTION_DEFAULT = True
 
 
 def _normalize_header_cell(value):
@@ -199,17 +192,6 @@ class Base_ImportImport(models.TransientModel):
             saved_options = (journal.bank_statement_import_profile or {}).get('options') or {}
             if 'bank_stmt_force_duplicate_lines' in saved_options:
                 options['bank_stmt_force_duplicate_lines'] = saved_options['bank_stmt_force_duplicate_lines']
-        # Unlike the above, this one is always injected explicitly (saved
-        # value, or the default) instead of only when something was saved:
-        # its default is True (checked), not unchecked, so the client-side
-        # checkbox needs an explicit value to show that on a journal's
-        # first-ever import, not just whatever the checkbox's own blank
-        # state happens to render as.
-        if 'bank_stmt_auto_reconcile_by_contact_date_amount' not in options:
-            saved_options = (journal.bank_statement_import_profile or {}).get('options') or {} if journal else {}
-            options['bank_stmt_auto_reconcile_by_contact_date_amount'] = saved_options.get(
-                'bank_stmt_auto_reconcile_by_contact_date_amount', _AUTO_RECONCILE_OPTION_DEFAULT,
-            )
         return super().parse_preview(options, count=count)
 
     def _get_mapping_suggestions(self, headers, header_types, fields_tree):
@@ -464,19 +446,6 @@ class Base_ImportImport(models.TransientModel):
         lines = self.env['account.bank.statement.line'].browse(res['ids'])
         statements = lines.statement_id
 
-        # 3.7 (extended) - runs AFTER account_accountant's own native
-        # auto-reconcile step (already done by now, inside
-        # super().execute_import()): only the lines still unreconciled at
-        # this point are looked at, so this never second-guesses a native
-        # match (exact amount, outstanding account, payment reference,
-        # reconcile model) - it only picks up what none of those could
-        # resolve, whether or not the line has a confirmed contact (from
-        # the CUIT-in-free-text match, or a column mapped directly to
-        # Contact). Same journal-remembered on/off switch as the duplicate-
-        # lines option above, default on.
-        if options.get('bank_stmt_auto_reconcile_by_contact_date_amount', _AUTO_RECONCILE_OPTION_DEFAULT):
-            lines.action_auto_reconcile_unassigned_by_amount_and_date(lines.ids)
-
         self._attach_import_file(statements)
         # No blanket to-check flagging here on purpose: account_accountant's
         # own auto-reconcile step (_try_auto_reconcile_statement_lines) tries
@@ -584,14 +553,7 @@ class Base_ImportImport(models.TransientModel):
             return
         journal.bank_statement_import_profile = {
             'mapping': mapping,
-            # 'if key in options' (not truthiness): a boolean option
-            # explicitly set to False (e.g. the user turning off
-            # auto-reconcile-on-import, which defaults to True) must be
-            # remembered as such too - 'if options.get(key)' would silently
-            # drop it, since False is falsy, and the True default would
-            # keep winning back on every subsequent import regardless of
-            # what the user actually chose.
-            'options': {key: options[key] for key in _PROFILE_OPTION_KEYS if key in options},
+            'options': {key: options[key] for key in _PROFILE_OPTION_KEYS if options.get(key)},
         }
 
     def _attach_import_file(self, statements):
