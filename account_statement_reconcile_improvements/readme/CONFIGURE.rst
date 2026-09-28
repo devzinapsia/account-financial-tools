@@ -1,7 +1,7 @@
 Go to **Accounting ‣ Configuration ‣ Settings** and, under the
-"Bank & Cash" / vendor checks area, enable or disable **Auto-reconciled
-bank statement lines ‣ Flag them as to check instead of fully reviewed**
-(enabled by default).
+"Bank & Cash" area, enable or disable **Account reconciliation** (leave
+statement lines reconciled automatically - either on import or by a
+reconciliation model - flagged to check; enabled by default).
 
 No other configuration is required: the per-journal import mapping is
 learned automatically the first time you import a file for that journal,

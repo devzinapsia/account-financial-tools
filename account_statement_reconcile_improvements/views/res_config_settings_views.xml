@@ -5,13 +5,11 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="account.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//block[@id='print_vendor_checks_setting_container']" position="inside">
+            <xpath expr="//block[@id='bank_cash']" position="inside">
                 <setting id="bank_statement_auto_reconcile_to_check_setting"
-                    string="Auto-reconciled bank statement lines"
-                    help="Statement lines reconciled automatically on import or by a reconciliation model">
+                    string="Account reconciliation"
+                    help="Leave statement lines reconciled automatically - either on import or by a reconciliation model - flagged to check">
                     <field name="bank_statement_auto_reconcile_to_check"/>
-                    <label for="bank_statement_auto_reconcile_to_check" class="fw-normal me-1"
-                        string="Flag them as to check instead of fully reviewed"/>
                 </setting>
             </xpath>
         </field>

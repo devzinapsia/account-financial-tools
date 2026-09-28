@@ -83,22 +83,17 @@ msgstr ""
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
-msgid "Auto-reconciled bank statement lines"
-msgstr "Líneas de extracto conciliadas automáticamente"
+msgid "Account reconciliation"
+msgstr "Conciliación de cuentas"
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
 msgid ""
-"Statement lines reconciled automatically on import or by a reconciliation "
-"model"
+"Leave statement lines reconciled automatically - either on import or by a "
+"reconciliation model - flagged to check"
 msgstr ""
-"Líneas de extracto conciliadas automáticamente al importar o por un modelo "
-"de conciliación"
-
-#. module: account_statement_reconcile_improvements
-#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
-msgid "Flag them as to check instead of fully reviewed"
-msgstr "Marcarlas a revisar en lugar de darlas por revisadas"
+"Dejar a revisar las líneas del extracto conciliadas automáticamente ya sea "
+"al importar o por un modelo de conciliación."
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python

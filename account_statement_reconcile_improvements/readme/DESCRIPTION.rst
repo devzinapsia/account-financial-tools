@@ -27,6 +27,8 @@ Import improvements
   rule and for why this doesn't offer a per-row checkbox in the preview.
   If every row in the file turns out to be a duplicate, no empty statement
   is left behind either (native Odoo would otherwise still create one).
+  Check **Import even if rows look like duplicates** in the import
+  screen's options sidebar to skip this check for a specific import.
 - **CUIT recognition in a free-text legend column.** A new "Contact (CUIT
   in free-text legend)" field can be mapped from the bank's own
   description/legend column; if exactly one valid Argentine CUIT is found
@@ -55,9 +57,9 @@ Reconciliation improvements
   invoices/payments stuck as reconciled: it now shows an explicit warning
   and, if confirmed, unreconciles every line first (reopening the matched
   invoices/payments) before deleting.
-- **A general setting** ("Auto-reconciled bank statement lines", in
-  Accounting settings) controls whether a line reconciled with no
-  confirmed contact backing the match - by the new button, or by an
+- **A general setting** ("Account reconciliation", in Accounting settings
+  ‣ Bank & Cash) controls whether a line reconciled with no confirmed
+  contact backing the match - by the new button, or by an
   ``account.reconcile.model`` rule with no partner condition - is flagged
   "to check" instead of fully reviewed. A line whose partner was already
   established some other way (the CUIT match above, a reconcile.model
