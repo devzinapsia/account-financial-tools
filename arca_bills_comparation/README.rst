@@ -1,6 +1,6 @@
-=======================
-ARCA Bills Comparison
-=======================
+==========================================
+Comparación con ARCA de facturas recibidas
+==========================================
 
 This module adds the "My Vouchers" ("Mis Comprobantes") control process, the
 first of a planned family of ARCA (formerly AFIP) reconciliation tools. It
