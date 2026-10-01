@@ -117,6 +117,17 @@ acá para que queden trazables:
 - **Ambigüedad en la columna de texto**: si aparece más de un CUIT válido
   en el texto, el contacto queda en blanco (no se adivina ni se rechaza la
   importación).
+- **Bug fix: campo CUIT duplicado en el selector de columnas**: los dos
+  campos virtuales de CUIT aparecían también, de forma espuria, anidados
+  bajo "Estados de cuenta /" en el selector de mapeo de columnas.
+  ``account.bank.statement.line`` está unificado con ``account.move``
+  (herencia por delegación desde v17), que trae su propio campo One2many
+  de vuelta a ``account.bank.statement.line`` (``statement_line_ids``,
+  "Estados de cuenta"); al recorrerlo, el armado del árbol de campos de
+  ``base_import`` vuelve a invocarse a sí mismo sobre el mismo modelo, y
+  sin un control de profundidad nuestros campos se agregaban de nuevo en
+  esa llamada recursiva. Corregido limitando el agregado a la llamada de
+  nivel superior real (``depth == FIELDS_RECURSION_LIMIT``).
 - **"Create Bill" sin adjunto**: la propia opción "Upload Bills" de
   ``account_accountant`` (``create_document_from_attachment``) siempre
   exige al menos un adjunto - no tiene una variante sin archivo. Por eso

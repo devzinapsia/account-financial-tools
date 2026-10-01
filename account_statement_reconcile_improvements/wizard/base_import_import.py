@@ -117,7 +117,22 @@ class Base_ImportImport(models.TransientModel):
     # -------------------------------------------------------------------
     def get_fields_tree(self, model, depth=FIELDS_RECURSION_LIMIT):
         fields_list = super().get_fields_tree(model, depth=depth)
-        if model == 'account.bank.statement.line' and self.env.context.get('bank_stmt_import'):
+        # account.bank.statement.line is unified with account.move (delegation
+        # inheritance since v17), which carries its own one2many field back to
+        # account.bank.statement.line (`statement_line_ids`, "Estados de
+        # cuenta"). base_import's own recursion into one2many fields therefore
+        # calls get_fields_tree('account.bank.statement.line', ...) AGAIN on
+        # itself at a smaller depth - without this guard, these two virtual
+        # fields would get appended on every one of those self-recursive
+        # calls too, surfacing as a confusing, non-functional duplicate nested
+        # under "Estados de cuenta /" in the mapping picker (selecting it
+        # would target `statement_line_ids/<field>`, a reverse relation with
+        # no rows yet on a fresh import - not the column being mapped).
+        # depth == FIELDS_RECURSION_LIMIT only on the one true top-level call
+        # (see base_import.base_import.get_fields_tree's own
+        # self.get_fields_tree(self.res_model), called with no depth
+        # argument); every recursive call passes depth - 1.
+        if model == 'account.bank.statement.line' and depth == FIELDS_RECURSION_LIMIT and self.env.context.get('bank_stmt_import'):
             fields_list.append({
                 'id': _AR_IDENTIFICATION_FIELD,
                 'name': _AR_IDENTIFICATION_FIELD,

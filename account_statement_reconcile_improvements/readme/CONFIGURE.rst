@@ -6,4 +6,6 @@ reconciliation model - flagged to check; enabled by default).
 No other configuration is required: the per-journal import mapping is
 learned automatically the first time you import a file for that journal,
 and the CUIT recognition works on whichever column you map to the new
-"Contact (CUIT in free-text legend)" field in the import wizard.
+"Contact (CUIT in free-text legend)" field - or, for banks with no
+separate legend column (e.g. BBVA's "Concepto"), the "Label + Contact
+(CUIT in free-text legend)" field - in the import wizard.

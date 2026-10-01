@@ -6,5 +6,6 @@ from . import test_bank_statement_partner_cuit_matching
 from . import test_bank_statement_unlink
 from . import test_create_vendor_bill
 from . import test_duplicate_line_detection
+from . import test_get_fields_tree
 from . import test_header_detection
 from . import test_mapping_profile_persistence
