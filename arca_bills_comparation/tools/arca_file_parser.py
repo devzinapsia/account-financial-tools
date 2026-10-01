@@ -3,6 +3,7 @@ import datetime
 import io
 import re
 import unicodedata
+import zipfile
 from io import BytesIO
 
 import openpyxl
@@ -182,18 +183,41 @@ def split_document_number(document_number):
 
 
 def parse_arca_file(content, filename=None):
-    """Parse an ARCA "Mis Comprobantes Recibidos" export (xlsx or csv).
+    """Parse an ARCA "Mis Comprobantes Recibidos" export (xlsx, csv, or zip).
 
     :param content: raw bytes of the file.
     :param filename: original filename, used to pick the parser (".csv" is
-        parsed as csv; anything else is parsed as the original xlsx export).
+        parsed as csv, ".zip" is unpacked first; anything else is parsed as
+        the original xlsx export).
     :return: list of row dicts, keyed by FIELD_KEYS.
     :raises ArcaFileFormatError: if the file can't be read or is missing
         expected columns.
     """
-    if (filename or "").lower().strip().endswith(".csv"):
+    name = (filename or "").lower().strip()
+    if name.endswith(".zip"):
+        return _parse_zip_file(content)
+    if name.endswith(".csv"):
         return _parse_csv_file(content)
     return _parse_xlsx_file(content)
+
+
+def _parse_zip_file(content):
+    """ARCA's portal downloads the csv export compressed; parse the single csv/xlsx inside."""
+    try:
+        archive = zipfile.ZipFile(BytesIO(content))
+    except zipfile.BadZipFile as exc:
+        raise ArcaFileFormatError(_("The file could not be read as a valid ZIP file.")) from exc
+    members = [
+        member
+        for member in archive.namelist()
+        if member.lower().endswith((".csv", ".xlsx")) and not member.endswith("/")
+    ]
+    if len(members) != 1:
+        raise ArcaFileFormatError(
+            _("The ZIP file must contain exactly one .csv or .xlsx file.")
+        )
+    member = members[0]
+    return parse_arca_file(archive.read(member), member)
 
 
 def _parse_xlsx_file(content):

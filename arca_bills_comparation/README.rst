@@ -54,7 +54,11 @@ Usage
 Go to **Accounting ‣ Review ‣ ARCA ‣ My Vouchers**.
 
 1. Download the "Mis Comprobantes Recibidos" export from ARCA's web portal
-   for the desired period, either as Excel (``.xlsx``) or CSV.
+   for the desired period. This process is about **vouchers received**
+   (vendor bills / purchases) only - not "Mis Comprobantes Emitidos"
+   (sales). Accepted formats: the ``.zip`` exactly as ARCA downloads it
+   (it must contain a single ``.csv`` or ``.xlsx``), or that ``.csv`` /
+   ``.xlsx`` file on its own.
 2. Attach it in the **File to import** field. The **From**/**To** dates are
    proposed automatically from the first and last voucher dates found in the
    file (ARCA's export only lists days with activity, so this may differ

@@ -10,7 +10,13 @@ class ArcaBillComparisonWizard(models.TransientModel):
     _name = "arca.bill.comparison.wizard"
     _description = "ARCA My Vouchers Received - Import Wizard"
 
-    file = fields.Binary(string="File to import", required=True)
+    file = fields.Binary(
+        string="File to import",
+        required=True,
+        help="ARCA's \"Mis Comprobantes Recibidos\" export (vouchers received, i.e. vendor bills - "
+        "not \"Mis Comprobantes Emitidos\"/sales). Accepted formats: the .zip exactly as downloaded "
+        "from ARCA, or the .csv or .xlsx file inside it.",
+    )
     filename = fields.Char(string="Filename")
     date_from = fields.Date(string="From")
     date_to = fields.Date(string="To")

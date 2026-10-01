@@ -439,7 +439,9 @@ class ArcaBillComparisonBatch(models.Model):
             document_type = self.env["l10n_latam.document.type"].search(
                 [
                     ("code", "=", row["voucher_type_code"]),
-                    ("country_id", "=", self.company_id.account_fiscal_country_id.id),
+                    # ARCA exports are always Argentine, whatever the
+                    # company's own fiscal country is set to.
+                    ("country_id", "=", self.env.ref("base.ar").id),
                 ],
                 limit=1,
             )

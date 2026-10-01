@@ -48,6 +48,18 @@ msgid "ARCA file"
 msgstr "Archivo ARCA"
 
 #. module: arca_bills_comparation
+#: model:ir.model.fields,help:arca_bills_comparation.field_arca_bill_comparison_wizard__file
+msgid ""
+"ARCA's \"Mis Comprobantes Recibidos\" export (vouchers received, i.e. vendor"
+" bills - not \"Mis Comprobantes Emitidos\"/sales). Accepted formats: the "
+".zip exactly as downloaded from ARCA, or the .csv or .xlsx file inside it."
+msgstr ""
+"Exportación \"Mis Comprobantes Recibidos\" de ARCA (comprobantes recibidos, "
+"es decir, facturas de proveedores; no \"Mis Comprobantes Emitidos\"/ventas)."
+" Formatos aceptados: el .zip tal como se descarga de ARCA, o el archivo .csv"
+" o .xlsx que contiene."
+
+#. module: arca_bills_comparation
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_authorization_code
 msgid "Authorization code"
 msgstr "Código de autorización"
@@ -403,6 +415,12 @@ msgstr "Impuestos: ARCA %(arca).2f vs Odoo %(odoo).2f"
 #. module: arca_bills_comparation
 #. odoo-python
 #: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
+msgid "The ZIP file must contain exactly one .csv or .xlsx file."
+msgstr "El archivo ZIP debe contener exactamente un archivo .csv o .xlsx."
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
 msgid "The file could not be read as a valid CSV (UTF-8) file."
 msgstr "El archivo no pudo leerse como un CSV (UTF-8) válido."
 
@@ -411,6 +429,12 @@ msgstr "El archivo no pudo leerse como un CSV (UTF-8) válido."
 #: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
 msgid "The file could not be read as a valid Excel (.xlsx) file."
 msgstr "El archivo no pudo leerse como un Excel (.xlsx) válido."
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/tools/arca_file_parser.py:0
+msgid "The file could not be read as a valid ZIP file."
+msgstr "El archivo no pudo leerse como un ZIP válido."
 
 #. module: arca_bills_comparation
 #. odoo-python
@@ -428,7 +452,8 @@ msgstr "Al archivo le falta la fila de encabezados de columna."
 #. odoo-python
 #: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
 msgid "The original file is no longer available; nothing to reprocess."
-msgstr "El archivo original ya no está disponible; no hay nada para reprocesar."
+msgstr ""
+"El archivo original ya no está disponible; no hay nada para reprocesar."
 
 #. module: arca_bills_comparation
 #. odoo-python

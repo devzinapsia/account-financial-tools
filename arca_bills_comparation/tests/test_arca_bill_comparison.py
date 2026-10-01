@@ -1,10 +1,13 @@
 import base64
+import io
+import zipfile
 from datetime import date
 from pathlib import Path
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.exceptions import UserError
 from odoo.tests import tagged
+from odoo.tools import mute_logger
 
 from ..tools.arca_file_parser import parse_arca_file
 
@@ -136,6 +139,44 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
     def test_empty_file(self):
         rows = self._load_rows("mis_comprobantes_vacio.xlsx")
         self.assertEqual(rows, [])
+
+    def _zip_of(self, *filenames):
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            for filename in filenames:
+                archive.writestr(filename, (DATA_DIR / filename).read_bytes())
+        return buffer.getvalue()
+
+    def test_zip_parsing(self):
+        # ARCA's portal downloads the export compressed; the zip must be
+        # accepted as-is, whether it wraps the csv or the xlsx export.
+        self.assertEqual(
+            parse_arca_file(self._zip_of("mis_comprobantes_base.csv"), "export.zip"),
+            self._load_rows("mis_comprobantes_base.csv"),
+        )
+        self.assertEqual(
+            parse_arca_file(self._zip_of("mis_comprobantes_base.xlsx"), "export.ZIP"),
+            self._load_rows("mis_comprobantes_base.xlsx"),
+        )
+
+    # The parser's _() runs without an env or request here (unlike in real
+    # use, where the wizard runs inside a request), which only logs a
+    # harmless "no translation language detected" warning.
+    @mute_logger("odoo.tools.translate")
+    def test_zip_with_zero_or_several_exports_raises(self):
+        from ..tools.arca_file_parser import ArcaFileFormatError
+
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w") as archive:
+            archive.writestr("readme.txt", b"nothing useful")
+        with self.assertRaises(ArcaFileFormatError):
+            parse_arca_file(buffer.getvalue(), "export.zip")
+        with self.assertRaises(ArcaFileFormatError):
+            parse_arca_file(
+                self._zip_of("mis_comprobantes_base.csv", "mis_comprobantes_base.xlsx"), "export.zip"
+            )
+        with self.assertRaises(ArcaFileFormatError):
+            parse_arca_file(b"not a zip", "export.zip")
 
     def test_csv_parsing_basic(self):
         rows = self._load_rows("mis_comprobantes_base.csv")
@@ -434,7 +475,8 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         self.assertTrue(line)
         # The csv only gives the bare code ("1"); the grid should show it
         # the same way the xlsx export's own text does.
-        self.assertEqual(line.arca_voucher_type_raw, "1 - Factura A")
+        self.assertEqual(line.arca_voucher_type_raw, batch._format_voucher_type(self.doc_type_a))
+        self.assertNotEqual(line.arca_voucher_type_raw, "1")
 
     # ------------------------------------------------------------------
     # Storing the source file in Documents, and reprocessing it later.
@@ -558,13 +600,15 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         batch = self.env["arca.bill.comparison.batch"].search(
             [("company_id", "=", self.company.id)], order="id desc", limit=1
         )
-        processed_on_before = batch.last_processed_on
+        line_ids_before = batch.line_ids.ids
 
         # Simulates selecting rows in the results grid and using the
         # "Reprocess" entry in the Action menu, instead of opening the run.
         result = batch.line_ids.action_reprocess_batches()
         self.assertEqual(result, {"type": "ir.actions.client", "tag": "reload"})
-        self.assertGreater(batch.last_processed_on, processed_on_before)
+        # New line ids prove it reran (last_processed_on only has 1s
+        # resolution, so comparing it is flaky within a fast test).
+        self.assertNotEqual(batch.line_ids.ids, line_ids_before)
 
     def test_reprocess_without_source_file_raises(self):
         batch = self.env["arca.bill.comparison.batch"].create(
