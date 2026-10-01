@@ -1,6 +1,6 @@
-==============================
-Account Payment Authorization
-==============================
+===================================
+Autorización de pagos a proveedores
+===================================
 
 Some users can load vendor bills and register payments for them, but
 certain payments should not be confirmed without another user's approval

@@ -1,9 +1,9 @@
 {
-    "name": "Account Payment Authorization - Payment Pro",
-    "version": "19.0.1.1.4",
-    "summary": "Bridge account_payment_authorization with ingadhoc's account_payment_pro, "
-    "so authorization policies see the vendor bill a payment_pro draft payment is "
-    "meant to settle.",
+    "name": "Autorización de pagos a proveedores - Payment Pro",
+    "version": "19.0.1.1.5",
+    "summary": "Integra la autorización de pagos con account_payment_pro de ingadhoc, "
+    "para que las políticas vean la factura que paga un borrador de pago "
+    "creado desde ese flujo.",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",
     "license": "AGPL-3",

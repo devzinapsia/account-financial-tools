@@ -1,6 +1,6 @@
-===================================================
-Account Payment Authorization - Payment Pro
-===================================================
+=================================================
+Autorización de pagos a proveedores - Payment Pro
+=================================================
 
 ``account_payment_authorization`` decides whether a vendor payment needs
 authorization based on conditions that can reference the vendor bill it is
