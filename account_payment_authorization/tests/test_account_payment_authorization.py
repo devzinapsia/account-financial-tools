@@ -17,6 +17,14 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # ingadhoc's account_payment_pro replaces the standard "Register
+        # Payment" flow these tests are built on, and the
+        # account_payment_authorization_payment_pro bridge then derives
+        # invoice_ids from to_pay_move_line_ids, overwriting the bill set
+        # directly on draft payments here. That flow is covered by the
+        # bridge module's own tests instead.
+        if cls.env["ir.module.module"]._get("account_payment_pro").state == "installed":
+            cls.skipTest(cls, "account_payment_pro is installed; covered by the bridge module's tests")
         cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
 
         users_model = cls.env["res.users"].with_context(no_reset_password=True)
