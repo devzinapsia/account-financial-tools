@@ -1,0 +1,531 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_vendor_bill_authorization
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-01 00:00+0000\n"
+"PO-Revision-Date: 2026-10-01 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"%(approver)s rejected the authorization request for vendor bill "
+"%(bill)s.<br/>Reason: %(reason)s"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"%(requester)s requested your authorization to confirm vendor bill %(bill)s "
+"(%(amount)s %(currency)s) from %(partner)s."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"%(revoker)s revoked the authorization for vendor bill %(bill)s, previously "
+"authorized by %(previous)s."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__active
+msgid "Active"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__always_block
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_search
+msgid "Always block"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_search
+msgid "Archived"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_move_form_authorization
+msgid "Authorization"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.actions.act_window,help:account_vendor_bill_authorization.action_account_vendor_bill_authorization_policy
+msgid ""
+"Authorization policies define, through a domain condition on\n"
+"                the vendor bill or vendor credit/debit note, which users must\n"
+"                authorize it before it can be confirmed, or whether it must\n"
+"                always be blocked."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "Authorization requested from: %s"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"Authorization reset: this vendor bill was reset to draft after %s authorized"
+" it, so it must be authorized again before it can be confirmed."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"Authorization reset: this vendor bill's data changed after %s authorized it,"
+" so it must be authorized again before it can be confirmed."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "Authorization revoked by %s. Awaiting authorization again."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_bank_statement_line__authorization_state
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__authorization_state
+msgid "Authorization status"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_move_form_authorization
+msgid "Authorize"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_move_form_authorization
+msgid "Authorize + Confirm"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__authorized
+msgid "Authorized"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_bank_statement_line__authorized_by_id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__authorized_by_id
+msgid "Authorized by"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_account_bill_filter_authorization
+msgid "Authorized, not confirmed by me yet"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__authorized_user_ids
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_form
+msgid "Authorizers"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_bank_statement_line__is_blocked
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__is_blocked
+msgid "Blocked by policy"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_reject_wizard_view_form
+msgid "Cancel"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__company_id
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_search
+msgid "Company"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__domain
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_form
+msgid "Conditions"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__domain
+msgid ""
+"Conditions a vendor bill or vendor credit/debit note must meet (logical AND)"
+" to match this policy, evaluated against account.move fields -- e.g. the "
+"classification (classification_id), the vendor, the journal, or the total "
+"amount, e.g. to build amount tiers with several policies. An empty domain "
+"matches any vendor bill or vendor credit/debit note (catch-all policy). The "
+"Type and Status conditions match what this module only ever actually "
+"evaluates against (draft vendor bills and vendor credit/debit notes), so "
+"they keep the record count shown while editing this domain accurate -- "
+"remove them if you really want to build a domain that reads as broader than "
+"that."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_reject_wizard_view_form
+msgid "Confirm"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.actions.act_window,help:account_vendor_bill_authorization.action_account_vendor_bill_authorization_policy
+msgid "Create your first vendor bill authorization policy"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__create_uid
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__create_date
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__display_name
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_form
+msgid "Enter users..."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_reject_wizard_view_form
+msgid "Explain why this vendor bill is rejected..."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__id
+msgid "ID"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__always_block
+msgid ""
+"If checked, a vendor bill matching this policy can never be confirmed nor "
+"approved by anyone, regardless of the Authorizers field (which is ignored in"
+" that case) and regardless of any other matching policy. Use this to "
+"explicitly and permanently deny a category of vendor bills, e.g. bills "
+"without a classification."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model,name:account_vendor_bill_authorization.model_account_move
+msgid "Journal Entry"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__write_uid
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__write_date
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__company_id
+msgid "Leave empty to make this policy apply to all companies."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_bank_statement_line__matched_policy_ids
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__matched_policy_ids
+msgid "Matched authorization policies"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__name
+msgid "Name"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__not_required
+msgid "Not required"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_bank_statement_line__pending_authorizer_ids
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__pending_authorizer_ids
+msgid "Pending authorizers"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__reason
+msgid "Reason"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_move_form_authorization
+msgid "Reject"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model,name:account_vendor_bill_authorization.model_account_vendor_bill_authorization_reject_wizard
+msgid "Reject Vendor Bill Authorization"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_reject_wizard_view_form
+msgid "Reject vendor bill"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__rejected
+msgid "Rejected"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_bank_statement_line__authorization_reject_reason
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__authorization_reject_reason
+msgid "Rejection reason"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"Rejection reset: this vendor bill's data changed after it was rejected, so "
+"it is pending authorization again."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_search
+msgid "Search vendor bill authorization policies"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"The following vendor bills require authorization before they can be "
+"confirmed: %s."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"These vendor bills require authorization before they can be confirmed: %s. "
+"An activity has been assigned to the authorized user(s) of each."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"This vendor bill could not be confirmed because it does not comply with the authorization policies. Check whether the vendor bill has any of the following:\n"
+"\n"
+"- Missing required information.\n"
+"- A field value that is inconsistent with internal rules.\n"
+"\n"
+"Please validate the information or check with your supervisor.\n"
+"\n"
+"Blocking policy/policies: %s"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "This vendor bill is not currently authorized."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "This vendor bill is not pending authorization."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"This vendor bill is permanently blocked by the following policy/policies: "
+"%s."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"This vendor bill matches an authorization policy with no authorized users "
+"configured. It cannot be approved until a user is added to that policy."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"This vendor bill requires authorization before it can be confirmed. An "
+"activity has been assigned to the authorized user(s)."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__to_authorize
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_account_bill_filter_authorization
+msgid "To authorize"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_account_bill_filter_authorization
+msgid "To authorize by me"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_bank_statement_line__is_blocked
+#: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_move__is_blocked
+msgid ""
+"True if at least one matching authorization policy has 'Always block' "
+"checked: this vendor bill can then never be confirmed, by anyone."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_move_form_authorization
+msgid "Unauthorize"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__authorized_user_ids
+msgid ""
+"Users allowed to approve a vendor bill matching this policy. Ignored if "
+"'Always block' is checked. If left empty (and 'Always block' is not "
+"checked), any vendor bill matching this policy can never be approved either "
+"-- this has the same practical effect as 'Always block', but leaving the box"
+" unchecked here usually means it was left empty by mistake rather than on "
+"purpose."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model,name:account_vendor_bill_authorization.model_account_vendor_bill_authorization_policy
+msgid "Vendor Bill Authorization Policy"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__move_id
+msgid "Vendor bill"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.actions.act_window,name:account_vendor_bill_authorization.action_account_vendor_bill_authorization_policy
+#: model:ir.ui.menu,name:account_vendor_bill_authorization.menu_account_vendor_bill_authorization_policy
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_list
+msgid "Vendor bill authorization policies"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_policy_view_form
+msgid "Vendor bill authorization policy"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "Vendor bill authorization rejected"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "Vendor bill authorization requested"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "Vendor bill authorization revoked"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"Vendor bill authorized and confirmed directly by %s (already an authorized "
+"user for a matching policy)."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "Vendor bill authorized by %s."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "Vendor bill authorized by %s. Awaiting confirmation."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"Vendor bill confirmed by %(user)s (authorized earlier by %(authorized_by)s)."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid ""
+"Vendor bill rejected by %(user)s.\n"
+"Reason: %(reason)s"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "Vendor bill rejected by %(user)s.<br/>Reason: %(reason)s"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "You are not allowed to authorize this vendor bill."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "You are not allowed to reject this vendor bill."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "You are not allowed to unauthorize this vendor bill."
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
+msgid "an authorizer"
+msgstr ""

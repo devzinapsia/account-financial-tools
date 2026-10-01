@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Multi-company record rule for account.vendor.bill.authorization.policy.
+         Users see global policies (company_id=False) and policies belonging
+         to any company they have access to. -->
+    <record id="rule_account_vendor_bill_authorization_policy_multicompany" model="ir.rule">
+        <field name="name">Vendor Bill Authorization Policy: multi-company</field>
+        <field name="model_id" ref="model_account_vendor_bill_authorization_policy"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+</odoo>

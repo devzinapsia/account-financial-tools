@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List view: no inline editing, clicking a row opens the form -->
+    <record id="account_vendor_bill_authorization_policy_view_list" model="ir.ui.view">
+        <field name="name">account.vendor.bill.authorization.policy.list</field>
+        <field name="model">account.vendor.bill.authorization.policy</field>
+        <field name="arch" type="xml">
+            <list string="Vendor bill authorization policies">
+                <field name="sequence" widget="handle" column_invisible="True"/>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="domain" optional="hide"/>
+                <field name="always_block"/>
+                <field name="authorized_user_ids" widget="many2many_tags"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="account_vendor_bill_authorization_policy_view_form" model="ir.ui.view">
+        <field name="name">account.vendor.bill.authorization.policy.form</field>
+        <field name="model">account.vendor.bill.authorization.policy</field>
+        <field name="arch" type="xml">
+            <form string="Vendor bill authorization policy">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sequence" invisible="1"/>
+                            <field name="active"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Conditions">
+                        <field name="domain" nolabel="1" colspan="2"
+                               widget="domain" options="{'model': 'account.move'}"/>
+                    </group>
+                    <group>
+                        <field name="always_block"/>
+                    </group>
+                    <group string="Authorizers" invisible="always_block">
+                        <field name="authorized_user_ids" nolabel="1" colspan="2"
+                               widget="many2many_tags" placeholder="Enter users..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="account_vendor_bill_authorization_policy_view_search" model="ir.ui.view">
+        <field name="name">account.vendor.bill.authorization.policy.search</field>
+        <field name="model">account.vendor.bill.authorization.policy</field>
+        <field name="arch" type="xml">
+            <search string="Search vendor bill authorization policies">
+                <field name="name"/>
+                <field name="authorized_user_ids"/>
+                <filter string="Always block" name="always_block" domain="[('always_block', '=', True)]"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Company" name="by_company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window action -->
+    <record id="action_account_vendor_bill_authorization_policy" model="ir.actions.act_window">
+        <field name="name">Vendor bill authorization policies</field>
+        <field name="res_model">account.vendor.bill.authorization.policy</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="account_vendor_bill_authorization_policy_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first vendor bill authorization policy
+            </p>
+            <p>
+                Authorization policies define, through a domain condition on
+                the vendor bill or vendor credit/debit note, which users must
+                authorize it before it can be confirmed, or whether it must
+                always be blocked.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item under Configuration > Invoicing, next to Invoice
+         Classifications (50) and Payment Authorization Policies (55) -->
+    <menuitem
+        id="menu_account_vendor_bill_authorization_policy"
+        name="Vendor bill authorization policies"
+        parent="account.account_invoicing_menu"
+        action="action_account_vendor_bill_authorization_policy"
+        sequence="56"
+        groups="account.group_account_manager"/>
+
+</odoo>
