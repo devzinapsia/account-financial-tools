@@ -38,6 +38,14 @@ Import improvements
   description/legend column; if exactly one valid Argentine CUIT is found
   in the text (checksum-validated), the corresponding partner is assigned
   automatically.
+- **CUIT recognition when the legend column is also the line's own label.**
+  Some banks (e.g. BBVA) have no separate legend/description column at
+  all - the one column that IS the transaction's own label ("Concepto")
+  is also the only place the CUIT shows up. Mapping that column to the
+  field above would discard the label text entirely (it gets replaced by
+  the resolved contact). A second field, "Label + Contact (CUIT in
+  free-text legend)", keeps the column's text as the line's label *and*
+  resolves the contact from that same text.
 - **Bank exports with leading metadata rows are handled automatically**
   (e.g. BBVA's account/period summary before the real column headers, or
   banks that interleave blank separator rows through the data) - no manual
@@ -69,6 +77,11 @@ Reconciliation improvements
   established some other way (the CUIT match above, a reconcile.model
   rule that matched a specific partner) is reliable enough to count as
   reviewed either way. Enabled by default.
+- **New "Create Bill" entry** in the bank reconciliation screen's own
+  "..." dropdown, right below "Upload Bills": opens a blank vendor bill
+  (pre-filled with the line's contact and date) for a purchase the user
+  has no file for yet. Unlike "Upload Bills", this never requires
+  attaching a document first.
 
 Decisiones de diseño
 =====================
@@ -108,6 +121,13 @@ acá para que queden trazables:
 - **Ambigüedad en la columna de texto**: si aparece más de un CUIT válido
   en el texto, el contacto queda en blanco (no se adivina ni se rechaza la
   importación).
+- **"Create Bill" sin adjunto**: la propia opción "Upload Bills" de
+  ``account_accountant`` (``create_document_from_attachment``) siempre
+  exige al menos un adjunto - no tiene una variante sin archivo. Por eso
+  se agregó un botón separado que crea una factura de proveedor en blanco
+  (sin líneas, sin conciliar contra el movimiento) para completarla a
+  mano; la conciliación posterior es la misma que la de cualquier otra
+  factura pendiente.
 - **Conciliación automática y "a revisar"**: el parámetro general de
   Contabilidad decide si las líneas conciliadas automáticamente (por el
   match de CUIT al importar, por el botón nuevo, o por un
@@ -188,6 +208,11 @@ bank journal, **Upload**), with these differences:
   sometimes contains the counterparty's CUIT, map that column to
   **Contact (CUIT in free-text legend)** instead of (or in addition to)
   mapping a real partner column.
+- If your bank's export has no separate legend column - the transaction's
+  own label is the only place the CUIT shows up (e.g. BBVA's "Concepto") -
+  map that column to **Label + Contact (CUIT in free-text legend)**
+  instead: it keeps the column's text as the line's label and resolves
+  the contact from it at the same time.
 - If a row looks like a movement you already imported for this journal
   (same date, contact and amount), it is skipped automatically and
   reported in the import result - check the warning message if the
@@ -208,6 +233,11 @@ invoice/payment with the same date and amount.
 
 Deleting a bank statement with reconciled lines now shows a confirmation
 warning before unreconciling and removing them.
+
+On the bank reconciliation screen, use **Create Bill** (in the "..."
+dropdown, below "Upload Bills") to open a blank vendor bill for a line you
+don't have a receipt/invoice file for yet, instead of attaching a
+placeholder file just to get past "Upload Bills".
 
 Bug Tracker
 ===========

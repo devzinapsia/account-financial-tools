@@ -89,3 +89,38 @@ class AccountBankStatementLine(models.Model):
                 line._flag_as_to_check_if_configured(force=True)
                 reconciled_count += 1
         return reconciled_count
+
+    def action_create_vendor_bill(self):
+        """3.11 - "Create bill" entry in the bank reconciliation screen's
+        own "..." dropdown, right below "Upload Bills": for a purchase the
+        user doesn't have any file for yet (no receipt/invoice on hand to
+        scan), opens a blank vendor bill form to fill in by hand instead.
+
+        account_accountant's own "Upload Bills" (create_document_from_attachment())
+        always requires at least one attachment - it calls
+        account.journal._create_document_from_attachment(attachment_ids),
+        which has no variant that skips the attachment step. This mirrors
+        that same method's own purchase-journal lookup, but creates a
+        plain empty account.move instead, pre-filled with this line's
+        contact and date so the user only has to add the actual invoice
+        lines/amount.
+
+        Deliberately does NOT try to reconcile the new bill against this
+        statement line: unlike a file imported via OCR, a blank bill has
+        no lines yet at all, so there's nothing to match against until the
+        user fills it in and posts it - that happens through the normal
+        reconcile flow afterwards, same as any other open invoice.
+        """
+        self.ensure_one()
+        purchase_journal = self.env['account.journal'].search_fetch(
+            domain=[*self.env['account.journal']._check_company_domain(self.company_id), ('type', '=', 'purchase')],
+            field_names=['id'],
+            limit=1,
+        )
+        invoice = self.env['account.move'].with_context(default_move_type='in_invoice').create({
+            'move_type': 'in_invoice',
+            'journal_id': purchase_journal.id,
+            'partner_id': self.partner_id.id,
+            'invoice_date': self.date,
+        })
+        return invoice._get_records_action()

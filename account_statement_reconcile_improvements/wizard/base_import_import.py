@@ -15,6 +15,16 @@ from ..tools.ar_id_extraction import extract_cuit
 # resolve it to a partner - see res.partner._find_unique_partner_by_cuit().
 _AR_IDENTIFICATION_FIELD = 'x_ar_partner_identification'
 
+# Some banks (e.g. BBVA) don't have a separate legend/description column at
+# all - the one column that doubles as the transaction's own label
+# ("Concepto") is ALSO the only place the CUIT ever shows up. The field
+# above can't handle that: mapping a column to it replaces the column
+# outright with the resolved partner_id, discarding the original text - so
+# the label is lost entirely for those banks. This second virtual field
+# does both at once: the column becomes payment_ref (Label), unchanged,
+# while the exact same text also feeds the CUIT match.
+_AR_LABEL_AND_IDENTIFICATION_FIELD = 'x_ar_label_and_partner_identification'
+
 # A real import with hundreds of duplicate rows would otherwise post a
 # chatter message with an equally huge table - capped for readability, with
 # a note for the remainder instead of silently dropping them.
@@ -112,6 +122,15 @@ class Base_ImportImport(models.TransientModel):
                 'id': _AR_IDENTIFICATION_FIELD,
                 'name': _AR_IDENTIFICATION_FIELD,
                 'string': self._t("Contact (CUIT in free-text legend)"),
+                'required': False,
+                'fields': [],
+                'type': 'char',
+                'model_name': model,
+            })
+            fields_list.append({
+                'id': _AR_LABEL_AND_IDENTIFICATION_FIELD,
+                'name': _AR_LABEL_AND_IDENTIFICATION_FIELD,
+                'string': self._t("Label + Contact (CUIT in free-text legend)"),
                 'required': False,
                 'fields': [],
                 'type': 'char',
@@ -245,6 +264,7 @@ class Base_ImportImport(models.TransientModel):
             statement_vals['import_file_hash'] = hashlib.sha256(self.file).hexdigest()
 
         data = self._resolve_ar_partner_identification(data, import_fields)
+        data = self._resolve_ar_label_and_partner_identification(data, import_fields)
         data = self._filter_out_duplicate_lines(data, import_fields, options)
         return data
 
@@ -267,6 +287,42 @@ class Base_ImportImport(models.TransientModel):
             cuit = extract_cuit(row[legend_index])
             partner = partner_model._find_unique_partner_by_cuit(cuit) if cuit else partner_model.browse()
             row[legend_index] = partner.id or False
+        return data
+
+    def _resolve_ar_label_and_partner_identification(self, data, import_fields):
+        """Same CUIT resolution as _resolve_ar_partner_identification, but
+        for banks (e.g. BBVA) that don't have a separate legend column at
+        all - the one column that IS the transaction's own label
+        ("Concepto") is also the only place the CUIT shows up. Mapping that
+        column to the plain CUIT field above would discard the label text
+        entirely (it gets replaced by the resolved partner_id); this field
+        keeps the text as payment_ref AND feeds the same text into the CUIT
+        match, instead of one replacing the other.
+
+        Not meant to be combined with _AR_IDENTIFICATION_FIELD on another
+        column of the same file: both would independently try to append
+        their own 'partner_id/.id' destination, and having two columns
+        mapped to the same Many2one target is not a supported/tested
+        combination - an edge case no real bank export has needed so far.
+        """
+        if _AR_LABEL_AND_IDENTIFICATION_FIELD not in import_fields:
+            return data
+        legend_index = import_fields.index(_AR_LABEL_AND_IDENTIFICATION_FIELD)
+        # Unlike the plain CUIT field, this one always keeps the column as
+        # the label - even when the user also mapped an explicit partner
+        # column, that only skips the CUIT-based guess below, same as
+        # _resolve_ar_partner_identification does in that case.
+        import_fields[legend_index] = 'payment_ref'
+
+        if 'partner_id' in import_fields or 'partner_id/.id' in import_fields:
+            return data
+
+        partner_model = self.env['res.partner']
+        import_fields.append('partner_id/.id')
+        for row in data:
+            cuit = extract_cuit(row[legend_index])
+            partner = partner_model._find_unique_partner_by_cuit(cuit) if cuit else partner_model.browse()
+            row.append(partner.id or False)
         return data
 
     def _filter_out_duplicate_lines(self, data, import_fields, options):

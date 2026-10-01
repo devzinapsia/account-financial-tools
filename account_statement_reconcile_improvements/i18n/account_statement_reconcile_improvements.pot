@@ -86,6 +86,18 @@ msgstr ""
 #. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
+msgid "Label + Contact (CUIT in free-text legend)"
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
+#. odoo-javascript
+#: code:addons/account_statement_reconcile_improvements/static/src/xml/create_vendor_bill_option.xml:0
+msgid "Create Bill"
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
+#. odoo-python
+#: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Bank statement import file"
 msgstr ""
 
