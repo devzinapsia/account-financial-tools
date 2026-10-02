@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Autorización de facturas de proveedor - Excepción por pago directo - Zinapsia</title>
+</head>
+<body>
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <h2 class="oe_slogan" style="color: #714B67; font-weight: bold;">Autorización de facturas de proveedor - Excepción por pago directo</h2>
+                <h3 class="oe_slogan">Vendor bills paid on loading with a petty cash journal skip authorization</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <p class="oe_mt32" style="font-size: 1.2em; text-align: justify;">
+                    Vendor bills paid on confirmation with one of the
+                    configured journals (the "Pay now journal" of
+                    Account Payment Super Power), typically petty cash, don't
+                    go through vendor bill authorization policies -- unless an
+                    "Always block" policy matches them. Only the configured
+                    users can use this bypass.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container oe_dark">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <h3 class="oe_mt32" style="color: #714B67;">Key Features</h3>
+                <ul style="list-style-type: square; line-height: 2;">
+                    <li><strong>Configurable journals and users:</strong> per company, in the Vendor Payments settings.</li>
+                    <li><strong>Filtered selector:</strong> the pay now journal of vendor bills only offers the bypass journals.</li>
+                    <li><strong>Always block wins:</strong> the bypass never overrides an "Always block" policy.</li>
+                    <li><strong>Server-side enforcement:</strong> only allowed users can set the pay now journal or confirm a bill that has one.</li>
+                    <li><strong>Traceable:</strong> a chatter message records which journal bypassed the authorization.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <p class="text-center" style="margin-top: 50px; font-style: italic;">
+                    Developed by <strong>Zinapsia</strong> for Odoo 19.
+                </p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

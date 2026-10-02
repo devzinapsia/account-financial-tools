@@ -1,0 +1,127 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_vendor_bill_authorization_pro
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-02 19:37+0000\n"
+"PO-Revision-Date: 2026-10-02 19:37+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_vendor_bill_authorization_pro
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization_pro/models/account_move.py:0
+msgid ""
+"Authorization not required: this vendor bill was paid on confirmation with "
+"journal %s, which bypasses vendor bill authorization."
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_account_bank_statement_line__pay_now_available_journal_ids
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_account_move__pay_now_available_journal_ids
+msgid "Available pay now journals"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_account_bank_statement_line__can_set_pay_now_journal
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_account_move__can_set_pay_now_journal
+msgid "Can set pay now journal"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model,name:account_vendor_bill_authorization_pro.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model,name:account_vendor_bill_authorization_pro.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_account_move__id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_res_company__id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_res_config_settings__id
+msgid "ID"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model,name:account_vendor_bill_authorization_pro.model_account_move
+msgid "Journal Entry"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_res_company__bypass_journal_ids
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_res_config_settings__bypass_journal_ids
+msgid "Journals that bypass authorization"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model.fields,help:account_vendor_bill_authorization_pro.field_res_company__bypass_journal_ids
+#: model:ir.model.fields,help:account_vendor_bill_authorization_pro.field_res_config_settings__bypass_journal_ids
+msgid ""
+"Only journals that can be chosen as the pay now journal of a vendor bill. A "
+"vendor bill paid on confirmation with one of them does not require "
+"authorization, unless an 'Always block' policy matches it. Leave empty to "
+"keep the pay now journal working as before, with no bypass."
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model.fields,help:account_vendor_bill_authorization_pro.field_res_company__bypass_user_ids
+#: model:ir.model.fields,help:account_vendor_bill_authorization_pro.field_res_config_settings__bypass_user_ids
+msgid ""
+"Only these users can set a pay now journal on a vendor bill, or confirm a "
+"vendor bill that has one, while journals that bypass authorization are "
+"configured."
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization_pro/models/account_move.py:0
+msgid ""
+"The pay now journal %(journal)s of vendor bill %(bill)s is not one of the "
+"journals that bypass authorization."
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_res_company__bypass_user_ids
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization_pro.field_res_config_settings__bypass_user_ids
+msgid "Users allowed to use this bypass"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization_pro.res_config_settings_view_form
+msgid "Vendor bill authorization bypass"
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization_pro.res_config_settings_view_form
+msgid ""
+"Vendor bills paid on confirmation with one of these journals don't require "
+"authorization, unless an 'Always block' policy matches them. Only these "
+"users can set the pay now journal on a vendor bill or confirm one that has "
+"it."
+msgstr ""
+
+#. module: account_vendor_bill_authorization_pro
+#. odoo-python
+#: code:addons/account_vendor_bill_authorization_pro/models/account_move.py:0
+msgid ""
+"You are not allowed to use the pay now journal %(journal)s on vendor bill "
+"%(bill)s: only the users allowed to bypass vendor bill authorization can set"
+" a pay now journal or confirm a vendor bill that has one."
+msgstr ""

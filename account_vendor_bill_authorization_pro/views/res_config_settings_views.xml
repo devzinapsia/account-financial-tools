@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.vendor.bill.authorization.pro</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account_payment_pro.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[field[@name='group_pay_now_vendor_invoices']]/.." position="after">
+                <setting id="vendor_bill_authorization_bypass"
+                    string="Vendor bill authorization bypass"
+                    company_dependent="1"
+                    invisible="not group_pay_now_vendor_invoices"
+                    help="Vendor bills paid on confirmation with one of these journals don't require authorization, unless an 'Always block' policy matches them. Only these users can set the pay now journal on a vendor bill or confirm one that has it.">
+                    <div class="content-group">
+                        <div class="row mt8">
+                            <label for="bypass_journal_ids" class="col-lg-4 o_light_label"/>
+                            <field name="bypass_journal_ids" widget="many2many_tags" options="{'no_create': True}" class="col-lg-8"/>
+                        </div>
+                        <div class="row">
+                            <label for="bypass_user_ids" class="col-lg-4 o_light_label"/>
+                            <field name="bypass_user_ids" widget="many2many_tags" options="{'no_create': True}" class="col-lg-8"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
