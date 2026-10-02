@@ -21,9 +21,13 @@
    (*Modification*) can pick it, but confirming the bill fails, because
    the payment can't be created in that journal. Make sure the allowed
    users above also have rights on the bypass journals in Journal Security.
-#. **Vendor payment authorization** (``account_payment_authorization``),
-   if installed: the payment created on confirmation goes through its
-   schemes like any other payment. If a scheme matches it, the bill is
-   confirmed, but its payment stays in draft, pending authorization in the
-   normal payment flow. Configure the payment schemes so they don't match
-   the bypass journals if that's not wanted.
+#. **Vendor payment authorization** (``account_payment_authorization``):
+   no extra setup is needed. Payment policies don't apply to the payment
+   created when a bypassed bill is confirmed, except policies marked
+   *Always block*. A payment policy marked *Always block* that matches
+   that payment (e.g. one conditioned on the petty cash journal) leaves
+   the bill confirmed and its payment blocked in draft, so avoid such
+   policies on the bypass journals. Every other payment goes through
+   payment authorization as usual: payments from other journals, and
+   payments from a bypass journal that settle something other than bills
+   with that same pay now journal.

@@ -1,6 +1,6 @@
 {
     "name": "Autorización de facturas de proveedor - Excepción por pago directo",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "summary": "Las facturas de proveedor pagadas en la carga con un diario de pago "
     "directo habilitado (p. ej. Fondo Fijo) no requieren autorización.",
     "author": "Zinapsia",
@@ -9,6 +9,7 @@
     "category": "Accounting/Accounting",
     "depends": [
         "account_vendor_bill_authorization",
+        "account_payment_authorization",
         "account_payment_pro",
         "account_journal_security",
     ],

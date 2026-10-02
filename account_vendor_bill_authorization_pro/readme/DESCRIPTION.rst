@@ -21,6 +21,12 @@ When the company configures **journals that bypass authorization** and the
   matches the bill, it stays blocked whatever its pay now journal.
 * Only an allowed user can confirm a bill that has a pay now journal. Any
   other user gets an error, and the bill stays in draft.
+* The payment created on confirmation also **skips vendor payment
+  authorization** (*Autorización de pagos a proveedores*,
+  ``account_payment_authorization``): the bill and its payment are
+  confirmed together. Only a payment from a bypass journal that settles
+  bills whose pay now journal is that same journal gets this. Payment
+  policies marked *Always block* still block it.
 * When a bill is confirmed through the bypass, a message in its chatter
   records which journal bypassed the authorization.
 
@@ -31,5 +37,6 @@ The whole module is inactive while the *Allow pay now on vendor invoices?*
 setting is unchecked, or while no journal that bypasses authorization is
 configured.
 
-This module was built for a specific client's setup and depends on
-``account_payment_pro`` and ``account_journal_security`` (ingadhoc).
+This module was built for a specific client's setup. It depends on
+``account_payment_authorization``, as well as on ``account_payment_pro``
+and ``account_journal_security`` (ingadhoc).

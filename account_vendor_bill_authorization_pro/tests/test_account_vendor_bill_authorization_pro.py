@@ -198,3 +198,60 @@ class TestAccountVendorBillAuthorizationPro(AccountTestInvoicingCommon):
             [("id", "=", self.petty_cash_journal.id)]
         )
         self.assertFalse(visible)
+
+    # -- Payment authorization (account_payment_authorization) -----------
+
+    def _create_payment_scheme(self, **vals):
+        # Default domain: every vendor payment still pending confirmation,
+        # i.e. a catch-all policy like "every payment must be authorized".
+        return self.env["account.payment.authorization.scheme"].create(
+            {"name": "All vendor payments", "authorized_user_ids": [Command.set(self.user_authorizer.ids)], **vals}
+        )
+
+    def test_bypass_payment_skips_payment_authorization(self):
+        self._create_payment_scheme()
+        bill = self._create_bill(self.classification_normal, self.petty_cash_journal)
+        bill.with_user(self.user_bypass).action_post()
+        self.assertEqual(bill.state, "posted")
+        payment = bill.matched_payment_ids
+        self.assertEqual(payment.journal_id, self.petty_cash_journal)
+        self.assertNotEqual(payment.state, "draft")
+        self.assertFalse(payment.matched_scheme_ids)
+        self.assertEqual(payment.authorization_state, "not_required")
+        self.assertIn(bill.payment_state, ("paid", "in_payment"))
+
+    def test_payment_always_block_scheme_still_blocks_bypass_payment(self):
+        self._create_payment_scheme(
+            name="Block petty cash",
+            domain=str([("journal_id", "=", self.petty_cash_journal.id)]),
+            block_payment=True,
+        )
+        bill = self._create_bill(self.classification_normal, self.petty_cash_journal)
+        self._post_expecting_error(bill, self.user_bypass)
+        payment = self.env["account.payment"].search([("journal_id", "=", self.petty_cash_journal.id)])
+        self.assertTrue(payment.matched_scheme_ids.block_payment)
+        self.assertEqual(payment.state, "draft")
+
+    def test_other_payments_still_require_payment_authorization(self):
+        self._create_payment_scheme()
+        payment_model = self.env["account.payment"].with_user(self.user_bypass)
+        vals = {
+            "payment_type": "outbound",
+            "partner_type": "supplier",
+            "partner_id": self.partner_a.id,
+            "amount": 100.0,
+        }
+        # Same bypass journal, but not settling a bypassed vendor bill.
+        petty_cash_payment = payment_model.create({**vals, "journal_id": self.petty_cash_journal.id})
+        self.assertTrue(petty_cash_payment.matched_scheme_ids)
+        # Settling a bill without pay now journal, from a non-bypass journal.
+        bill = self._create_bill()
+        bill.with_user(self.user_bypass).action_post()
+        bank_payment = payment_model.create(
+            {
+                **vals,
+                "journal_id": self.bank_journal.id,
+                "to_pay_move_line_ids": [Command.set(bill.open_move_line_ids.ids)],
+            }
+        )
+        self.assertTrue(bank_payment.matched_scheme_ids)

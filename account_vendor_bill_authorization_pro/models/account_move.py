@@ -46,22 +46,9 @@ class AccountMove(models.Model):
                 not company.bypass_journal_ids or self.env.user in company.bypass_user_ids
             )
 
-    @api.depends(
-        "move_type",
-        "company_id",
-        "partner_id",
-        "journal_id",
-        "currency_id",
-        "invoice_date",
-        "date",
-        "classification_id",
-        "amount_total",
-        "fiscal_position_id",
-        "invoice_payment_term_id",
-        # Added by this module; the list above repeats the base module's,
-        # since an @api.depends on an override replaces the original one.
-        "pay_now_journal_id",
-    )
+    # Added to the base module's dependencies: Odoo merges the @api.depends
+    # of every override along the MRO.
+    @api.depends("pay_now_journal_id")
     def _compute_matched_policy_ids(self):
         super()._compute_matched_policy_ids()
         if not self._is_pay_now_vendor_enabled():
