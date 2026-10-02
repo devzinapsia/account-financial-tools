@@ -610,6 +610,30 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         # resolution, so comparing it is flaky within a fast test).
         self.assertNotEqual(batch.line_ids.ids, line_ids_before)
 
+    def test_runs_are_isolated_per_company(self):
+        other_company = self.env["res.company"].create({"name": "ARCA other company"})
+        batch = self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+        batch._run_comparison([self._make_row(date=date(2026, 8, 12), total_amount=100.0)])
+        user = self.env["res.users"].create(
+            {
+                "name": "ARCA other company user",
+                "login": "arca_other_company_user",
+                "company_id": other_company.id,
+                "company_ids": [(6, 0, (other_company | self.company).ids)],
+                "group_ids": [(6, 0, self.env.ref("account.group_account_manager").ids)],
+            }
+        )
+        # Allowed in both companies, but standing on the other one: must
+        # only see the active company's runs, not every allowed company's.
+        on_other = self.env(user=user, context={"allowed_company_ids": [other_company.id, self.company.id]})
+        self.assertFalse(on_other["arca.bill.comparison.batch"].search([("id", "=", batch.id)]))
+        self.assertFalse(on_other["arca.bill.comparison.line"].search([("batch_id", "=", batch.id)]))
+        on_own = self.env(user=user, context={"allowed_company_ids": [self.company.id, other_company.id]})
+        self.assertEqual(on_own["arca.bill.comparison.batch"].search([("id", "=", batch.id)]), batch)
+        self.assertTrue(on_own["arca.bill.comparison.line"].search([("batch_id", "=", batch.id)]))
+
     def test_reprocess_without_source_file_raises(self):
         batch = self.env["arca.bill.comparison.batch"].create(
             {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Only the company currently active in the switcher, not every
+         allowed one: runs are a per-company check, mixing companies in the
+         same list is confusing even for users allowed in several. -->
+    <record id="rule_arca_bill_comparison_batch_company" model="ir.rule">
+        <field name="name">ARCA bill comparison run: multi-company</field>
+        <field name="model_id" ref="model_arca_bill_comparison_batch"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+    </record>
+
+    <record id="rule_arca_bill_comparison_line_company" model="ir.rule">
+        <field name="name">ARCA bill comparison line: multi-company</field>
+        <field name="model_id" ref="model_arca_bill_comparison_line"/>
+        <field name="domain_force">[('company_id', '=', company_id)]</field>
+    </record>
+
+</odoo>
