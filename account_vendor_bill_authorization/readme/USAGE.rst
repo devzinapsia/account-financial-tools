@@ -41,10 +41,10 @@ authorization, so it is posted right away.
 Authorizing or rejecting a pending bill
 ========================================
 
-Open the bill. If you are one of the users authorized to act on it, you
-will see **Authorize** and **Authorize + Confirm** buttons next to
-**Confirm** in the header, and a **Reject** button in the
-**Authorization** tab.
+Open the bill. If you are one of the users authorized to act on it, the
+header shows **Authorize + Confirm**, **Authorize** and **Reject**
+instead of the regular **Confirm** button, so that authorizing is always
+an explicit choice.
 
 * **Authorize**: does *not* confirm the bill. It only sets the
   **Authorization status** to *Authorized* and the **Authorized by**

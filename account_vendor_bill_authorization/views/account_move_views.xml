@@ -17,11 +17,25 @@
                  confirming it. Once authorized, the regular "Confirm"
                  button lets anyone finish confirming it, not just an
                  authorized user; see account_move.py action_post(). -->
+            <!-- For an authorizer looking at a bill pending their
+                 authorization, the regular "Confirm" button is replaced by
+                 "Authorize + Confirm" (shown under exactly the opposite
+                 condition), so that authorizing is always an explicit
+                 choice. Server-side, action_post() still authorizes and
+                 confirms when an authorizer confirms by any other path
+                 (e.g. the list's bulk action). -->
+            <xpath expr="//header/button[@name='action_post'][last()]" position="attributes">
+                <attribute name="invisible" separator=" or " add="(state == 'draft' and move_type in ('in_invoice', 'in_refund') and not is_blocked and authorization_state not in ('authorized', 'rejected') and uid in pending_authorizer_ids)"/>
+            </xpath>
             <xpath expr="//header/button[@name='action_post'][last()]" position="after">
+                <button name="action_authorize_and_confirm_bill" string="Authorize + Confirm" type="object"
+                        class="oe_highlight"
+                        invisible="state != 'draft' or move_type not in ('in_invoice', 'in_refund') or is_blocked or authorization_state in ('authorized', 'rejected') or uid not in pending_authorizer_ids"
+                        groups="account.group_account_invoice"/>
                 <button name="action_authorize_bill" string="Authorize" type="object"
                         invisible="state != 'draft' or move_type not in ('in_invoice', 'in_refund') or is_blocked or authorization_state in ('authorized', 'rejected') or uid not in pending_authorizer_ids"
                         groups="account.group_account_invoice"/>
-                <button name="action_authorize_and_confirm_bill" string="Authorize + Confirm" type="object"
+                <button name="action_reject_bill" string="Reject" type="object"
                         invisible="state != 'draft' or move_type not in ('in_invoice', 'in_refund') or is_blocked or authorization_state in ('authorized', 'rejected') or uid not in pending_authorizer_ids"
                         groups="account.group_account_invoice"/>
                 <!-- Undoes a mistaken Authorize click: only shown once the
@@ -53,10 +67,6 @@
                                    invisible="authorization_state != 'rejected'"/>
                         </group>
                     </group>
-                    <button name="action_reject_bill" string="Reject" type="object"
-                            class="btn btn-secondary"
-                            invisible="state != 'draft' or is_blocked or authorization_state in ('authorized', 'rejected') or uid not in pending_authorizer_ids"
-                            groups="account.group_account_invoice"/>
                 </page>
             </xpath>
         </field>

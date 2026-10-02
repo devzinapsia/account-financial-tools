@@ -1,6 +1,6 @@
 {
     "name": "Autorización de facturas de proveedor",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "summary": "Requiere la autorización de usuarios configurados antes de confirmar "
     "facturas y notas de crédito/débito de proveedor que cumplan las políticas "
     "definidas.",

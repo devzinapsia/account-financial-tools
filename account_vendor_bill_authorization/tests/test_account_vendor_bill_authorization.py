@@ -602,6 +602,41 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
                 self.assertIsNotNone(node)
                 self.assertEqual(node.get("optional"), "hide")
 
+    def test_form_header_replaces_confirm_for_pending_authorizer(self):
+        """For an authorizer on a pending bill, "Confirm" is hidden under
+        exactly the condition that shows "Authorize + Confirm", and
+        "Reject" sits in the header next to them.
+        """
+        view = self.env["account.move"].get_view(
+            view_id=self.env.ref("account.view_move_form").id, view_type="form"
+        )
+        header = etree.fromstring(view["arch"]).find(".//header")
+        names = [button.get("name") for button in header.iter("button")]
+        confirm = [b for b in header.iter("button") if b.get("name") == "action_post"][-1]
+        combined = header.find(".//button[@name='action_authorize_and_confirm_bill']")
+        self.assertIn(
+            "(state == 'draft' and move_type in ('in_invoice', 'in_refund') and not is_blocked "
+            "and authorization_state not in ('authorized', 'rejected') "
+            "and uid in pending_authorizer_ids)",
+            confirm.get("invisible"),
+        )
+        self.assertEqual(
+            combined.get("invisible"),
+            "state != 'draft' or move_type not in ('in_invoice', 'in_refund') or is_blocked "
+            "or authorization_state in ('authorized', 'rejected') "
+            "or uid not in pending_authorizer_ids",
+        )
+        index = names.index("action_authorize_and_confirm_bill")
+        self.assertEqual(
+            names[index:index + 4],
+            [
+                "action_authorize_and_confirm_bill",
+                "action_authorize_bill",
+                "action_reject_bill",
+                "action_unauthorize_bill",
+            ],
+        )
+
     def test_new_policy_defaults(self):
         policy = self.env["account.vendor.bill.authorization.policy"].create({"name": "Defaults"})
         self.assertEqual(policy.company_id, self.env.company)
