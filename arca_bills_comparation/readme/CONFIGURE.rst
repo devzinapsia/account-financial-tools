@@ -9,7 +9,10 @@ localization setup:
   CUIT used to download the ARCA export, since the file's recipient CUIT is
   validated against it before importing.
 
-Access to the wizard and its results follows the same security groups as
-vendor bills: ``Billing`` users can run the process and view results;
-``Accounting Manager`` users additionally get full read/write access to
-stored runs and lines.
+Access: the whole process (running the **My Vouchers** wizard, viewing
+runs and their results, **Reprocess** from the run form or from either
+Action menu, and deleting runs) is available to users with **Show Full
+Accounting Features** (``account.group_account_user``) and above, which
+includes Accounting Administrators. Users with only **Billing** access
+don't see the ARCA menu. No Documents app rights are needed: the source
+file is stored and read back by the module itself.

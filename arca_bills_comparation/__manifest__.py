@@ -1,6 +1,6 @@
 {
     "name": "Comparación con ARCA de facturas recibidas",
-    "version": "19.0.1.1.10",
+    "version": "19.0.1.1.11",
     "summary": "Compara la exportación 'Mis Comprobantes Recibidos' de ARCA con las facturas de proveedores de Odoo",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",

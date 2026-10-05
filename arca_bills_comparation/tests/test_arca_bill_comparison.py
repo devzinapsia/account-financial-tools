@@ -610,6 +610,37 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         # resolution, so comparing it is flaky within a fast test).
         self.assertNotEqual(batch.line_ids.ids, line_ids_before)
 
+    def test_full_accounting_features_user_can_run_everything(self):
+        # "Show Full Accounting Features" (not Administrator, no Documents
+        # group): process, read, reprocess (form and both Action menus) and
+        # delete must all work.
+        accountant = self.env["res.users"].create(
+            {
+                "name": "ARCA accountant",
+                "login": "arca_accountant",
+                "company_id": self.company.id,
+                "company_ids": [(6, 0, self.company.ids)],
+                "group_ids": [(6, 0, self.env.ref("account.group_account_user").ids)],
+            }
+        )
+        self.assertFalse(accountant.has_group("account.group_account_manager"))
+        env = self.env(user=accountant, context={"allowed_company_ids": self.company.ids})
+        wizard = env["arca.bill.comparison.wizard"].create(
+            {
+                "file": base64.b64encode((DATA_DIR / "mis_comprobantes_base.xlsx").read_bytes()),
+                "filename": "mis_comprobantes_base.xlsx",
+            }
+        )
+        wizard.action_process()
+        batch = env["arca.bill.comparison.batch"].search([], order="id desc", limit=1)
+        self.assertTrue(batch.line_ids)
+        batch.read(["name", "last_processed_on", "source_document_id", "line_count"])
+        batch.line_ids.read(["result", "move_id", "arca_voucher_type_raw"])
+        batch.action_reprocess()
+        batch.action_reprocess_multi()
+        batch.line_ids.action_reprocess_batches()
+        batch.unlink()
+
     def test_runs_are_isolated_per_company(self):
         other_company = self.env["res.company"].create({"name": "ARCA other company"})
         batch = self.env["arca.bill.comparison.batch"].create(

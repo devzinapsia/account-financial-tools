@@ -145,10 +145,13 @@ class ArcaBillComparisonBatch(models.Model):
         same ARCA file again.
         """
         self.ensure_one()
-        if not self.source_document_id or not self.source_document_id.attachment_id:
+        # sudo(): reprocessing must not depend on the user also having
+        # Documents access rights, same as storing the file in the first place.
+        document = self.source_document_id.sudo()
+        if not document or not document.attachment_id:
             raise UserError(_("The original file is no longer available; nothing to reprocess."))
         try:
-            rows = parse_arca_file(self.source_document_id.attachment_id.raw, self.source_document_id.name)
+            rows = parse_arca_file(document.attachment_id.raw, document.name)
         except ArcaFileFormatError as exc:
             raise UserError(str(exc)) from exc
         self._run_comparison(rows)
