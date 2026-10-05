@@ -637,6 +637,209 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
             ],
         )
 
+    # -- Authorization request activities ------------------------------
+
+    def _requests(self, bill):
+        return bill._get_authorization_requests()
+
+    def test_authorize_removes_requests_without_chatter_noise(self):
+        """Authorizing removes every "authorization requested" activity
+        without posting one "activity done" message per authorizer, and
+        leaves unrelated To-Dos alone.
+        """
+        bill = self._create_bill(self.classification_two)
+        self._post_blocked(bill, self.user_creator)
+        self.assertEqual(self._requests(bill).user_id, self.user_authorizer | self.user_authorizer_2)
+        unrelated = bill.activity_schedule(
+            "mail.mail_activity_data_todo", summary="Call the vendor", user_id=self.user_creator.id
+        )
+        messages_before = bill.message_ids
+
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+
+        self.assertFalse(self._requests(bill))
+        self.assertTrue(unrelated.exists())
+        new_messages = bill.message_ids - messages_before
+        self.assertEqual(len(new_messages), 1, new_messages.mapped("body"))
+        self.assertIn("authorized by", new_messages.body)
+        self.assertFalse(new_messages.mail_activity_type_id)
+
+    def test_reject_removes_requests_and_keeps_creator_notice(self):
+        bill = self._create_bill(self.classification_two)
+        self._post_blocked(bill, self.user_creator)
+        bill.with_user(self.user_authorizer_2)._reject_bill("Duplicated")
+        self.assertFalse(self._requests(bill))
+        notice = self._authorization_activities(bill)
+        self.assertEqual(notice.user_id, self.user_creator)
+
+    def test_direct_confirm_by_authorizer_removes_requests(self):
+        bill = self._create_bill(self.classification_two)
+        self._post_blocked(bill, self.user_creator)
+        bill.with_user(self.user_authorizer_2).action_post()
+        self.assertEqual(bill.state, "posted")
+        self.assertFalse(self._requests(bill))
+
+    def test_repeated_confirm_attempt_does_not_duplicate_requests(self):
+        bill = self._create_bill(self.classification_two)
+        self._post_blocked(bill, self.user_creator)
+        self._post_blocked(bill, self.user_other)
+        self.assertEqual(len(self._requests(bill)), 2)
+        requested = [b for b in bill.message_ids.mapped("body") if "Authorization requested from" in (b or "")]
+        self.assertEqual(len(requested), 1)
+
+        # A newly added authorizer is asked on the next attempt, only them.
+        self.policy_two.authorized_user_ids = [Command.link(self.user_manager.id)]
+        self._post_blocked(bill, self.user_creator)
+        self.assertEqual(
+            self._requests(bill).user_id,
+            self.user_authorizer | self.user_authorizer_2 | self.user_manager,
+        )
+        self.assertEqual(len(self._requests(bill)), 3)
+
+    def test_requests_removed_when_no_longer_required(self):
+        """E.g. an edit, a policy change, or a bypass (pay now journal in
+        account_vendor_bill_authorization_pro) makes the bill stop matching:
+        the pending requests go away with it.
+        """
+        bill = self._create_bill(self.classification_sensitive)
+        self._post_blocked(bill, self.user_creator)
+        self.assertTrue(self._requests(bill))
+        bill.with_user(self.user_creator).classification_id = False
+        self.assertEqual(bill.authorization_state, "not_required")
+        self.assertFalse(self._requests(bill))
+
+    def test_requests_removed_when_policy_stops_matching_and_bill_is_posted(self):
+        bill = self._create_bill(self.classification_sensitive)
+        self._post_blocked(bill, self.user_creator)
+        self.policy_sensitive.active = False
+        bill.with_user(self.user_creator).action_post()
+        self.assertEqual(bill.state, "posted")
+        self.assertFalse(self._requests(bill))
+
+    def test_requests_removed_when_bill_is_cancelled(self):
+        bill = self._create_bill(self.classification_sensitive)
+        self._post_blocked(bill, self.user_creator)
+        bill.button_cancel()
+        self.assertEqual(bill.state, "cancel")
+        self.assertFalse(self._requests(bill))
+
+    def test_requests_in_another_language_are_recognized(self):
+        """The summary is stored in the requester's language; requests made
+        by a Spanish-speaking user must still be found and removed.
+        """
+        lang = self.env["res.lang"]._activate_lang("es_AR")
+        bill = self._create_bill(self.classification_sensitive)
+        self._post_blocked(bill.with_context(lang=lang.code), self.user_creator)
+        self.assertEqual(len(self._requests(bill)), 1)
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+        self.assertFalse(self._requests(bill))
+
+    def test_cleanup_stale_authorization_requests(self):
+        """Migration helper: removes requests left behind by earlier
+        versions on bills no longer pending, and duplicates on pending
+        bills, keeping one request per authorizer.
+        """
+        summary = "Vendor bill authorization requested"
+
+        def schedule(bill, user):
+            return bill.activity_schedule(
+                "mail.mail_activity_data_todo", summary=summary, user_id=user.id
+            )
+
+        posted = self._create_bill(self.classification_sensitive)
+        posted.with_user(self.user_authorizer).action_authorize_and_confirm_bill()
+        stale = schedule(posted, self.user_authorizer)
+
+        pending = self._create_bill(self.classification_two)
+        first = schedule(pending, self.user_authorizer)
+        duplicate = schedule(pending, self.user_authorizer)
+        other = schedule(pending, self.user_authorizer_2)
+        unrelated = pending.activity_schedule(
+            "mail.mail_activity_data_todo", summary="Call the vendor", user_id=self.user_authorizer.id
+        )
+
+        removed = self.env["account.move"]._cleanup_stale_authorization_requests()
+
+        self.assertEqual(removed, 2)
+        self.assertFalse(stale.exists())
+        self.assertFalse(duplicate.exists())
+        self.assertTrue(first.exists())
+        self.assertTrue(other.exists())
+        self.assertTrue(unrelated.exists())
+
+    # -- Multi-company -------------------------------------------------
+
+    def _create_company_2_bill(self, company_data, classification):
+        return (
+            self.env["account.move"]
+            .with_company(company_data["company"])
+            .create(
+                {
+                    "move_type": "in_invoice",
+                    "journal_id": company_data["default_journal_purchase"].id,
+                    "partner_id": self.partner_a.id,
+                    "invoice_date": "2026-01-01",
+                    "classification_id": classification.id,
+                    "invoice_line_ids": [
+                        Command.create({"name": "Test line", "quantity": 1, "price_unit": 100.0})
+                    ],
+                }
+            )
+        )
+
+    def test_company_policy_only_applies_to_its_own_company(self):
+        """A policy restricted to one company never matches another
+        company's bills, even with an identical condition.
+        """
+        company_data_2 = self.setup_other_company()
+        company_2 = company_data_2["company"]
+        classification = self.env["account.move.classification"].create({"name": "Company 2 only"})
+        policy_company_2 = self.env["account.vendor.bill.authorization.policy"].create(
+            {
+                "name": "Company 2 policy",
+                "company_id": company_2.id,
+                "domain": str([("classification_id", "=", classification.id)]),
+                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
+            }
+        )
+
+        bill_company_1 = self._create_bill(classification)
+        self.assertEqual(bill_company_1.company_id, self.env.company)
+        self.assertFalse(bill_company_1.matched_policy_ids)
+        self.assertEqual(bill_company_1.authorization_state, "not_required")
+        bill_company_1.with_user(self.user_creator).action_post()
+        self.assertEqual(bill_company_1.state, "posted")
+
+        bill_company_2 = self._create_company_2_bill(company_data_2, classification)
+        self.assertEqual(bill_company_2.matched_policy_ids, policy_company_2)
+        self.assertEqual(bill_company_2.authorization_state, "to_authorize")
+
+    def test_policy_without_company_applies_to_every_company(self):
+        company_data_2 = self.setup_other_company()
+        classification = self.env["account.move.classification"].create({"name": "Shared"})
+        shared_policy = self.env["account.vendor.bill.authorization.policy"].create(
+            {
+                "name": "Shared policy",
+                "company_id": False,
+                "domain": str([("classification_id", "=", classification.id)]),
+                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
+            }
+        )
+        self.assertEqual(self._create_bill(classification).matched_policy_ids, shared_policy)
+        self.assertEqual(
+            self._create_company_2_bill(company_data_2, classification).matched_policy_ids,
+            shared_policy,
+        )
+
+    def test_policies_of_other_companies_are_hidden_by_record_rule(self):
+        company_data_2 = self.setup_other_company()
+        policy_company_2 = self.env["account.vendor.bill.authorization.policy"].create(
+            {"name": "Company 2 policy", "company_id": company_data_2["company"].id}
+        )
+        visible = self.env["account.vendor.bill.authorization.policy"].with_user(self.user_manager).search([])
+        self.assertNotIn(policy_company_2, visible)
+        self.assertIn(self.policy_sensitive, visible)
+
     def test_new_policy_defaults(self):
         policy = self.env["account.vendor.bill.authorization.policy"].create({"name": "Defaults"})
         self.assertEqual(policy.company_id, self.env.company)

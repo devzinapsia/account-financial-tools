@@ -178,6 +178,11 @@ class AccountMove(models.Model):
             new_state = "to_authorize" if move.matched_policy_ids else "not_required"
             if move.authorization_state != new_state:
                 super(AccountMove, move).write({"authorization_state": new_state})
+                if new_state == "not_required":
+                    # E.g. an edit, a policy change, or a bypass (see
+                    # account_vendor_bill_authorization_pro) made it stop
+                    # matching: nobody needs to act on it anymore.
+                    move._clear_authorization_requests()
 
     def _force_authorization_compute(self):
         # Force matched_policy_ids/pending_authorizer_ids/is_blocked to be
@@ -276,6 +281,10 @@ class AccountMove(models.Model):
                     )
                 move.message_post(body=body)
 
+        if vals.get("state") and vals["state"] != "draft":
+            # E.g. cancelled: a bill that is no longer a draft can't be
+            # authorized anymore. Posting is handled in _post().
+            self._clear_authorization_requests()
         self._sync_authorization_state_with_match()
         return result
 
@@ -312,16 +321,97 @@ class AccountMove(models.Model):
             ", ".join(blocking_policies.mapped("name")),
         )
 
-    def _mark_authorization_activities_done(self, feedback):
-        self.activity_ids.filtered(
-            lambda activity: activity.activity_type_id == self.env.ref(ACTIVITY_TYPE_XMLID)
-        ).action_feedback(feedback=feedback)
+    @api.model
+    def _get_authorization_request_summaries(self):
+        """The summary of the activities _create_authorization_activities()
+        schedules, in every installed language: the summary is stored
+        already translated into the requester's language, and it is what
+        tells these activities apart from any other To-Do on the bill.
+        """
+        # The untranslated source is always included: it is what gets stored
+        # for any requester whose language has no translation, and en_US is
+        # not necessarily among the installed languages.
+        source = "Vendor bill authorization requested"
+        return {source} | {
+            self.with_context(lang=code).env._("Vendor bill authorization requested")
+            for code, _name in self.env["res.lang"].get_installed()
+        }
+
+    def _get_authorization_requests(self):
+        """Open "authorization requested" activities of these bills -- not
+        any other To-Do, nor the rejected/revoked notices sent to whoever
+        loaded the bill. Read as superuser: the user acting on the bill may
+        not see the other authorizers' activities.
+        """
+        if not self:
+            return self.env["mail.activity"]
+        todo = self.env.ref(ACTIVITY_TYPE_XMLID)
+        return (
+            self.env["mail.activity"]
+            .sudo()
+            .search(
+                [
+                    ("res_model", "=", self._name),
+                    ("res_id", "in", self.ids),
+                    ("activity_type_id", "=", todo.id),
+                    ("summary", "in", list(self._get_authorization_request_summaries())),
+                ]
+            )
+        )
+
+    def _clear_authorization_requests(self):
+        """Remove the pending "authorization requested" activities once
+        nobody needs to act on them anymore (authorized, rejected, no
+        longer required, posted, cancelled). They are deleted rather than
+        marked as done on purpose: marking an activity as done posts one
+        chatter message per activity (one per authorizer), while the
+        decision itself is already logged by this module's own message.
+        """
+        self._get_authorization_requests().unlink()
+
+    @api.model
+    def _cleanup_stale_authorization_requests(self):
+        """Remove "authorization requested" activities left behind by
+        earlier versions, which only closed them on an explicit decision:
+        those on bills no longer pending authorization, plus duplicates
+        (one per repeated confirm attempt) on bills still pending. Returns
+        the number of activities removed.
+        """
+        todo = self.env.ref(ACTIVITY_TYPE_XMLID)
+        activities = (
+            self.env["mail.activity"]
+            .sudo()
+            .search(
+                [
+                    ("res_model", "=", self._name),
+                    ("activity_type_id", "=", todo.id),
+                    ("summary", "in", list(self._get_authorization_request_summaries())),
+                ],
+                order="id",
+            )
+        )
+        moves = self.sudo().browse(set(activities.mapped("res_id"))).exists()
+        pending = moves.filtered(
+            lambda m: m.move_type in VENDOR_BILL_TYPES
+            and m.state == "draft"
+            and m.authorization_state == "to_authorize"
+        )
+        to_remove = self.env["mail.activity"].sudo()
+        seen = set()
+        for activity in activities:
+            key = (activity.res_id, activity.user_id.id)
+            if activity.res_id not in pending.ids or key in seen:
+                to_remove |= activity
+            seen.add(key)
+        to_remove.unlink()
+        return len(to_remove)
 
     def _create_authorization_activities(self):
         for move in self:
             if move.is_blocked:
                 # Nobody can ever approve it: asking anyone would only
                 # suggest that waiting for an approval will help.
+                move._clear_authorization_requests()
                 move.message_post(
                     body=_(
                         "This vendor bill is permanently blocked by the "
@@ -331,7 +421,12 @@ class AccountMove(models.Model):
                 )
                 continue
 
-            for user in move.pending_authorizer_ids:
+            # A repeated confirm attempt must not ask the same authorizers
+            # again: only those without an open request get one (and the
+            # chatter only logs when someone new was asked).
+            already_asked = move._get_authorization_requests().user_id
+            new_authorizers = move.pending_authorizer_ids - already_asked
+            for user in new_authorizers:
                 move.activity_schedule(
                     ACTIVITY_TYPE_XMLID,
                     summary=_("Vendor bill authorization requested"),
@@ -347,14 +442,14 @@ class AccountMove(models.Model):
                     ),
                     user_id=user.id,
                 )
-            if move.pending_authorizer_ids:
+            if new_authorizers:
                 move.message_post(
                     body=_(
                         "Authorization requested from: %s",
-                        ", ".join(move.pending_authorizer_ids.mapped("display_name")),
+                        ", ".join(new_authorizers.mapped("display_name")),
                     )
                 )
-            else:
+            elif not move.pending_authorizer_ids:
                 move.message_post(
                     body=_(
                         "This vendor bill matches an authorization policy with "
@@ -401,9 +496,7 @@ class AccountMove(models.Model):
                 to_confirm += move
             elif self.env.user in move.pending_authorizer_ids:
                 move.write({"authorization_state": "authorized", "authorized_by_id": self.env.user.id})
-                move._mark_authorization_activities_done(
-                    _("Vendor bill authorized by %s.", self.env.user.display_name)
-                )
+                move._clear_authorization_requests()
                 move.message_post(
                     body=_(
                         "Vendor bill authorized and confirmed directly by %s "
@@ -502,7 +595,14 @@ class AccountMove(models.Model):
                 super(AccountMove, reversals).write({"authorization_state": "not_required"})
         else:
             self._check_vendor_bill_authorization_before_post()
-        return super(AccountMove, self.with_context(**{POSTING_CONTEXT_KEY: True}))._post(soft=soft)
+        posted = super(AccountMove, self.with_context(**{POSTING_CONTEXT_KEY: True}))._post(soft=soft)
+        # Whatever path posted them (including a bypass that made the
+        # authorization unnecessary), nobody needs to act on their
+        # authorization requests anymore.
+        self.filtered(
+            lambda m: m.move_type in VENDOR_BILL_TYPES and m.state == "posted"
+        )._clear_authorization_requests()
+        return posted
 
     def _check_bill_pending_authorization(self, access_error_message):
         self._refresh_authorization_state()
@@ -529,9 +629,7 @@ class AccountMove(models.Model):
         self._check_bill_pending_authorization(_("You are not allowed to authorize this vendor bill."))
         for move in self:
             move.write({"authorization_state": "authorized", "authorized_by_id": self.env.user.id})
-            move._mark_authorization_activities_done(
-                _("Vendor bill authorized by %s.", self.env.user.display_name)
-            )
+            move._clear_authorization_requests()
             move.message_post(
                 body=_(
                     "Vendor bill authorized by %s. Awaiting confirmation.",
@@ -611,13 +709,7 @@ class AccountMove(models.Model):
         self.ensure_one()
         self._check_bill_pending_authorization(_("You are not allowed to reject this vendor bill."))
         self.write({"authorization_state": "rejected", "authorization_reject_reason": reason})
-        self._mark_authorization_activities_done(
-            _(
-                "Vendor bill rejected by %(user)s.\nReason: %(reason)s",
-                user=self.env.user.display_name,
-                reason=reason,
-            )
-        )
+        self._clear_authorization_requests()
         self.message_post(
             body=Markup(_("Vendor bill rejected by %(user)s.<br/>Reason: %(reason)s"))
             % {"user": self.env.user.display_name, "reason": reason}

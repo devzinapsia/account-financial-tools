@@ -20,7 +20,12 @@ When someone clicks **Confirm**:
   * Its **Authorization status** stays *To authorize*.
   * An activity is assigned to every authorizer of every matching policy,
     so it shows up in their **My Activities** and triggers an email
-    according to their own notification preferences.
+    according to their own notification preferences. Trying to confirm
+    again does not ask the same authorizers twice.
+  * These authorization requests are removed (without cluttering the
+    chatter) as soon as nobody needs to act on them anymore: when the bill
+    is authorized, rejected, confirmed, cancelled, or stops matching any
+    policy.
   * A message is logged on the bill's chatter noting from whom
     authorization was requested.
   * The user gets an error message explaining that the bill is pending
@@ -48,8 +53,8 @@ an explicit choice.
 
 * **Authorize**: does *not* confirm the bill. It only sets the
   **Authorization status** to *Authorized* and the **Authorized by**
-  field to you, marks the pending activities as done, and logs it on the
-  chatter. The bill stays in *Draft*. Once authorized, **anyone** with the
+  field to you, removes the pending authorization requests, and logs it
+  on the chatter. The bill stays in *Draft*. Once authorized, **anyone** with the
   normal permission to confirm bills can click the regular **Confirm**
   button -- this lets the person who signs off on a bill be different from
   the person who actually confirms it.
@@ -59,7 +64,7 @@ an explicit choice.
 * **Reject**: opens a small window asking for a reason. Once confirmed,
   the bill's **Authorization status** becomes *Rejected*, the reason is
   stored on the bill and shown in the **Authorization** tab, the pending
-  activities are marked done, and an activity is created for the user who
+  authorization requests are removed, and an activity is created for the user who
   loaded the bill, informing them of the rejection and the reason.
   Fixing the bill (see below) or trying to confirm it again requests
   authorization again.

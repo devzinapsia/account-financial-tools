@@ -542,12 +542,6 @@ msgstr ""
 #. module: account_vendor_bill_authorization
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid "Vendor bill authorized by %s."
-msgstr "Factura de proveedor autorizada por %s."
-
-#. module: account_vendor_bill_authorization
-#. odoo-python
-#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid "Vendor bill authorized by %s. Awaiting confirmation."
 msgstr "Factura de proveedor autorizada por %s. Pendiente de confirmación."
 
@@ -559,16 +553,6 @@ msgid ""
 msgstr ""
 "Factura de proveedor confirmada por %(user)s (autorizada previamente por "
 "%(authorized_by)s)."
-
-#. module: account_vendor_bill_authorization
-#. odoo-python
-#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid ""
-"Vendor bill rejected by %(user)s.\n"
-"Reason: %(reason)s"
-msgstr ""
-"Factura de proveedor rechazada por %(user)s.\n"
-"Motivo: %(reason)s"
 
 #. module: account_vendor_bill_authorization
 #. odoo-python
