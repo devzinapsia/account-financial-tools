@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mejoras al ajuste por inflación - Zinapsia</title>
+</head>
+<body>
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <h2 class="oe_slogan" style="color: #714B67; font-weight: bold;">Mejoras al ajuste por inflación</h2>
+                <h3 class="oe_slogan">Exclude a whole closing/opening journal from the inflation adjustment</h3>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <p class="oe_mt32" style="font-size: 1.2em; text-align: justify;">
+                    Adhoc's <code>l10n_ar_account_reports</code> inflation adjustment wizard can only
+                    exclude one closing entry and one opening entry from the calculation. This module
+                    adds the option to exclude every entry posted in a given miscellaneous journal
+                    instead, for companies that split their closing/opening into several entries.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container oe_dark">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <h3 class="oe_mt32" style="color: #714B67;">Key Features</h3>
+                <ul style="list-style-type: square; line-height: 2;">
+                    <li><strong>New question:</strong> "Specify individual entries?", shown when closing/opening entries were made.</li>
+                    <li><strong>Whole-journal exclusion:</strong> every entry of the selected journal is left out of both the initial balance and each monthly period.</li>
+                    <li><strong>Safe validation:</strong> the journal is required in Python too, and can't be the adjustment entry's own journal.</li>
+                    <li><strong>Translation fix:</strong> the wizard's "Journal" field now shows as "Diario".</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="oe_container">
+        <div class="oe_row oe_spaced">
+            <div class="oe_span12">
+                <p class="text-center" style="margin-top: 50px; font-style: italic;">
+                    Developed by <strong>Zinapsia</strong> for Odoo 19.
+                </p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

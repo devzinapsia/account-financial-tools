@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="inflation_adjustment_form" model="ir.ui.view">
+        <field name="name">inflation.adjustment.form.improvements</field>
+        <field name="model">inflation.adjustment</field>
+        <field name="inherit_id" ref="l10n_ar_account_reports.inflation_adjustment_form"/>
+        <field name="arch" type="xml">
+            <!-- Drop the inline closing/opening boxes next to the first
+                 question; the fields are re-added below the new one -->
+            <xpath expr="//field[@name='closure_move_id']/.." position="replace"/>
+            <xpath expr="//field[@name='open_move_id']/.." position="replace"/>
+            <xpath expr="//field[@name='open_cloure_entry']/.." position="after">
+                <label for="specify_individual_entries" invisible="open_cloure_entry != 'yes'"/>
+                <div class="o_row" invisible="open_cloure_entry != 'yes'">
+                    <field name="specify_individual_entries" widget="radio" nolabel="1"
+                           required="open_cloure_entry == 'yes'"/>
+                </div>
+                <field name="closure_move_id"
+                       invisible="open_cloure_entry != 'yes' or specify_individual_entries != 'yes'"
+                       required="open_cloure_entry == 'yes' and specify_individual_entries == 'yes'"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="open_move_id"
+                       invisible="open_cloure_entry != 'yes' or specify_individual_entries != 'yes'"
+                       required="open_cloure_entry == 'yes' and specify_individual_entries == 'yes'"
+                       options="{'no_create': True, 'no_open': True}"/>
+                <field name="exclusion_journal_id"
+                       invisible="open_cloure_entry != 'yes' or specify_individual_entries != 'no'"
+                       required="open_cloure_entry == 'yes' and specify_individual_entries == 'no'"
+                       options="{'no_create': True, 'no_open': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,59 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* l10n_ar_inflation_adjustment_improvements
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-05 00:00+0000\n"
+"PO-Revision-Date: 2026-10-05 00:00+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields,help:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__specify_individual_entries
+msgid "If you answer no, all the entries posted in the selected journal will be excluded from the inflation adjustment."
+msgstr "Si responde que no, se excluirán del ajuste por inflación todos los asientos registrados en el diario indicado."
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields,field_description:l10n_ar_account_reports.field_inflation_adjustment__journal_id
+msgid "Journal"
+msgstr "Diario"
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__exclusion_journal_id
+msgid "Journal where they are posted"
+msgstr "Diario en el que están registrados"
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields.selection,name:l10n_ar_inflation_adjustment_improvements.selection__inflation_adjustment__specify_individual_entries__no
+msgid "No"
+msgstr "No"
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "Please select the journal where the closing/opening entries are posted."
+msgstr "Seleccione el diario en el que están registrados los asientos de cierre/apertura."
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__specify_individual_entries
+msgid "Specify individual entries?"
+msgstr "¿Indica los asientos individuales?"
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "The journal where the closing/opening entries are posted can't be the same journal where the inflation adjustment entry is created, otherwise previous inflation adjustment entries would also be excluded."
+msgstr "El diario en el que están registrados los asientos de cierre/apertura no puede ser el mismo diario en el que se genera el asiento de ajuste por inflación, ya que también se excluirían los ajustes por inflación anteriores."
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields.selection,name:l10n_ar_inflation_adjustment_improvements.selection__inflation_adjustment__specify_individual_entries__yes
+msgid "Yes"
+msgstr "Sí"
