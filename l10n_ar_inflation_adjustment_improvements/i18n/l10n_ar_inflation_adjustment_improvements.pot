@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 00:00+0000\n"
-"PO-Revision-Date: 2026-10-05 00:00+0000\n"
+"POT-Creation-Date: 2026-10-06 00:00+0000\n"
+"PO-Revision-Date: 2026-10-06 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,8 +16,47 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields,help:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__specify_individual_entries
-msgid "If you answer no, all the entries posted in the selected journal will be excluded from the inflation adjustment."
+#: model_terms:ir.ui.view,arch_db:l10n_ar_inflation_adjustment_improvements.inflation_adjustment_form
+msgid "Adjusted as initial balances, from the month before the start date."
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__adjustment_warning
+msgid "Adjustment warning"
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields,help:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__first_odoo_fiscal_year
+msgid "Answer yes if Odoo has no closing entry of the previous fiscal year, e.g. because the company started using Odoo this fiscal year: the opening entries are then adjusted as initial balances, instead of being excluded together with the closing entries."
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "Besides the opening entries, these balances prior to the start date will also count as initial balance. If this isn't the first fiscal year recorded in Odoo, answer no and select the previous fiscal year closing entries:"
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "Global inflation adjustment opening entries [%(date_from)s] / [%(date_to)s]"
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "Inflation adjustment %(year)s"
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "Inflation adjustment opening entries (%(amount)s * %(factor).2f%%)"
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__first_odoo_fiscal_year
+msgid "Is this the first fiscal year recorded in Odoo?"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
@@ -26,33 +65,57 @@ msgid "Journal"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__exclusion_journal_id
-msgid "Journal where they are posted"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields.selection,name:l10n_ar_inflation_adjustment_improvements.selection__inflation_adjustment__specify_individual_entries__no
+#: model:ir.model.fields.selection,name:l10n_ar_inflation_adjustment_improvements.selection__inflation_adjustment__first_odoo_fiscal_year__no
 msgid "No"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
 #. odoo-python
 #: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
-msgid "Please select the journal where the closing/opening entries are posted."
+msgid "No inflation adjustment index was found for the previous date (%(date)s). Please configure the corresponding index."
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__specify_individual_entries
-msgid "Specify individual entries?"
+#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__opening_move_ids
+msgid "Opening entries"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
 #. odoo-python
 #: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
-msgid "The journal where the closing/opening entries are posted can't be the same journal where the inflation adjustment entry is created, otherwise previous inflation adjustment entries would also be excluded."
+msgid "Please select the opening entries."
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields.selection,name:l10n_ar_inflation_adjustment_improvements.selection__inflation_adjustment__specify_individual_entries__yes
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "Please select the previous fiscal year closing entries. If there are none because this is the first fiscal year recorded in Odoo, answer yes to that question."
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__closing_move_ids
+msgid "Previous fiscal year closing entries"
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "The closing entries must be the previous fiscal year's ones, dated before the start date (%(date)s)."
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "The opening entries must be dated within the adjusted period (%(date_from)s - %(date_to)s)."
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "The selected closing and opening entries don't cancel each other out in these accounts, so their initial balance may be wrong. Check that no entry is missing or selected by mistake:"
+msgstr ""
+
+#. module: l10n_ar_inflation_adjustment_improvements
+#: model:ir.model.fields.selection,name:l10n_ar_inflation_adjustment_improvements.selection__inflation_adjustment__first_odoo_fiscal_year__yes
 msgid "Yes"
 msgstr ""

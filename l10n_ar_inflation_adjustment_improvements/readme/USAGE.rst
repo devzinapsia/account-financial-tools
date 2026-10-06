@@ -1,9 +1,10 @@
 #. Go to **Accounting ‣ Accounting ‣ Asiento de ajuste por inflación**.
 #. Answer *Yes* to "Has closing/opening entries?".
-#. Answer "Specify individual entries?":
+#. Answer "Is this the first fiscal year recorded in Odoo?":
 
-   * *Yes*: select the closing entry and the opening entry.
-   * *No*: select the journal where the closing/opening entries are
-     posted. All its entries will be left out of the adjustment.
+   * *No*: select the previous fiscal year closing entries and the
+     current fiscal year opening entries.
+   * *Yes*: select the opening entries only.
 
+#. Check the warning on top of the wizard, if any.
 #. Click **Confirm**.

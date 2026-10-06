@@ -9,7 +9,7 @@
         <div class="oe_row oe_spaced">
             <div class="oe_span12">
                 <h2 class="oe_slogan" style="color: #714B67; font-weight: bold;">Mejoras al ajuste por inflación</h2>
-                <h3 class="oe_slogan">Exclude a whole closing/opening journal from the inflation adjustment</h3>
+                <h3 class="oe_slogan">Several closing/opening entries and first fiscal year in Odoo on the inflation adjustment</h3>
             </div>
         </div>
     </section>
@@ -18,10 +18,10 @@
         <div class="oe_row oe_spaced">
             <div class="oe_span12">
                 <p class="oe_mt32" style="font-size: 1.2em; text-align: justify;">
-                    Adhoc's <code>l10n_ar_account_reports</code> inflation adjustment wizard can only
-                    exclude one closing entry and one opening entry from the calculation. This module
-                    adds the option to exclude every entry posted in a given miscellaneous journal
-                    instead, for companies that split their closing/opening into several entries.
+                    Adhoc's <code>l10n_ar_account_reports</code> inflation adjustment wizard excludes
+                    exactly one closing entry and one opening entry from the calculation. This module
+                    lets you select several of each, and correctly adjusts the opening entries of the
+                    first fiscal year recorded in Odoo, which has no closing entry.
                 </p>
             </div>
         </div>
@@ -32,9 +32,10 @@
             <div class="oe_span12">
                 <h3 class="oe_mt32" style="color: #714B67;">Key Features</h3>
                 <ul style="list-style-type: square; line-height: 2;">
-                    <li><strong>New question:</strong> "Specify individual entries?", shown when closing/opening entries were made.</li>
-                    <li><strong>Whole-journal exclusion:</strong> every entry of the selected journal is left out of both the initial balance and each monthly period.</li>
-                    <li><strong>Safe validation:</strong> the journal is required in Python too, and can't be the adjustment entry's own journal.</li>
+                    <li><strong>Entry lists:</strong> several previous fiscal year closing entries and several opening entries, instead of a single one of each.</li>
+                    <li><strong>First fiscal year in Odoo:</strong> the opening entries are adjusted as initial balances, from the month before the start date.</li>
+                    <li><strong>Strict validations:</strong> required entries, closing entries before the start date and opening entries within the period.</li>
+                    <li><strong>Warnings:</strong> closing and opening entries not cancelling each other out, or balances prior to the start date that would also count, shown before confirming.</li>
                     <li><strong>Translation fix:</strong> the wizard's "Journal" field now shows as "Diario".</li>
                 </ul>
             </div>

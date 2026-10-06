@@ -1,6 +1,6 @@
-================================
+===============================
 Mejoras al ajuste por inflación
-================================
+===============================
 
 This module improves the "Asiento de ajuste por inflación" (inflation
 adjustment entry) wizard added by Adhoc's ``l10n_ar_account_reports``
@@ -8,31 +8,69 @@ adjustment entry) wizard added by Adhoc's ``l10n_ar_account_reports``
 
 Upstream, when the user answers *Yes* to "Has closing/opening entries?"
 (*¿Ha realizado asientos de cierre/apertura?*), the wizard asks for exactly
-one closing entry and one opening entry to exclude from the calculation.
-That doesn't work when the closing/opening was split into several entries,
-or when a dedicated journal holds them all.
+one closing entry and one opening entry, and excludes both from the
+calculation. That works for a regular fiscal year, but not:
 
-New question
-============
+* when the opening was split into several entries (e.g. extra opening
+  entries correcting the first one, because some of its lines were
+  already reconciled with bank statements and it can't be reset to draft
+  without losing them), or
+* on the first fiscal year recorded in Odoo, which has an opening entry
+  but no closing one. Answering *No* adjusts the opening entry as a
+  movement of its month, one month short of inflation on every opening
+  balance; indicating a hand-made reverse closing entry leaves the opening
+  balances not adjusted at all, since excluding both entries means using
+  the history before the closing as initial balance, and there is none in
+  Odoo.
+
+New question and entry lists
+============================
 
 When the first question is answered *Yes*, a second one is shown:
-"Specify individual entries?" (*¿Indica los asientos individuales?*):
+"Is this the first fiscal year recorded in Odoo?" (*¿Es el primer
+ejercicio registrado en Odoo?*), and upstream's single closing/opening
+entry fields are replaced by lists of entries:
 
-* **Yes** (default): same behavior as upstream. The closing entry and the
-  opening entry are required, shown right below the new question, and
-  only those 2 entries are excluded.
-* **No**: those 2 fields are hidden and a new "Journal where they are
-  posted" (*Diario en el que están registrados*) field is required
-  instead, limited to miscellaneous journals of the wizard's company.
-  **Every** posted entry of that journal is excluded from the adjustment,
-  both from the initial balance and from each monthly period.
+* **No** (default, regular fiscal year): upstream logic, on several
+  entries. Both "Previous fiscal year closing entries" (*Asientos de
+  cierre del ejercicio anterior*) and "Opening entries" (*Asientos de
+  apertura*) are required, and they are all excluded from the
+  calculation, so the balances before the closing are the initial
+  balance.
+* **Yes** (first fiscal year recorded in Odoo): only the "Opening
+  entries" are required. They are adjusted as initial balances (with the
+  index of the month before the start date, as upstream does for the
+  balances prior to it) instead of as movements of their month.
 
-If the first question is answered *No*, none of these fields are shown or
-required, and nothing is excluded (upstream behavior).
+If the first question is answered *No*, nothing changes from upstream.
 
-The selected journal can't be the same journal where the adjustment entry
-is created, since that would also exclude previous inflation adjustment
-entries. Both rules are enforced in Python too, not only in the form.
+Validations and warnings
+========================
+
+Strict validations, which block the confirmation:
+
+* the required lists above can't be empty;
+* closing entries must be dated before the start date (the previous
+  fiscal year's ones: the current fiscal year's closing would leave the
+  previous closing in the initial balance, zeroing it out), and opening
+  entries within the adjusted period.
+
+Warnings, shown on top of the wizard as soon as the entries are selected,
+which don't block the confirmation:
+
+* regular fiscal year: the selected closing and opening entries don't
+  cancel each other out in some accounts (an entry is missing or was
+  selected by mistake, e.g. a result closing entry);
+* first fiscal year in Odoo: some balances prior to the start date would
+  also count as initial balance, besides the opening entries (e.g. the
+  same balances loaded twice, or it's not really the first fiscal year in
+  Odoo). Balances the opening entries cancel out, such as a bridge account
+  used to load the pending invoices, don't trigger it.
+
+Only non-monetary accounts carrying their balance forward are considered,
+as in the adjustment itself: pending receivables/payables loaded before
+the start date, and their taxes, are monetary and don't affect the
+calculation.
 
 Translation fix
 ===============
@@ -44,11 +82,21 @@ Technical note
 ==============
 
 Upstream builds the move line domain used for both the initial balance
-and every period in a single method, ``get_move_line_domain()``. This
-module extends that method with ``super()`` to add the journal exclusion,
-so ``confirm()`` itself isn't duplicated. Fields hidden by the current
-answers are cleared, both by an onchange and right before ``confirm()``,
-so a stale closing/opening entry can't be excluded by mistake.
+and every period in a single method, ``get_move_line_domain()``, which
+this module extends with ``super()`` to exclude the selected entries.
+
+Upstream has no hook to move entries of the period into the initial
+balance, so on the first fiscal year in Odoo the opening entries are
+excluded through that same method, and ``confirm()`` adds their initial
+balance adjustment lines (plus their own total line on the adjustment
+account) to the draft entry upstream's ``confirm()`` creates, called with
+``super()``. If upstream finds nothing else to adjust, this module creates
+the entry with the opening entries' lines alone. Upstream's single
+closing/opening entry fields are hidden and always left empty.
+
+The "Journal" translation targets ``l10n_ar_account_reports``'s own field,
+so it is written by hand in this module's ``.po`` files: Odoo's
+translation export doesn't include it, keep it when regenerating them.
 
 **Table of contents**
 
@@ -58,22 +106,25 @@ so a stale closing/opening entry can't be excluded by mistake.
 Configuration
 =============
 
-No configuration is needed. If you want to exclude a whole journal, make
-sure the closing/opening entries are posted in a miscellaneous journal
-used only for them, different from the journal where the inflation
-adjustment entry is created.
+No configuration is needed.
+
+On the first fiscal year recorded in Odoo, pending invoices loaded with a
+date within the adjusted fiscal year against income/expense accounts are
+adjusted as that fiscal year's results: date them before the start date,
+or load them against a bridge account the opening entry cancels out.
 
 Usage
 =====
 
 #. Go to **Accounting ‣ Accounting ‣ Asiento de ajuste por inflación**.
 #. Answer *Yes* to "Has closing/opening entries?".
-#. Answer "Specify individual entries?":
+#. Answer "Is this the first fiscal year recorded in Odoo?":
 
-   * *Yes*: select the closing entry and the opening entry.
-   * *No*: select the journal where the closing/opening entries are
-     posted. All its entries will be left out of the adjustment.
+   * *No*: select the previous fiscal year closing entries and the
+     current fiscal year opening entries.
+   * *Yes*: select the opening entries only.
 
+#. Check the warning on top of the wizard, if any.
 #. Click **Confirm**.
 
 Bug Tracker
