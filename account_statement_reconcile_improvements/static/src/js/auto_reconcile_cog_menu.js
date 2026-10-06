@@ -46,10 +46,22 @@ export class AutoReconcileByAmountAndDate extends Component {
         // widget it was clicked from (a form field, a list row, ...) - a cog
         // menu entry isn't tied to any of those, so without this the
         // reconciled lines only stopped showing as pending after a manual
-        // page refresh (F5). soft_reload is the native, documented way to
-        // reload the current controller in place, without a full browser
-        // reload.
-        return this.action.doAction({ type: "ir.actions.client", tag: "soft_reload" });
+        // page refresh (F5).
+        //
+        // ir.actions.client/soft_reload (tried first) turned out NOT to fix
+        // this reliably: it calls the action service's restore(), which is
+        // built for cheap "go back" breadcrumb navigation - it's allowed to
+        // reuse the controller's last exported/cached state instead of
+        // re-fetching, so the just-reconciled lines kept showing as pending
+        // until navigating away to another screen and back (which mounts a
+        // fresh controller, forcing a real re-fetch). Calling the view's own
+        // model.load() directly - the same call this widget's own
+        // kanban_renderer.js already uses after its quick-create flow
+        // (validateQuickCreate()) - forces that real re-fetch instead, and
+        // also re-triggers the model's onRootLoaded hook (registered by
+        // kanban_renderer.js), which recomputes the journal total/reconcile
+        // counts alongside the line list.
+        return this.env.model.load();
     }
 }
 

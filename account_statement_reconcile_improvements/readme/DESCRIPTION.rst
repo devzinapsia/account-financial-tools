@@ -128,6 +128,18 @@ acá para que queden trazables:
   sin un control de profundidad nuestros campos se agregaban de nuevo en
   esa llamada recursiva. Corregido limitando el agregado a la llamada de
   nivel superior real (``depth == FIELDS_RECURSION_LIMIT``).
+- **Bug fix: "Reconcile by date and amount" no refrescaba la pantalla.**
+  Tras reconciliar, las líneas quedaban mostrándose como pendientes hasta
+  navegar a otra pantalla y volver. La acción de cliente
+  ``soft_reload`` usada originalmente llama a ``action.restore()`` de
+  Odoo, pensada para una navegación "volver atrás" barata - puede reusar
+  el estado ya exportado/cacheado del controlador en vez de pedir datos
+  de nuevo al servidor. Corregido llamando directamente a
+  ``this.env.model.load()`` (el mismo mecanismo que ya usa
+  ``kanban_renderer.js`` de este widget tras su propio flujo de
+  quick-create), que fuerza un refetch real y también vuelve a disparar
+  el hook ``onRootLoaded`` que recalcula los totales/contadores del
+  diario.
 - **"Create Bill" sin adjunto**: la propia opción "Upload Bills" de
   ``account_accountant`` (``create_document_from_attachment``) siempre
   exige al menos un adjunto - no tiene una variante sin archivo. Por eso
