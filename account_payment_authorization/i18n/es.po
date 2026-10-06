@@ -336,12 +336,6 @@ msgstr ""
 #. module: account_payment_authorization
 #. odoo-python
 #: code:addons/account_payment_authorization/models/account_payment.py:0
-msgid "Payment authorized by %s."
-msgstr "Pago autorizado por %s."
-
-#. module: account_payment_authorization
-#. odoo-python
-#: code:addons/account_payment_authorization/models/account_payment.py:0
 msgid "Payment authorized by %s. Awaiting confirmation."
 msgstr "Pago autorizado por %s. Pendiente de confirmación."
 
@@ -353,16 +347,6 @@ msgid ""
 msgstr ""
 "Pago confirmado por %(user)s (autorizado previamente por "
 "%(authorized_by)s)."
-
-#. module: account_payment_authorization
-#. odoo-python
-#: code:addons/account_payment_authorization/wizards/account_payment_authorization_reject_wizard.py:0
-msgid ""
-"Payment rejected by %(user)s.\n"
-"Reason: %(reason)s"
-msgstr ""
-"Pago rechazado por %(user)s.\n"
-"Motivo: %(reason)s"
 
 #. module: account_payment_authorization
 #. odoo-python

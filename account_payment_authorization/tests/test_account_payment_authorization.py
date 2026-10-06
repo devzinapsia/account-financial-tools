@@ -25,7 +25,11 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         # bridge module's own tests instead.
         if cls.env["ir.module.module"]._get("account_payment_pro").state == "installed":
             cls.skipTest(cls, "account_payment_pro is installed; covered by the bridge module's tests")
-        cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
+        # Chatter messages and errors are rendered in the acting user's
+        # language; pin it so the assertions on their text don't depend on
+        # which languages happen to be loaded in the database.
+        cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True, lang="en_US"))
+        cls.env.user.lang = "en_US"
 
         users_model = cls.env["res.users"].with_context(no_reset_password=True)
         group_invoice = cls.env.ref("account.group_account_invoice")
@@ -35,6 +39,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
             {
                 "name": "Payment Creator",
                 "login": "payment_creator",
+                "lang": "en_US",
                 "email": "payment_creator@test.example.com",
                 "group_ids": [Command.set([group_invoice.id])],
             }
@@ -43,6 +48,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
             {
                 "name": "Payment Authorizer",
                 "login": "payment_authorizer",
+                "lang": "en_US",
                 "email": "payment_authorizer@test.example.com",
                 "group_ids": [Command.set([group_invoice.id])],
             }
@@ -51,6 +57,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
             {
                 "name": "Payment Authorizer 2",
                 "login": "payment_authorizer_2",
+                "lang": "en_US",
                 "email": "payment_authorizer_2@test.example.com",
                 "group_ids": [Command.set([group_invoice.id])],
             }
@@ -59,6 +66,7 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
             {
                 "name": "Accounting Manager",
                 "login": "payment_manager",
+                "lang": "en_US",
                 "email": "payment_manager@test.example.com",
                 "group_ids": [Command.set([group_manager.id])],
             }
@@ -838,6 +846,181 @@ class TestAccountPaymentAuthorization(AccountTestInvoicingCommon):
         self.assertNotIn(payment_pending, results)
         self.assertNotIn(payment_confirmed, results)
         self.assertNotIn(payment_other_user, results)
+
+    # -- Authorization request activities ------------------------------
+
+    def _two_authorizer_payment(self):
+        """Draft payment matching a scheme with two authorizers."""
+        classification = self.env["account.move.classification"].create(
+            {"name": f"Two authorizers {self.env['account.move.classification'].search_count([])}"}
+        )
+        self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "Two authorizers",
+                "domain": str([("invoice_ids.classification_id", "=", classification.id)]),
+                "authorized_user_ids": [
+                    Command.set([self.user_authorizer.id, self.user_authorizer_2.id])
+                ],
+            }
+        )
+        bill = self._create_posted_bill(classification=classification)
+        return self._create_draft_payment(bill, self.user_creator)
+
+    def _post_payment_blocked(self, payment, user):
+        # Not assertRaises(): its savepoint would roll back the activities.
+        try:
+            payment.with_user(user).action_post()
+            self.fail("Expected a UserError blocking the payment.")
+        except UserError:
+            pass
+
+    def test_authorize_removes_requests_without_chatter_noise(self):
+        payment = self._two_authorizer_payment()
+        self._post_payment_blocked(payment, self.user_creator)
+        requests = payment._get_authorization_requests()
+        self.assertEqual(requests.user_id, self.user_authorizer | self.user_authorizer_2)
+        unrelated = payment.activity_schedule(
+            "mail.mail_activity_data_todo", summary="Call the vendor", user_id=self.user_creator.id
+        )
+        messages_before = payment.message_ids
+
+        payment.with_user(self.user_authorizer).action_authorize_payment()
+
+        self.assertFalse(payment._get_authorization_requests())
+        self.assertTrue(unrelated.exists())
+        new_messages = payment.message_ids - messages_before
+        self.assertEqual(len(new_messages), 1)
+        self.assertFalse(new_messages.mail_activity_type_id)
+
+    def test_reject_removes_requests_and_keeps_creator_notice(self):
+        payment = self._two_authorizer_payment()
+        self._post_payment_blocked(payment, self.user_creator)
+        self.env["account.payment.authorization.reject.wizard"].with_user(self.user_authorizer_2).create(
+            {"payment_id": payment.id, "reason": "Duplicated"}
+        ).action_confirm()
+        self.assertFalse(payment._get_authorization_requests())
+        notice = payment.activity_ids.filtered(lambda a: a.user_id == self.user_creator)
+        self.assertEqual(len(notice), 1)
+
+    def test_direct_confirm_by_authorizer_removes_requests(self):
+        payment = self._two_authorizer_payment()
+        self._post_payment_blocked(payment, self.user_creator)
+        payment.with_user(self.user_authorizer_2).action_post()
+        self.assertFalse(payment.is_pending_confirmation)
+        self.assertFalse(payment._get_authorization_requests())
+
+    def test_repeated_confirm_attempt_does_not_duplicate_requests(self):
+        payment = self._two_authorizer_payment()
+        self._post_payment_blocked(payment, self.user_creator)
+        messages_before = payment.message_ids
+        self._post_payment_blocked(payment, self.user_manager)
+        self.assertEqual(len(payment._get_authorization_requests()), 2)
+        self.assertFalse(payment.message_ids - messages_before)
+
+    def test_requests_removed_when_no_longer_required(self):
+        payment = self._two_authorizer_payment()
+        self._post_payment_blocked(payment, self.user_creator)
+        self.assertTrue(payment._get_authorization_requests())
+        other_bill = self._create_posted_bill()
+        payment.with_user(self.user_creator).invoice_ids = [Command.set(other_bill.ids)]
+        self.assertEqual(payment.authorization_state, "not_required")
+        self.assertFalse(payment._get_authorization_requests())
+
+    def test_requests_removed_when_payment_is_cancelled(self):
+        payment = self._two_authorizer_payment()
+        self._post_payment_blocked(payment, self.user_creator)
+        payment.action_cancel()
+        self.assertEqual(payment.state, "canceled")
+        self.assertFalse(payment._get_authorization_requests())
+
+    def test_cleanup_stale_authorization_requests(self):
+        summary = "Payment authorization requested"
+
+        def schedule(payment, user):
+            return payment.activity_schedule(
+                "mail.mail_activity_data_todo", summary=summary, user_id=user.id
+            )
+
+        confirmed = self._two_authorizer_payment()
+        confirmed.with_user(self.user_authorizer).action_post()
+        stale = schedule(confirmed, self.user_authorizer)
+
+        pending = self._two_authorizer_payment()
+        self.assertEqual(pending.authorization_state, "to_authorize")
+        first = schedule(pending, self.user_authorizer)
+        duplicate = schedule(pending, self.user_authorizer)
+        other = schedule(pending, self.user_authorizer_2)
+        unrelated = pending.activity_schedule(
+            "mail.mail_activity_data_todo", summary="Call the vendor", user_id=self.user_authorizer.id
+        )
+
+        removed = self.env["account.payment"]._cleanup_stale_authorization_requests()
+
+        self.assertEqual(removed, 2)
+        self.assertFalse(stale.exists())
+        self.assertFalse(duplicate.exists())
+        self.assertTrue(first.exists())
+        self.assertTrue(other.exists())
+        self.assertTrue(unrelated.exists())
+
+    # -- Multi-company -------------------------------------------------
+
+    def _create_vendor_payment(self, company_data):
+        journal = company_data["default_journal_bank"]
+        return (
+            self.env["account.payment"]
+            .with_company(company_data["company"])
+            .create(
+                {
+                    "payment_type": "outbound",
+                    "partner_type": "supplier",
+                    "partner_id": self.partner_a.id,
+                    "amount": 100.0,
+                    "journal_id": journal.id,
+                    "payment_method_line_id": journal.outbound_payment_method_line_ids[:1].id,
+                }
+            )
+        )
+
+    def test_company_scheme_only_applies_to_its_own_company(self):
+        company_data_2 = self.setup_other_company()
+        scheme_company_2 = self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "Company 2 scheme",
+                "company_id": company_data_2["company"].id,
+                "domain": str([("partner_id", "=", self.partner_a.id)]),
+                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
+            }
+        )
+        payment_company_1 = self._create_vendor_payment(self.company_data)
+        self.assertFalse(payment_company_1.matched_scheme_ids)
+        self.assertEqual(payment_company_1.authorization_state, "not_required")
+
+        payment_company_2 = self._create_vendor_payment(company_data_2)
+        self.assertEqual(payment_company_2.matched_scheme_ids, scheme_company_2)
+        self.assertEqual(payment_company_2.authorization_state, "to_authorize")
+
+    def test_scheme_without_company_applies_to_every_company(self):
+        company_data_2 = self.setup_other_company()
+        shared_scheme = self.env["account.payment.authorization.scheme"].create(
+            {
+                "name": "Shared scheme",
+                "company_id": False,
+                "domain": str([("partner_id", "=", self.partner_a.id)]),
+                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
+            }
+        )
+        self.assertEqual(self._create_vendor_payment(self.company_data).matched_scheme_ids, shared_scheme)
+        self.assertEqual(self._create_vendor_payment(company_data_2).matched_scheme_ids, shared_scheme)
+
+    def test_schemes_of_other_companies_are_hidden_by_record_rule(self):
+        company_data_2 = self.setup_other_company()
+        scheme_company_2 = self.env["account.payment.authorization.scheme"].create(
+            {"name": "Company 2 scheme", "company_id": company_data_2["company"].id}
+        )
+        visible = self.env["account.payment.authorization.scheme"].with_user(self.user_manager).search([])
+        self.assertNotIn(scheme_company_2, visible)
+        self.assertIn(self.scheme_classification, visible)
 
     def test_new_scheme_defaults_to_current_company(self):
         scheme = (

@@ -160,6 +160,10 @@ class AccountPayment(models.Model):
             new_state = "to_authorize" if payment.matched_scheme_ids else "not_required"
             if payment.authorization_state != new_state:
                 payment.authorization_state = new_state
+                if new_state == "not_required":
+                    # E.g. an edit or a scheme change made it stop
+                    # matching: nobody needs to act on it anymore.
+                    payment._clear_authorization_requests()
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -240,6 +244,10 @@ class AccountPayment(models.Model):
                     )
                 )
 
+        if vals.get("state") in ("canceled", "rejected"):
+            # A cancelled/rejected payment can't be authorized anymore.
+            # Confirmation is handled in action_post().
+            self._clear_authorization_requests()
         self._sync_authorization_state_with_match()
         return result
 
@@ -255,9 +263,97 @@ class AccountPayment(models.Model):
         """
         self.invalidate_recordset(["matched_scheme_ids", "pending_authorizer_ids"])
 
+    @api.model
+    def _get_authorization_request_summaries(self):
+        """The summary of the activities _create_authorization_activities()
+        schedules, in every installed language: the summary is stored
+        already translated into the requester's language, and it is what
+        tells these activities apart from any other To-Do on the payment.
+        """
+        # The untranslated source is always included: it is what gets stored
+        # for any requester whose language has no translation, and en_US is
+        # not necessarily among the installed languages.
+        source = "Payment authorization requested"
+        return {source} | {
+            self.with_context(lang=code).env._("Payment authorization requested")
+            for code, _name in self.env["res.lang"].get_installed()
+        }
+
+    def _get_authorization_requests(self):
+        """Open "authorization requested" activities of these payments --
+        not any other To-Do, nor the rejected/revoked notices sent to whoever
+        registered the payment. Read as superuser: the user acting on the
+        payment may not see the other authorizers' activities.
+        """
+        if not self:
+            return self.env["mail.activity"]
+        todo = self.env.ref(ACTIVITY_TYPE_XMLID)
+        return (
+            self.env["mail.activity"]
+            .sudo()
+            .search(
+                [
+                    ("res_model", "=", self._name),
+                    ("res_id", "in", self.ids),
+                    ("activity_type_id", "=", todo.id),
+                    ("summary", "in", list(self._get_authorization_request_summaries())),
+                ]
+            )
+        )
+
+    def _clear_authorization_requests(self):
+        """Remove the pending "authorization requested" activities once
+        nobody needs to act on them anymore (authorized, rejected, no
+        longer required, confirmed, cancelled). They are deleted rather than
+        marked as done on purpose: marking an activity as done posts one
+        chatter message per activity (one per authorizer), while the
+        decision itself is already logged by this module's own message.
+        """
+        self._get_authorization_requests().unlink()
+
+    @api.model
+    def _cleanup_stale_authorization_requests(self):
+        """Remove "authorization requested" activities left behind by
+        earlier versions, which only closed them on an explicit decision:
+        those on payments no longer pending authorization, plus duplicates
+        (one per repeated confirm attempt) on payments still pending.
+        Returns the number of activities removed.
+        """
+        todo = self.env.ref(ACTIVITY_TYPE_XMLID)
+        activities = (
+            self.env["mail.activity"]
+            .sudo()
+            .search(
+                [
+                    ("res_model", "=", self._name),
+                    ("activity_type_id", "=", todo.id),
+                    ("summary", "in", list(self._get_authorization_request_summaries())),
+                ],
+                order="id",
+            )
+        )
+        payments = self.sudo().browse(set(activities.mapped("res_id"))).exists()
+        pending = payments.filtered(
+            lambda p: p.is_pending_confirmation and p.authorization_state == "to_authorize"
+        )
+        to_remove = self.env["mail.activity"].sudo()
+        seen = set()
+        for activity in activities:
+            key = (activity.res_id, activity.user_id.id)
+            if activity.res_id not in pending.ids or key in seen:
+                to_remove |= activity
+            seen.add(key)
+        to_remove.unlink()
+        return len(to_remove)
+
     def _create_authorization_activities(self):
         for payment in self:
-            for user in payment.pending_authorizer_ids:
+            # A repeated confirm attempt must not ask the same authorizers
+            # again: only those without an open request get one (and the
+            # chatter only logs when someone new was asked).
+            already_asked = payment._get_authorization_requests().user_id
+            new_authorizers = payment.pending_authorizer_ids - already_asked
+            for user in new_authorizers:
                 payment.activity_schedule(
                     ACTIVITY_TYPE_XMLID,
                     summary=_("Payment authorization requested"),
@@ -273,13 +369,15 @@ class AccountPayment(models.Model):
                     ),
                     user_id=user.id,
                 )
-            if payment.pending_authorizer_ids:
+            if new_authorizers:
                 payment.message_post(
                     body=_(
                         "Authorization requested from: %s",
-                        ", ".join(payment.pending_authorizer_ids.mapped("display_name")),
+                        ", ".join(new_authorizers.mapped("display_name")),
                     )
                 )
+                continue
+            if payment.pending_authorizer_ids:
                 continue
 
             blocking_schemes = payment.matched_scheme_ids.filtered("block_payment")
@@ -349,6 +447,7 @@ class AccountPayment(models.Model):
             elif self.env.user in payment.pending_authorizer_ids:
                 payment.authorization_state = "authorized"
                 payment.authorized_by_id = self.env.user
+                payment._clear_authorization_requests()
                 payment.message_post(
                     body=_(
                         "Payment authorized and confirmed directly by %s "
@@ -376,6 +475,9 @@ class AccountPayment(models.Model):
 
         if to_confirm:
             super(AccountPayment, to_confirm).action_post()
+            # Whatever made them confirmable, nobody needs to act on their
+            # authorization requests anymore.
+            to_confirm.filtered(lambda p: not p.is_pending_confirmation)._clear_authorization_requests()
 
         if blocked_payments and not to_confirm:
             # A payment matching a scheme with "Always block" checked can
@@ -461,12 +563,7 @@ class AccountPayment(models.Model):
         for payment in self:
             payment.authorization_state = "authorized"
             payment.authorized_by_id = self.env.user
-            payment.activity_ids.filtered(
-                lambda activity: activity.activity_type_id
-                == self.env.ref(ACTIVITY_TYPE_XMLID)
-            ).action_feedback(
-                feedback=_("Payment authorized by %s.", self.env.user.display_name)
-            )
+            payment._clear_authorization_requests()
             payment.message_post(
                 body=_(
                     "Payment authorized by %s. Awaiting confirmation.",

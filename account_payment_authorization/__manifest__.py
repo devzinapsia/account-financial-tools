@@ -1,6 +1,6 @@
 {
     "name": "Autorización de pagos a proveedores",
-    "version": "19.0.1.0.18",
+    "version": "19.0.1.0.19",
     "summary": "Requiere la autorización de usuarios configurados antes de confirmar "
     "pagos a proveedores que cumplan las políticas definidas.",
     "author": "Zinapsia",

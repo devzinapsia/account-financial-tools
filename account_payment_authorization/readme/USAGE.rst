@@ -15,7 +15,12 @@ single vendor bill from the Vendor Bills list and use the same action).
   * Its **Authorization status** is set to *To authorize*.
   * An activity is assigned to every authorized user of every matching
     policy, so it shows up in their **My Activities** and triggers an
-    email according to their own notification preferences.
+    email according to their own notification preferences. Trying to
+    confirm again does not ask the same authorizers twice.
+  * These authorization requests are removed (without cluttering the
+    chatter) as soon as nobody needs to act on them anymore: when the
+    payment is authorized, rejected, confirmed, cancelled, or stops
+    matching any policy.
   * A message is logged on the payment's chatter noting that
     authorization was requested and from whom.
   * The user who tried to confirm the payment gets an error message
@@ -37,8 +42,8 @@ be the one to trigger that state.
 
 * **Authorize**: does *not* confirm the payment. It only sets the
   **Authorization status** to *Authorized* and the **Authorized by**
-  field to you, marks the pending activities as done, and logs it on the
-  chatter. The payment stays in *Draft*.
+  field to you, removes the pending authorization requests, and logs it
+  on the chatter. The payment stays in *Draft*.
 
   Once a payment is authorized this way, **anyone** with the normal
   permission to confirm payments can click the regular **Confirm**
@@ -61,7 +66,7 @@ be the one to trigger that state.
   restriction.
 * **Reject**: opens a small window asking for a reason. Once confirmed,
   the payment's **Authorization status** becomes *Rejected*, the reason
-  is stored on the payment, the pending activities are marked done, and
+  is stored on the payment, the pending authorization requests are removed, and
   an activity is created for the user who originally registered the
   payment, informing them of the rejection and the reason.
 

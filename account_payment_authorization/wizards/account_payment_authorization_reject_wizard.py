@@ -29,16 +29,7 @@ class AccountPaymentAuthorizationRejectWizard(models.TransientModel):
 
         payment.authorization_state = "rejected"
         payment.authorization_reject_reason = self.reason
-        payment.activity_ids.filtered(
-            lambda activity: activity.activity_type_id
-            == self.env.ref(ACTIVITY_TYPE_XMLID)
-        ).action_feedback(
-            feedback=_(
-                "Payment rejected by %(user)s.\nReason: %(reason)s",
-                user=self.env.user.display_name,
-                reason=self.reason,
-            )
-        )
+        payment._clear_authorization_requests()
         payment.message_post(
             body=_(
                 "Payment rejected by %(user)s.<br/>Reason: %(reason)s",
