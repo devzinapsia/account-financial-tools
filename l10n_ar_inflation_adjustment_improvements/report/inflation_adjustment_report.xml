@@ -133,17 +133,25 @@
                                     <td class="text-end" t-out="coefficient(month['factor'])"/>
                                     <td class="text-end" t-out="percent(month['factor'])"/>
                                     <td class="text-end" t-out="amount(month['debit']) if month['debit'] else ''"/>
-                                    <td class="text-end" t-out="amount(month['adjustment']) if month['adjustment'] &gt; 0 else ''"/>
+                                    <td class="text-end" t-out="amount(month['adjustment_debit']) if month['adjustment_debit'] else ''"/>
                                     <td class="text-end" t-out="amount(month['credit']) if month['credit'] else ''"/>
-                                    <td class="text-end" t-out="amount(-month['adjustment']) if month['adjustment'] &lt; 0 else ''"/>
+                                    <td class="text-end" t-out="amount(month['adjustment_credit']) if month['adjustment_credit'] else ''"/>
                                 </tr>
                             </t>
+                            <t t-set="rounding" t-value="line['rounding'] if by_entry else line['months_rounding']"/>
+                            <tr t-if="rounding and not by_entry" class="fst-italic">
+                                <td colspan="2">Rounding difference</td>
+                                <td colspan="4"/>
+                                <td class="text-end" t-out="amount(rounding) if rounding &gt; 0 else ''"/>
+                                <td/>
+                                <td class="text-end" t-out="amount(-rounding) if rounding &lt; 0 else ''"/>
+                            </tr>
                             <tr>
                                 <td colspan="5"><strong>Totals</strong></td>
                                 <td class="text-end fw-bold" t-out="amount(line['debit'])"/>
-                                <td class="text-end fw-bold" t-out="amount(line['adjustment_debit'] + max(line['rounding'], 0.0)) if by_entry else amount(line['months_adjustment_debit'])"/>
+                                <td class="text-end fw-bold" t-out="amount((line['adjustment_debit'] if by_entry else line['months_adjustment_debit']) + max(rounding, 0.0))"/>
                                 <td class="text-end fw-bold" t-out="amount(line['credit'])"/>
-                                <td class="text-end fw-bold" t-out="amount(line['adjustment_credit'] + max(-line['rounding'], 0.0)) if by_entry else amount(line['months_adjustment_credit'])"/>
+                                <td class="text-end fw-bold" t-out="amount((line['adjustment_credit'] if by_entry else line['months_adjustment_credit']) + max(-rounding, 0.0))"/>
                             </tr>
                             <tr>
                                 <td colspan="9">

@@ -90,9 +90,10 @@ Report detail options
 The wizard's "Report detail" (*Detalle del reporte*) sets the PDF's rows:
 
 * **By account and month** (*Por cuenta y mes*, default): one row per
-  account and origin month, exactly as the adjustment entry lines. The
-  shortest one, for the general review: each row can be matched against
-  a line of the entry.
+  account and origin month, as the adjustment entry lines. The shortest
+  one, for the general review: each row's adjustment debit minus
+  adjustment credit matches a line of the entry (to the cent, see
+  Rounding below).
 * **Balance sheet accounts by entry, income/expense by month**
   (*Patrimoniales por asiento, resultados por mes*): one row per journal
   entry on balance sheet accounts (fixed assets, equity, etc.), where each
@@ -128,10 +129,22 @@ Considerations
 * **Coefficient:** shown both as a factor (closing index / origin month
   index, e.g. 1.3355) and as the % the adjustment applies (factor - 1,
   e.g. 33.55%, the same % as the adjustment entry line labels).
-* **Rounding:** upstream rounds each account and month. When detailed by
-  entry, each row is rounded on its own, so a "Rounding difference" row
-  shows up where their sum differs from the entry by a few cents. Account
-  totals and the summary always match the entry.
+* **Debit and credit adjusted on their own:** upstream adjusts the net
+  of each account and month (one line per month in the entry). The
+  report adjusts each column on its own instead, debit × % in "Adjustment
+  debit" and credit × % in "Adjustment credit", as the previous system's
+  report did, so both sides of a month show their adjustment. The final
+  adjustment is the same: their difference.
+* **Rounding:** each row is rounded on its own, so a "Rounding
+  difference" row shows up where their sum differs from the entry by a
+  few cents. Account totals and the summary always match the entry.
+* **Adjustment already recorded:** if a posted inflation adjustment entry
+  already exists within the period (in the wizard's journal, on its
+  adjustment account), the wizard and the report warn about it: its lines
+  count as movements of the period (dated on the last month they don't
+  change the adjustment, but they do change the historical balances), and
+  confirming again would record the adjustment twice. Reset it to draft
+  or cancel it before recalculating.
 
 Chatter
 -------

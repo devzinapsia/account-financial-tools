@@ -1,6 +1,6 @@
 {
     "name": "Mejoras al ajuste por inflación",
-    "version": "19.0.1.2.0",
+    "version": "19.0.1.2.1",
     "summary": "Varios asientos de cierre/apertura, primer ejercicio en Odoo, simulación con detalle por cuenta y revisión de cuentas monetarias en el ajuste por inflación",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",

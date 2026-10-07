@@ -69,11 +69,37 @@ class InflationAdjustment(models.TransientModel):
 
     @api.depends(
         "open_cloure_entry", "first_odoo_fiscal_year", "closing_move_ids", "opening_move_ids",
-        "company_id", "date_from",
+        "company_id", "date_from", "date_to", "journal_id", "account_id",
     )
     def _compute_adjustment_warning(self):
         for wizard in self:
-            wizard.adjustment_warning = wizard._get_adjustment_warning()
+            warnings = [w for w in (wizard._get_existing_adjustment_warning(), wizard._get_adjustment_warning()) if w]
+            wizard.adjustment_warning = Markup("").join(warnings) if warnings else False
+
+    def _get_existing_adjustment_moves(self):
+        """Posted inflation adjustment entries already recorded within the
+        period, e.g. by a previous run of this wizard."""
+        self.ensure_one()
+        if not (self.journal_id and self.account_id and self.date_from and self.date_to):
+            return self.env["account.move"]
+        return self.env["account.move"].search([
+            ("journal_id", "=", self.journal_id.id),
+            ("state", "=", "posted"),
+            ("date", ">=", self.date_from),
+            ("date", "<=", self.date_to),
+            ("line_ids.account_id", "=", self.account_id.id),
+        ])
+
+    def _get_existing_adjustment_warning(self):
+        moves = self._get_existing_adjustment_moves()
+        if not moves:
+            return False
+        return Markup("<p>%s</p>") % _(
+            "There are posted inflation adjustment entries within this period: %(entries)s. Their lines count as"
+            " movements of the period, and confirming again would record the adjustment twice: if you are"
+            " recalculating it, reset them to draft or cancel them first.",
+            entries=", ".join(moves.mapped("name")),
+        )
 
     def _get_adjustment_warning(self):
         self.ensure_one()

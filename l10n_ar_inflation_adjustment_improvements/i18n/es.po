@@ -478,6 +478,12 @@ msgid "The selected closing and opening entries don't cancel each other out in t
 msgstr "Los asientos de cierre y apertura indicados no se compensan en estas cuentas, por lo que su saldo inicial podría ser incorrecto. Revise que no falte ni sobre ningún asiento:"
 
 #. module: l10n_ar_inflation_adjustment_improvements
+#. odoo-python
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
+msgid "There are posted inflation adjustment entries within this period: %(entries)s. Their lines count as movements of the period, and confirming again would record the adjustment twice: if you are recalculating it, reset them to draft or cancel them first."
+msgstr "Hay asientos de ajuste por inflación publicados dentro de este período: %(entries)s. Sus líneas cuentan como movimientos del período, y volver a confirmar registraría el ajuste dos veces: si lo está recalculando, páselos a borrador o cancélelos antes."
+
+#. module: l10n_ar_inflation_adjustment_improvements
 #: model_terms:ir.ui.view,arch_db:l10n_ar_inflation_adjustment_improvements.report_axi
 msgid "These non-monetary accounts look monetary, e.g. receivables or payables in pesos, which aren't restated. Check their classification:"
 msgstr "Estas cuentas no monetarias parecen monetarias, por ejemplo créditos o deudas en pesos, que no se reexpresan. Revise su clasificación:"

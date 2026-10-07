@@ -241,9 +241,16 @@ class InflationAdjustment(models.TransientModel):
                     "adjustment_debit": currency.round(base["debit"] * factor),
                     "adjustment_credit": currency.round(base["credit"] * factor),
                 })
+            # Each column adjusted on its own, as the previous system's report
+            # does: upstream adjusts the net of each month, so the rounding
+            # difference against the entry goes to its own row
+            for month in months.values():
+                month["adjustment_debit"] = currency.round(month["debit"] * month["factor"])
+                month["adjustment_credit"] = currency.round(month["credit"] * month["factor"])
             adjustment = sum(value for (account_id, _month), value in adjustments.items() if account_id == account.id)
             balance = sum(base["debit"] - base["credit"] for base in bases)
             entries_adjustment = sum(e["adjustment_debit"] - e["adjustment_credit"] for e in entries)
+            months_adjustment = sum(m["adjustment_debit"] - m["adjustment_credit"] for m in months.values())
             accounts.append({
                 "account": account,
                 "months": list(months.values()),
@@ -252,9 +259,10 @@ class InflationAdjustment(models.TransientModel):
                 "credit": sum(base["credit"] for base in bases),
                 "adjustment_debit": sum(e["adjustment_debit"] for e in entries),
                 "adjustment_credit": sum(e["adjustment_credit"] for e in entries),
-                "months_adjustment_debit": sum(max(m["adjustment"], 0.0) for m in months.values()),
-                "months_adjustment_credit": sum(max(-m["adjustment"], 0.0) for m in months.values()),
+                "months_adjustment_debit": sum(m["adjustment_debit"] for m in months.values()),
+                "months_adjustment_credit": sum(m["adjustment_credit"] for m in months.values()),
                 "rounding": currency.round(adjustment - entries_adjustment),
+                "months_rounding": currency.round(adjustment - months_adjustment),
                 "balance": balance,
                 "adjustment": adjustment,
                 "restated": balance + adjustment,
@@ -381,8 +389,14 @@ class InflationAdjustment(models.TransientModel):
                 by_month.write_number(row, 5, month["factor"], percent)
                 by_month.write_number(row, 6, month["debit"], money)
                 by_month.write_number(row, 7, month["credit"], money)
-                by_month.write_number(row, 8, max(month["adjustment"], 0.0), money)
-                by_month.write_number(row, 9, max(-month["adjustment"], 0.0), money)
+                by_month.write_number(row, 8, month["adjustment_debit"], money)
+                by_month.write_number(row, 9, month["adjustment_credit"], money)
+                row += 1
+            if account["months_rounding"]:
+                by_month.write(row, 0, account["account"].code)
+                by_month.write(row, 1, account["account"].name)
+                by_month.write(row, 2, _("Rounding difference"))
+                by_month.write_number(row, 8 if account["months_rounding"] > 0 else 9, abs(account["months_rounding"]), money)
                 row += 1
 
         by_entry = workbook.add_worksheet(_("By entry"))

@@ -124,6 +124,32 @@ class TestInflationAdjustmentReport(AccountTestInvoicingCommon):
         self.assertEqual([m["month"] for m in sales["months"]], [D("2025-03-01")])
         self.assertEqual(len(sales["entries"]), 2)
 
+    def test_month_detail_adjusts_each_column(self):
+        """Debit and credit of the same month are adjusted on their own, as
+        the previous system's report does; the entry adjusts their net."""
+        self._move("2025-03-25", [(self.sales, 100.0), (self.cash, -100.0)])
+        report = self._wizard()._get_adjustment_report_data()
+        sales = next(line for line in report["accounts"] if line["account"] == self.sales)
+        march = sales["months"][0]
+        self.assertAlmostEqual(march["debit"], 100.0)
+        self.assertAlmostEqual(march["credit"], 500.0)
+        self.assertAlmostEqual(march["adjustment_debit"], round(100.0 * march["factor"], 2))
+        self.assertAlmostEqual(march["adjustment_credit"], round(500.0 * march["factor"], 2))
+        self.assertAlmostEqual(
+            sales["months_adjustment_debit"] - sales["months_adjustment_credit"] + sales["months_rounding"],
+            sales["adjustment"],
+            places=2,
+        )
+
+    def test_existing_adjustment_warning(self):
+        wizard = self._wizard()
+        self.assertFalse(wizard._get_existing_adjustment_moves())
+        move = self.env["account.move"].browse(wizard.confirm()["res_id"])
+        move.action_post()
+        second = self._wizard()
+        self.assertEqual(second._get_existing_adjustment_moves(), move)
+        self.assertIn(move.name, second.adjustment_warning)
+
     def test_mixed_detail(self):
         """Balance sheet accounts by entry, income/expense accounts by month."""
         wizard = self._wizard()
