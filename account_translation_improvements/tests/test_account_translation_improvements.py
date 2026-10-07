@@ -15,6 +15,10 @@ RENAMED = {
     "account.action_account_payments": ("Customer Collections", "Cobros de clientes"),
     "account.menu_action_move_in_refund_type": ("Credit Notes", "Notas de crédito"),
     "account.action_move_in_refund_type": ("Credit Notes", "Notas de crédito"),
+    "account.action_move_out_invoice": ("Customer Invoices", "Facturas a clientes"),
+    "account.action_move_out_invoice_type": ("Customer Invoices", "Facturas a clientes"),
+    "account.action_move_in_invoice": ("Vendor Bills", "Facturas de proveedores"),
+    "account.action_move_in_invoice_type": ("Vendor Bills", "Facturas de proveedores"),
 }
 
 
@@ -33,7 +37,8 @@ class TestAccountTranslationImprovements(TransactionCase):
         cls.user = new_test_user(
             cls.env,
             login="ati_accountant",
-            groups="base.group_user,account.group_account_manager",
+            # group_account_user: the payment items list's header button needs it
+            groups="base.group_user,account.group_account_manager,account.group_account_user",
         )
         cls.Move = cls.env["account.move"].with_user(cls.user)
 
@@ -128,6 +133,25 @@ class TestAccountTranslationImprovements(TransactionCase):
             self.assertEqual(len(button), 1, view_xmlid)
             self.assertEqual(button[0].get("string"), expected, view_xmlid)
 
+    def test_payment_items_list_button(self):
+        """The payment items list (e.g. account_ux's Customers / Vendors
+        Ledger) shows "Collect" only when opened on receivables alone."""
+        arch = self._arch("account.view_move_line_payment_tree", "list")
+        buttons = arch.xpath("//header/button[@name='action_payment_items_register_payment']")
+        self.assertEqual(len(buttons), 2)
+        for context, expected in (
+            ({"search_default_trade_receivable": 1}, ["Collect"]),
+            ({"search_default_trade_payable": 1}, ["Pay"]),
+            ({"search_default_trade_receivable": 1, "search_default_trade_payable": 1}, ["Pay"]),
+            ({}, ["Pay"]),
+        ):
+            visible = [
+                button.get("string")
+                for button in buttons
+                if not safe_eval(button.get("invisible") or "False", {"context": context})
+            ]
+            self.assertEqual(visible, expected, context)
+
     def test_renamed_records(self):
         for xmlid, (name_en, name_es) in RENAMED.items():
             record = self.env.ref(xmlid)
@@ -142,6 +166,12 @@ class TestAccountTranslationImprovements(TransactionCase):
             record = self.env.ref(xmlid)
             self.assertEqual(record.with_context(lang="en_US").name, name_en, xmlid)
             self.assertEqual(record.with_context(lang="es_AR").name, name_es, xmlid)
+
+    def test_invoice_menus_untouched(self):
+        """Only the invoice/bill actions (window title) are renamed: their
+        menus keep "Facturas", they're already under Customers/Vendors."""
+        for xmlid in ("account.menu_action_move_out_invoice_type", "account.menu_action_move_in_invoice_type"):
+            self.assertEqual(self.env.ref(xmlid).with_context(lang="es_AR").name, "Facturas", xmlid)
 
     def test_forced_translations_replace_existing_ones(self):
         """The module's po must win over a translation the record already
@@ -160,6 +190,10 @@ class TestAccountTranslationImprovements(TransactionCase):
             ("account.action_account_payments", "Customer Payments", "Pagos del cliente"),
             ("account.menu_action_move_in_refund_type", "Refunds", "Reembolsos"),
             ("account.action_move_in_refund_type", "Refunds", "Reembolsos"),
+            ("account.action_move_out_invoice", "Invoices", "Facturas"),
+            ("account.action_move_out_invoice_type", "Invoices", "Facturas"),
+            ("account.action_move_in_invoice", "Bills", "Facturas"),
+            ("account.action_move_in_invoice_type", "Bills", "Facturas"),
         ):
             record = self.env.ref(xmlid)
             self.assertEqual(record.with_context(lang="en_US").name, name_en, xmlid)

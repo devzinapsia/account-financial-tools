@@ -17,6 +17,15 @@ only:
   same action; only one of them is shown on each document.
 * **Customer invoice and credit note lists**: the "Pay" header button
   becomes "Collect" ("Cobrar").
+* **Payment items list** (the list used, for example, by the "Customers
+  Ledger" / "Vendors Ledger" menus of ingadhoc's ``account_ux``): the
+  "Pay" header button becomes "Collect" ("Cobrar") when the list is opened
+  on receivables only (its action filters
+  ``search_default_trade_receivable`` and not
+  ``search_default_trade_payable``). This list is shared by customers and
+  vendors and has no document type to tell them apart, so the opening
+  action decides; anywhere else (vendors ledger, partner ledger with both,
+  Amounts to Settle) it keeps "Pay".
 * **Gear (⚙) menu action of the invoice form**: renamed to "Pay / Collect"
   ("Pagar / Cobrar"), since Odoo can't show a different action name per
   document type.
@@ -24,6 +33,12 @@ only:
   its window title to "Customer Collections" ("Cobros de clientes").
 * **Vendors ‣ Refunds** menu: renamed to "Credit Notes" ("Notas de
   crédito"), and its window title too.
+* **Invoice and bill list titles**: "Invoices" and "Bills" both read
+  "Facturas" in Spanish, so the window title / breadcrumb doesn't tell
+  which list is open. The actions are renamed to "Customer Invoices"
+  ("Facturas a clientes") and "Vendor Bills" ("Facturas de
+  proveedores"). The menus keep "Facturas", since they're already under
+  Customers / Vendors.
 
 Everything else on the vendor side (Vendors ‣ Payments, the bill lists,
 etc.) is left untouched.
@@ -37,8 +52,8 @@ Technical notes
   install/upgrade, because a regular translation load never replaces the
   translation ``account`` already set on those records.
 * Uninstalling the module restores the original names ("Pay", "Payments",
-  "Customer Payments", "Refunds") and their translations from
-  ``account``'s po files.
+  "Customer Payments", "Refunds", "Invoices", "Bills") and their
+  translations from ``account``'s po files.
 * ``account_payment`` (installed automatically with ``account``) hides the
   "Pay" buttons while an invoice has an authorized online transaction. The
   glue module ``account_translation_improvements_account_payment``
@@ -67,8 +82,13 @@ Usage
    register the payment reads **Cobrar**. On a vendor bill it still reads
    **Pagar**.
 #. Go to **Facturación ‣ Clientes**: the payments menu reads **Cobros**.
+#. In **Facturación ‣ Clientes ‣ Mayor de Clientes** (``account_ux``),
+   select some lines: the header button reads **Cobrar**. In **Mayor de
+   Proveedores** it still reads **Pagar**.
 #. Go to **Facturación ‣ Proveedores**: the refunds menu reads **Notas de
    crédito**.
+#. Open **Clientes ‣ Facturas** or **Proveedores ‣ Facturas**: the screen
+   title reads **Facturas a clientes** or **Facturas de proveedores**.
 
 Bug Tracker
 ===========

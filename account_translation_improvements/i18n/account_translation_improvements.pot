@@ -6,15 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-25 00:00+0000\n"
-"PO-Revision-Date: 2026-09-25 00:00+0000\n"
-"Last-Translator: Zinapsia\n"
-"Language-Team: \n"
-"Language: es_AR\n"
-"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_translation_improvements
 #: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_move_form
@@ -22,37 +14,37 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_out_credit_note_tree
 #: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_out_invoice_tree
 msgid "Collect"
-msgstr "Cobrar"
+msgstr ""
 
 #. module: account_translation_improvements
 #: model:ir.ui.menu,name:account.menu_action_account_payments_receivable
 msgid "Collections"
-msgstr "Cobros"
+msgstr ""
 
 #. module: account_translation_improvements
 #: model:ir.actions.act_window,name:account.action_move_in_refund_type
 #: model:ir.ui.menu,name:account.menu_action_move_in_refund_type
 msgid "Credit Notes"
-msgstr "Notas de crédito"
+msgstr ""
 
 #. module: account_translation_improvements
 #: model:ir.actions.act_window,name:account.action_account_payments
 msgid "Customer Collections"
-msgstr "Cobros de clientes"
+msgstr ""
 
 #. module: account_translation_improvements
 #: model:ir.actions.act_window,name:account.action_move_out_invoice
 #: model:ir.actions.act_window,name:account.action_move_out_invoice_type
 msgid "Customer Invoices"
-msgstr "Facturas a clientes"
+msgstr ""
 
 #. module: account_translation_improvements
 #: model:ir.actions.server,name:account.action_move_force_register_payment
 msgid "Pay / Collect"
-msgstr "Pagar / Cobrar"
+msgstr ""
 
 #. module: account_translation_improvements
 #: model:ir.actions.act_window,name:account.action_move_in_invoice
 #: model:ir.actions.act_window,name:account.action_move_in_invoice_type
 msgid "Vendor Bills"
-msgstr "Facturas de proveedores"
+msgstr ""

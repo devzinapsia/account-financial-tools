@@ -29,6 +29,24 @@
     </record>
 
     <!--
+        Invoice / bill list titles: "Invoices" and "Bills" are both
+        "Facturas" in Spanish. Only the actions (window title/breadcrumb) are
+        renamed; the menus keep "Facturas", already under Customers/Vendors.
+    -->
+    <record id="account.action_move_out_invoice" model="ir.actions.act_window">
+        <field name="name">Customer Invoices</field>
+    </record>
+    <record id="account.action_move_out_invoice_type" model="ir.actions.act_window">
+        <field name="name">Customer Invoices</field>
+    </record>
+    <record id="account.action_move_in_invoice" model="ir.actions.act_window">
+        <field name="name">Vendor Bills</field>
+    </record>
+    <record id="account.action_move_in_invoice_type" model="ir.actions.act_window">
+        <field name="name">Vendor Bills</field>
+    </record>
+
+    <!--
         The records above are account's, so they already have account's
         translations ("Pagar", "Pagos", "Pagos del cliente", "Reembolsos").
         Loading this module's po files never replaces an existing

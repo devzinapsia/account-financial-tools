@@ -1,6 +1,6 @@
 {
     "name": "Mejoras a traducciones contables",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "summary": "Cobrar/Cobros en clientes y Notas de crédito en proveedores",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",

@@ -8,6 +8,10 @@ OVERRIDDEN_NAMES = {
     "account.action_account_payments": "Customer Payments",
     "account.menu_action_move_in_refund_type": "Refunds",
     "account.action_move_in_refund_type": "Refunds",
+    "account.action_move_out_invoice": "Invoices",
+    "account.action_move_out_invoice_type": "Invoices",
+    "account.action_move_in_invoice": "Bills",
+    "account.action_move_in_invoice_type": "Bills",
 }
 
 

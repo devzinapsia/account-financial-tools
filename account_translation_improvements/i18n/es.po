@@ -18,6 +18,7 @@ msgstr ""
 
 #. module: account_translation_improvements
 #: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_move_form
+#: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_move_line_payment_tree
 #: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_out_credit_note_tree
 #: model_terms:ir.ui.view,arch_db:account_translation_improvements.view_out_invoice_tree
 msgid "Collect"
@@ -40,6 +41,18 @@ msgid "Customer Collections"
 msgstr "Cobros de clientes"
 
 #. module: account_translation_improvements
+#: model:ir.actions.act_window,name:account.action_move_out_invoice
+#: model:ir.actions.act_window,name:account.action_move_out_invoice_type
+msgid "Customer Invoices"
+msgstr "Facturas a clientes"
+
+#. module: account_translation_improvements
 #: model:ir.actions.server,name:account.action_move_force_register_payment
 msgid "Pay / Collect"
 msgstr "Pagar / Cobrar"
+
+#. module: account_translation_improvements
+#: model:ir.actions.act_window,name:account.action_move_in_invoice
+#: model:ir.actions.act_window,name:account.action_move_in_invoice_type
+msgid "Vendor Bills"
+msgstr "Facturas de proveedores"
