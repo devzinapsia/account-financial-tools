@@ -68,6 +68,108 @@ as in the adjustment itself: pending receivables/payables loaded before
 the start date, and their taxes, are monetary and don't affect the
 calculation.
 
+Simulation and detail report
+============================
+
+The wizard has 2 more buttons next to **Confirm**: **Simulate PDF** and
+**Simulate Excel**. They download the adjustment detail without creating
+the entry, so it can be checked, and simulated again with other
+parameters, before confirming. The report is the "Detail of the result
+from exposure to changes in the purchasing power of the currency"
+(*Detalle del resultado por exposición a los cambios en el poder
+adquisitivo de la moneda*), one block per account with its origin index,
+coefficient (as a factor and as %), debit/credit, adjustment, final
+adjustment and historical/restated balance, plus a summary by account
+whose total equals the adjustment account counterpart. The report is A4
+portrait, the same layout as the RECPAM detail of the previous accounting
+system, plus the summary.
+
+Report detail options
+---------------------
+
+The wizard's "Report detail" (*Detalle del reporte*) sets the PDF's rows:
+
+* **By account and month** (*Por cuenta y mes*, default): one row per
+  account and origin month, exactly as the adjustment entry lines. The
+  shortest one, for the general review: each row can be matched against
+  a line of the entry.
+* **Balance sheet accounts by entry, income/expense by month**
+  (*Patrimoniales por asiento, resultados por mes*): one row per journal
+  entry on balance sheet accounts (fixed assets, equity, etc.), where each
+  opening entry, purchase or contribution is worth seeing, and one row per
+  month on income/expense accounts, which hold every invoice of the year.
+* **By account and entry** (*Por cuenta y asiento*): one row per journal
+  entry on every account, as a ledger grouped by entry (several lines of
+  the same entry on the same account add up to one row). Each invoice is
+  a journal entry in Odoo, so income/expense accounts can list hundreds
+  of rows: for auditing a specific account rather than for printing.
+
+The Excel file always has both the by month and the by entry details,
+plus a summary and the accounts to review, in separate sheets, to filter
+any combination.
+
+Considerations
+--------------
+
+* **Header:** the report states the closing/opening entries the
+  adjustment was computed with (closing and opening entries excluded on a
+  regular fiscal year; opening entries adjusted as initial balance on the
+  first fiscal year in Odoo), so it documents its own parameters.
+* **Initial balance row:** the balances prior to the start date always
+  add up to a single "Initial balance" row per account, even when
+  detailed by entry (the history before the period isn't listed). On the
+  first fiscal year in Odoo, the by month detail also adds the opening
+  entries into that row; the by entry details list each opening entry.
+* **Opening entries index:** the initial balance and the first fiscal
+  year's opening entries use the index of the month before the start
+  date (e.g. June for a fiscal year starting on July 1st), since they
+  carry the balances at the previous closing. The previous accounting
+  system's RECPAM detail used the same criterion.
+* **Coefficient:** shown both as a factor (closing index / origin month
+  index, e.g. 1.3355) and as the % the adjustment applies (factor - 1,
+  e.g. 33.55%, the same % as the adjustment entry line labels).
+* **Rounding:** upstream rounds each account and month. When detailed by
+  entry, each row is rounded on its own, so a "Rounding difference" row
+  shows up where their sum differs from the entry by a few cents. Account
+  totals and the summary always match the entry.
+
+Chatter
+-------
+
+On **Confirm**, whether or not it was simulated before, 2 files are
+attached to the adjustment entry and posted in its chatter, as the
+working papers of that adjustment:
+
+* the **PDF**, with the report detail selected in the wizard (by account
+  and month by default), to read or print;
+* the **Excel** file, the most detailed one, with every detail.
+
+Simulations are only downloaded: they aren't attached to any entry.
+
+To match the entry to the cent without duplicating upstream's
+calculation, the simulation creates the adjustment entry exactly as
+**Confirm** would, reads it and rolls everything back.
+
+Non-monetary accounts to review
+===============================
+
+Monetary items (cash, receivables, payables in pesos) aren't restated.
+``account_ux`` sets each account's "Is monetary" from its type, so e.g. a
+partner's current account typed as equity or non-current ends up being
+restated. The wizard (and the report) lists the non-monetary accounts it
+reaches that look monetary, with the reason:
+
+* the account allows reconciliation;
+* its type is non-current asset/liability;
+* it has a foreign currency;
+* it has journal entry lines (not invoice lines) with a partner, on a
+  balance sheet account.
+
+It's only a warning. Once an account is reviewed, either mark it as
+monetary, or check its new "Monetary classification reviewed"
+(*Clasificación monetaria revisada*) field so it isn't listed again. The
+chart of accounts has a "Non-monetary to review" filter.
+
 Translation fix
 ===============
 

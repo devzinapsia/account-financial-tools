@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_inflation_adjustment" model="report.paperformat">
+        <field name="name">Inflation adjustment detail (A4 portrait)</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">18</field>
+        <field name="margin_bottom">12</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">12</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_inflation_adjustment" model="ir.actions.report">
+        <field name="name">Inflation adjustment detail</field>
+        <field name="model">inflation.adjustment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">l10n_ar_inflation_adjustment_improvements.report_axi</field>
+        <field name="report_file">l10n_ar_inflation_adjustment_improvements.report_axi</field>
+        <field name="paperformat_id" ref="paperformat_inflation_adjustment"/>
+    </record>
+
+    <template id="report_axi">
+        <t t-call="web.html_container">
+            <t t-set="o" t-value="docs[:1]"/>
+            <t t-call="web.internal_layout">
+                <div class="page" style="font-size: 10px;">
+                    <h5 class="text-center fw-bold">Detail of the result from exposure to changes in the purchasing power of the currency</h5>
+
+                    <table class="table table-sm table-borderless w-auto mb-2">
+                        <tr>
+                            <td class="fw-bold">Company</td>
+                            <td t-out="report['company'].name"/>
+                            <td class="fw-bold ps-5">Period</td>
+                            <td><t t-out="fdate(report['date_from'])"/> - <t t-out="fdate(report['date_to'])"/></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Tax ID</td>
+                            <td t-out="report['company'].vat or ''"/>
+                            <td class="fw-bold ps-5">Closing index</td>
+                            <td t-out="index(report['end_index'])"/>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Entry</td>
+                            <td>
+                                <t t-if="report['move_name']" t-out="report['move_name']"/>
+                                <t t-else="">Simulation (no entry created)</t>
+                            </td>
+                            <td class="fw-bold ps-5">Generated on</td>
+                            <td t-out="report['generated_at'].strftime('%d/%m/%Y %H:%M')"/>
+                        </tr>
+                    </table>
+                    <p t-foreach="report['entries_info']" t-as="info" class="mb-1">
+                        <span class="fw-bold" t-out="info[0]"/>: <span t-out="info[1]"/>
+                    </p>
+                    <p class="text-muted mb-2">Coefficient = closing index / origin month index. The adjustment is the amount times (coefficient - 1), shown as %.</p>
+
+                    <div t-foreach="report['warnings']" t-as="warning" class="alert alert-warning py-1 mb-2" t-out="warning"/>
+                    <div t-if="report['review_accounts']" class="alert alert-warning py-1 mb-2">
+                        <p class="mb-1">These non-monetary accounts look monetary, e.g. receivables or payables in pesos, which aren't restated. Check their classification:</p>
+                        <ul class="mb-0">
+                            <li t-foreach="report['review_accounts'].items()" t-as="review">
+                                <t t-out="review[0].display_name"/>: <t t-out="', '.join(review[1])"/>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <table t-foreach="report['accounts']" t-as="line" class="table table-sm mb-3" style="table-layout: fixed;">
+                        <t t-set="by_entry" t-value="detail == 'entry' or (detail == 'mixed' and line['account'].internal_group not in ('income', 'expense'))"/>
+                        <colgroup>
+                            <col style="width: 8%;"/>
+                            <col style="width: 16%;"/>
+                            <col style="width: 8%;"/>
+                            <col style="width: 6%;"/>
+                            <col style="width: 6%;"/>
+                            <col style="width: 14%;"/>
+                            <col style="width: 14%;"/>
+                            <col style="width: 14%;"/>
+                            <col style="width: 14%;"/>
+                        </colgroup>
+                        <thead>
+                            <tr class="table-light">
+                                <th colspan="9">
+                                    <strong t-out="line['account'].code"/>
+                                    <strong class="ms-3" t-out="line['account'].name"/>
+                                </th>
+                            </tr>
+                            <tr style="vertical-align: bottom;">
+                                <th t-if="by_entry">Date</th>
+                                <th t-if="by_entry">Entry</th>
+                                <th t-else="" colspan="2">Origin month</th>
+                                <th class="text-end">Index</th>
+                                <th class="text-end">Coef.</th>
+                                <th class="text-end">%</th>
+                                <th class="text-end">Debit</th>
+                                <th class="text-end">Adjustment debit</th>
+                                <th class="text-end">Credit</th>
+                                <th class="text-end">Adjustment credit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="by_entry">
+                                <tr t-foreach="line['entries']" t-as="entry">
+                                    <td t-out="fdate(entry['date'])"/>
+                                    <td t-out="entry['name']"/>
+                                    <td class="text-end" t-out="index(entry['index'])"/>
+                                    <td class="text-end" t-out="coefficient(entry['factor'])"/>
+                                    <td class="text-end" t-out="percent(entry['factor'])"/>
+                                    <td class="text-end" t-out="amount(entry['debit']) if entry['debit'] else ''"/>
+                                    <td class="text-end" t-out="amount(entry['adjustment_debit']) if entry['adjustment_debit'] else ''"/>
+                                    <td class="text-end" t-out="amount(entry['credit']) if entry['credit'] else ''"/>
+                                    <td class="text-end" t-out="amount(entry['adjustment_credit']) if entry['adjustment_credit'] else ''"/>
+                                </tr>
+                                <tr t-if="line['rounding']" class="fst-italic">
+                                    <td/>
+                                    <td>Rounding difference</td>
+                                    <td colspan="4"/>
+                                    <td class="text-end" t-out="amount(line['rounding']) if line['rounding'] &gt; 0 else ''"/>
+                                    <td/>
+                                    <td class="text-end" t-out="amount(-line['rounding']) if line['rounding'] &lt; 0 else ''"/>
+                                </tr>
+                            </t>
+                            <t t-else="">
+                                <tr t-foreach="line['months']" t-as="month">
+                                    <td colspan="2" t-out="month['label']"/>
+                                    <td class="text-end" t-out="index(month['index'])"/>
+                                    <td class="text-end" t-out="coefficient(month['factor'])"/>
+                                    <td class="text-end" t-out="percent(month['factor'])"/>
+                                    <td class="text-end" t-out="amount(month['debit']) if month['debit'] else ''"/>
+                                    <td class="text-end" t-out="amount(month['adjustment']) if month['adjustment'] &gt; 0 else ''"/>
+                                    <td class="text-end" t-out="amount(month['credit']) if month['credit'] else ''"/>
+                                    <td class="text-end" t-out="amount(-month['adjustment']) if month['adjustment'] &lt; 0 else ''"/>
+                                </tr>
+                            </t>
+                            <tr>
+                                <td colspan="5"><strong>Totals</strong></td>
+                                <td class="text-end fw-bold" t-out="amount(line['debit'])"/>
+                                <td class="text-end fw-bold" t-out="amount(line['adjustment_debit'] + max(line['rounding'], 0.0)) if by_entry else amount(line['months_adjustment_debit'])"/>
+                                <td class="text-end fw-bold" t-out="amount(line['credit'])"/>
+                                <td class="text-end fw-bold" t-out="amount(line['adjustment_credit'] + max(-line['rounding'], 0.0)) if by_entry else amount(line['months_adjustment_credit'])"/>
+                            </tr>
+                            <tr>
+                                <td colspan="9">
+                                    <span class="fw-bold">Account final adjustment:</span>
+                                    <t t-if="line['adjustment'] &gt;= 0">DEBIT</t>
+                                    <t t-else="">CREDIT</t>
+                                    <span class="fw-bold ms-2" t-out="amount(abs(line['adjustment']))"/>
+                                    <span class="ms-5">Historical balance:</span>
+                                    <span t-out="amount(line['balance'])"/>
+                                    <span class="ms-4">Restated balance:</span>
+                                    <span class="fw-bold" t-out="amount(line['restated'])"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="page-break-inside: avoid;">
+                        <h6 class="fw-bold mt-4">Summary by account</h6>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Account</th>
+                                    <th class="text-end">Historical balance</th>
+                                    <th class="text-end">Adjustment</th>
+                                    <th class="text-end">Restated balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="report['accounts']" t-as="line">
+                                    <td t-out="line['account'].code"/>
+                                    <td t-out="line['account'].name"/>
+                                    <td class="text-end" t-out="amount(line['balance'])"/>
+                                    <td class="text-end" t-out="amount(line['adjustment'])"/>
+                                    <td class="text-end" t-out="amount(line['restated'])"/>
+                                </tr>
+                                <tr>
+                                    <td colspan="3"><strong>Total adjustment</strong></td>
+                                    <td class="text-end fw-bold" t-out="amount(report['total_adjustment'])"/>
+                                    <td/>
+                                </tr>
+                                <tr>
+                                    <td colspan="3"><strong>Adjustment account total (counterpart)</strong></td>
+                                    <td class="text-end fw-bold" t-out="amount(report['recpam'])"/>
+                                    <td/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
