@@ -172,6 +172,10 @@ class TestInflationAdjustmentReport(AccountTestInvoicingCommon):
             self.assertNotIn(move.name, html["mixed"])
             self.assertIn(move.name, html["entry"])
         self.assertIn("03/2025", html["mixed"])
+        # The report detail is the report's subtitle
+        self.assertIn("By account and month", html["month"])
+        self.assertIn("Balance sheet accounts by entry, income/expense by month", html["mixed"])
+        self.assertIn("By account and entry", html["entry"])
 
     def test_confirm_attaches_report_files(self):
         move = self.env["account.move"].browse(self._wizard().confirm()["res_id"])
@@ -179,7 +183,7 @@ class TestInflationAdjustmentReport(AccountTestInvoicingCommon):
         self.assertEqual(len(attachments), 2)
         xlsx = attachments.filtered(lambda a: a.name.endswith(".xlsx"))
         workbook = openpyxl.load_workbook(io.BytesIO(xlsx.raw))
-        self.assertEqual(len(workbook.sheetnames), 4)
+        self.assertEqual(len(workbook.sheetnames), 3)
 
     def test_simulate_buttons(self):
         wizard = self._wizard()
@@ -188,17 +192,3 @@ class TestInflationAdjustmentReport(AccountTestInvoicingCommon):
             self.assertEqual(action["type"], "ir.actions.act_url")
             self.assertEqual(action["target"], "download")
         self.assertEqual(self.env["account.move"].search_count([]), moves_before)
-
-    def test_monetary_review(self):
-        wizard = self._wizard()
-        review = wizard._get_monetary_review_accounts()
-        # Reconcilable, with partner movements in journal entries
-        self.assertEqual(len(review[self.partner_account]), 2)
-        self.assertNotIn(self.fixed_asset, review)
-        self.assertNotIn(self.sales, review)
-        self.assertIn(self.partner_account.code, wizard.monetary_review_warning)
-
-        self.partner_account.inflation_monetary_reviewed = True
-        wizard.invalidate_recordset(["monetary_review_warning"])
-        self.assertNotIn(self.partner_account, wizard._get_monetary_review_accounts())
-        self.assertFalse(wizard.monetary_review_warning)

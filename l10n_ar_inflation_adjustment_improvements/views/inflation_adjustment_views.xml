@@ -10,9 +10,6 @@
                 <div class="alert alert-warning" role="alert" invisible="not adjustment_warning">
                     <field name="adjustment_warning" nolabel="1"/>
                 </div>
-                <div class="alert alert-warning" role="alert" invisible="not monetary_review_warning">
-                    <field name="monetary_review_warning" nolabel="1"/>
-                </div>
             </xpath>
             <xpath expr="//field[@name='journal_id']" position="after">
                 <field name="report_detail" widget="radio"/>

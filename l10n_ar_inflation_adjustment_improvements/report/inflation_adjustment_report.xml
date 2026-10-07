@@ -31,7 +31,8 @@
             <t t-set="o" t-value="docs[:1]"/>
             <t t-call="web.internal_layout">
                 <div class="page" style="font-size: 10px;">
-                    <h5 class="text-center fw-bold">Detail of the result from exposure to changes in the purchasing power of the currency</h5>
+                    <h5 class="text-center fw-bold mb-0">Detail of the result from exposure to changes in the purchasing power of the currency</h5>
+                    <h6 class="text-center mb-2" t-out="detail_label"/>
 
                     <table class="table table-sm table-borderless w-auto mb-2">
                         <tr>
@@ -62,14 +63,6 @@
                     <p class="text-muted mb-2">Coefficient = closing index / origin month index. The adjustment is the amount times (coefficient - 1), shown as %.</p>
 
                     <div t-foreach="report['warnings']" t-as="warning" class="alert alert-warning py-1 mb-2" t-out="warning"/>
-                    <div t-if="report['review_accounts']" class="alert alert-warning py-1 mb-2">
-                        <p class="mb-1">These non-monetary accounts look monetary, e.g. receivables or payables in pesos, which aren't restated. Check their classification:</p>
-                        <ul class="mb-0">
-                            <li t-foreach="report['review_accounts'].items()" t-as="review">
-                                <t t-out="review[0].display_name"/>: <t t-out="', '.join(review[1])"/>
-                            </li>
-                        </ul>
-                    </div>
 
                     <table t-foreach="report['accounts']" t-as="line" class="table table-sm mb-3" style="table-layout: fixed;">
                         <t t-set="by_entry" t-value="detail == 'entry' or (detail == 'mixed' and line['account'].internal_group not in ('income', 'expense'))"/>

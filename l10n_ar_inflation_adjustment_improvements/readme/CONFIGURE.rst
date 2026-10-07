@@ -1,7 +1,4 @@
-Before the first adjustment, review the chart of accounts' monetary
-classification: **Accounting ‣ Configuration ‣ Chart of Accounts**, filter
-"Non-monetary to review", and for each account either mark it as
-monetary or check "Monetary classification reviewed".
+No configuration is needed.
 
 On the first fiscal year recorded in Odoo, pending invoices loaded with a
 date within the adjusted fiscal year against income/expense accounts are

@@ -11,7 +11,6 @@ from odoo.tools.misc import format_date, formatLang
 
 REPORT = "l10n_ar_inflation_adjustment_improvements.action_report_inflation_adjustment"
 XLSX_MIMETYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-NON_CURRENT_TYPES = ("asset_non_current", "liability_non_current")
 
 
 class _SimulationRollback(Exception):
@@ -34,79 +33,6 @@ class InflationAdjustment(models.TransientModel):
         " balance sheet accounts and by month on income/expense accounts, which hold every invoice; or by"
         " account and journal entry. The Excel file always has the by month and by entry details.",
     )
-    monetary_review_warning = fields.Html(
-        string="Accounts to review",
-        compute="_compute_monetary_review_warning",
-        sanitize=False,
-    )
-
-    # Accounts to review
-
-    def _get_monetary_review_accounts(self):
-        """Return {account: [reasons]} of the non-monetary accounts the
-        adjustment reaches that look monetary (e.g. receivables or payables in
-        pesos) and nobody reviewed yet."""
-        self.ensure_one()
-        if not (self.company_id and self.date_to):
-            return {}
-        AccountMoveLine = self.env["account.move.line"]
-        domain = [
-            ("account_id.is_monetary", "=", False),
-            ("account_id.inflation_monetary_reviewed", "=", False),
-            ("company_id", "=", self.company_id.id),
-            ("parent_state", "=", "posted"),
-            ("date", "<=", self.date_to),
-        ]
-        accounts = self.env["account.account"].union(
-            *(account for account, in AccountMoveLine._read_group(domain, ["account_id"]))
-        )
-        # Invoice lines carry the partner too: only journal entries (manual
-        # entries, payments) tell a balance with a third party apart
-        with_partner = self.env["account.account"].union(*(
-            account for account, in AccountMoveLine._read_group(
-                domain + [
-                    ("partner_id", "!=", False),
-                    ("move_id.move_type", "=", "entry"),
-                    ("account_id.internal_group", "in", ("asset", "liability", "equity")),
-                ],
-                ["account_id"],
-            )
-        ))
-        company_currency = self.company_id.currency_id
-        result = {}
-        for account in accounts.sorted(lambda a: a.code or ""):
-            reasons = []
-            if account.reconcile:
-                reasons.append(_("allows reconciliation"))
-            if account.account_type in NON_CURRENT_TYPES:
-                reasons.append(_("non-current asset/liability type"))
-            if account.currency_id and account.currency_id != company_currency:
-                reasons.append(_("foreign currency"))
-            if account in with_partner:
-                reasons.append(_("journal entries with a partner"))
-            if reasons:
-                result[account] = reasons
-        return result
-
-    @api.depends("company_id", "date_to")
-    def _compute_monetary_review_warning(self):
-        for wizard in self:
-            accounts = wizard._get_monetary_review_accounts()
-            if not accounts:
-                wizard.monetary_review_warning = False
-                continue
-            items = Markup("").join(
-                Markup("<li>%s: %s</li>") % (account.display_name, ", ".join(reasons))
-                for account, reasons in accounts.items()
-            )
-            wizard.monetary_review_warning = Markup("<p>%s</p><ul class='mb-0'>%s</ul>") % (
-                _(
-                    "These non-monetary accounts look monetary, e.g. receivables or payables in pesos, which"
-                    " aren't restated. If they are, mark them as monetary; otherwise check \"Monetary"
-                    " classification reviewed\" on the account:"
-                ),
-                items,
-            )
 
     # Report data
 
@@ -280,7 +206,6 @@ class InflationAdjustment(models.TransientModel):
             "total_adjustment": sum(account["adjustment"] for account in accounts),
             "recpam": total,
             "warnings": warnings,
-            "review_accounts": self._get_monetary_review_accounts(),
             "entries_info": self._get_report_entries_info(),
         }
 
@@ -426,14 +351,6 @@ class InflationAdjustment(models.TransientModel):
                 by_entry.write_number(row, 8 if account["rounding"] > 0 else 10, abs(account["rounding"]), money)
                 row += 1
 
-        review = workbook.add_worksheet(_("Accounts to review"))
-        row = write_header(review, [(_("Code"), 14), (_("Account"), 45), (_("Why it looks monetary"), 60)], 0)
-        for account, reasons in report["review_accounts"].items():
-            review.write(row, 0, account.code)
-            review.write(row, 1, account.name)
-            review.write(row, 2, ", ".join(reasons))
-            row += 1
-
         workbook.close()
         return output.getvalue()
 
@@ -497,6 +414,7 @@ class ReportInflationAdjustment(models.AbstractModel):
         wizard = self.env["inflation.adjustment"].browse(docids)
         move = self.env["account.move"].browse(data["move_id"]) if data.get("move_id") else None
         env = self.env
+        detail = data.get("detail") or wizard.report_detail
 
         def amount(value):
             return formatLang(env, value, digits=2)
@@ -505,7 +423,8 @@ class ReportInflationAdjustment(models.AbstractModel):
             "doc_ids": docids,
             "docs": wizard,
             "report": wizard._get_adjustment_report_data(move),
-            "detail": data.get("detail") or wizard.report_detail,
+            "detail": detail,
+            "detail_label": dict(wizard._fields["report_detail"]._description_selection(self.env)).get(detail),
             "amount": amount,
             "coefficient": lambda factor: formatLang(env, 1.0 + factor, digits=4),
             "percent": lambda factor: formatLang(env, factor * 100.0, digits=2) + "%",

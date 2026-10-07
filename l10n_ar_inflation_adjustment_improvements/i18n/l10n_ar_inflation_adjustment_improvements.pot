@@ -59,14 +59,8 @@ msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
 #. odoo-python
-#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0 model:ir.model,name:l10n_ar_inflation_adjustment_improvements.model_account_account model_terms:ir.ui.view,arch_db:l10n_ar_inflation_adjustment_improvements.report_axi
+#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0 model_terms:ir.ui.view,arch_db:l10n_ar_inflation_adjustment_improvements.report_axi
 msgid "Account"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#. odoo-python
-#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0 model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__monetary_review_warning
-msgid "Accounts to review"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
@@ -144,11 +138,6 @@ msgstr ""
 #. module: l10n_ar_inflation_adjustment_improvements
 #: model_terms:ir.ui.view,arch_db:l10n_ar_inflation_adjustment_improvements.report_axi
 msgid "CREDIT"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields,help:l10n_ar_inflation_adjustment_improvements.field_account_account__inflation_monetary_reviewed
-msgid "Check it once someone confirmed this non-monetary account is right as non-monetary: the inflation adjustment stops listing it among the accounts to review."
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
@@ -230,7 +219,7 @@ msgid "Detail of the result from exposure to changes in the purchasing power of 
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_account_account__display_name model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__display_name model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_report_l10n_ar_inflation_adjustment_improvements_report_axi__display_name
+#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__display_name model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_report_l10n_ar_inflation_adjustment_improvements_report_axi__display_name
 msgid "Display Name"
 msgstr ""
 
@@ -269,7 +258,7 @@ msgid "Historical balance"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_account_account__id model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__id model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_report_l10n_ar_inflation_adjustment_improvements_report_axi__id
+#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_inflation_adjustment__id model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_report_l10n_ar_inflation_adjustment_improvements_report_axi__id
 msgid "ID"
 msgstr ""
 
@@ -336,11 +325,6 @@ msgid "Journal"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#: model:ir.model.fields,field_description:l10n_ar_inflation_adjustment_improvements.field_account_account__inflation_monetary_reviewed
-msgid "Monetary classification reviewed"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
 #: model:ir.model.fields.selection,name:l10n_ar_inflation_adjustment_improvements.selection__inflation_adjustment__first_odoo_fiscal_year__no
 msgid "No"
 msgstr ""
@@ -349,11 +333,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment.py:0
 msgid "No inflation adjustment index was found for the previous date (%(date)s). Please configure the corresponding index."
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#: model_terms:ir.ui.view,arch_db:l10n_ar_inflation_adjustment_improvements.view_account_search
-msgid "Non-monetary to review"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
@@ -483,17 +462,6 @@ msgid "There are posted inflation adjustment entries within this period: %(entri
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#: model_terms:ir.ui.view,arch_db:l10n_ar_inflation_adjustment_improvements.report_axi
-msgid "These non-monetary accounts look monetary, e.g. receivables or payables in pesos, which aren't restated. Check their classification:"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#. odoo-python
-#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0
-msgid "These non-monetary accounts look monetary, e.g. receivables or payables in pesos, which aren't restated. If they are, mark them as monetary; otherwise check \"Monetary classification reviewed\" on the account:"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
 #. odoo-python
 #: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0
 msgid "Total adjustment"
@@ -506,36 +474,6 @@ msgid "Warning"
 msgstr ""
 
 #. module: l10n_ar_inflation_adjustment_improvements
-#. odoo-python
-#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0
-msgid "Why it looks monetary"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
 #: model:ir.model.fields.selection,name:l10n_ar_inflation_adjustment_improvements.selection__inflation_adjustment__first_odoo_fiscal_year__yes
 msgid "Yes"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#. odoo-python
-#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0
-msgid "allows reconciliation"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#. odoo-python
-#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0
-msgid "foreign currency"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#. odoo-python
-#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0
-msgid "journal entries with a partner"
-msgstr ""
-
-#. module: l10n_ar_inflation_adjustment_improvements
-#. odoo-python
-#: code:addons/l10n_ar_inflation_adjustment_improvements/models/inflation_adjustment_report.py:0
-msgid "non-current asset/liability type"
 msgstr ""

@@ -106,13 +106,13 @@ The wizard's "Report detail" (*Detalle del reporte*) sets the PDF's rows:
   of rows: for auditing a specific account rather than for printing.
 
 The Excel file always has both the by month and the by entry details,
-plus a summary and the accounts to review, in separate sheets, to filter
-any combination.
+plus a summary, in separate sheets, to filter any combination.
 
 Considerations
 --------------
 
-* **Header:** the report states the closing/opening entries the
+* **Header:** the report's subtitle is the report detail it was printed
+  with, and it states the closing/opening entries the
   adjustment was computed with (closing and opening entries excluded on a
   regular fiscal year; opening entries adjusted as initial balance on the
   first fiscal year in Odoo), so it documents its own parameters.
@@ -162,26 +162,6 @@ Simulations are only downloaded: they aren't attached to any entry.
 To match the entry to the cent without duplicating upstream's
 calculation, the simulation creates the adjustment entry exactly as
 **Confirm** would, reads it and rolls everything back.
-
-Non-monetary accounts to review
-===============================
-
-Monetary items (cash, receivables, payables in pesos) aren't restated.
-``account_ux`` sets each account's "Is monetary" from its type, so e.g. a
-partner's current account typed as equity or non-current ends up being
-restated. The wizard (and the report) lists the non-monetary accounts it
-reaches that look monetary, with the reason:
-
-* the account allows reconciliation;
-* its type is non-current asset/liability;
-* it has a foreign currency;
-* it has journal entry lines (not invoice lines) with a partner, on a
-  balance sheet account.
-
-It's only a warning. Once an account is reviewed, either mark it as
-monetary, or check its new "Monetary classification reviewed"
-(*Clasificación monetaria revisada*) field so it isn't listed again. The
-chart of accounts has a "Non-monetary to review" filter.
 
 Translation fix
 ===============
