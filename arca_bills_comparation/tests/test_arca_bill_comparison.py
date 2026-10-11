@@ -639,6 +639,18 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
         batch.action_reprocess()
         batch.action_reprocess_multi()
         batch.line_ids.action_reprocess_batches()
+
+        # Real case: a run uploaded by one accountant, opened/reprocessed by
+        # another one (Documents' default "None" internal access used to make
+        # the stored file readable only by its uploader).
+        colleague = accountant.copy({"name": "ARCA colleague", "login": "arca_colleague"})
+        colleague_env = self.env(user=colleague, context={"allowed_company_ids": self.company.ids})
+        colleague_batch = colleague_env["arca.bill.comparison.batch"].browse(batch.id)
+        self.assertTrue(colleague_batch.source_document_id.display_name)
+        self.assertTrue(
+            colleague_env["documents.document"].search([("id", "=", batch.source_document_id.id)])
+        )
+        colleague_batch.action_reprocess()
         batch.unlink()
 
     def test_runs_are_isolated_per_company(self):

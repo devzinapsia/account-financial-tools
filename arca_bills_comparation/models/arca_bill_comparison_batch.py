@@ -19,6 +19,10 @@ AMOUNT_TOLERANCE = 0.02
 # these folders for clients that never run the process.
 DOCUMENTS_ROOT_FOLDER_NAME = "Zinapsia"
 DOCUMENTS_ARCA_FOLDER_NAME = "Mis comprobantes ARCA"
+# Documents defaults to "None" for internal users, which made a run's file
+# readable only by whoever uploaded it: any other accountant got an access
+# error opening/reprocessing that run. Read-only for every internal user.
+DOCUMENTS_INTERNAL_ACCESS = "view"
 
 
 def _format_point_of_sale(value):
@@ -95,7 +99,12 @@ class ArcaBillComparisonBatch(models.Model):
             # so this shows up as a shared "Company" folder for every user
             # instead of looking privately owned by nobody-in-particular.
             root_folder = Document.create(
-                {"name": DOCUMENTS_ROOT_FOLDER_NAME, "type": "folder", "owner_id": False}
+                {
+                    "name": DOCUMENTS_ROOT_FOLDER_NAME,
+                    "type": "folder",
+                    "owner_id": False,
+                    "access_internal": DOCUMENTS_INTERNAL_ACCESS,
+                }
             )
         folder = Document.search(
             [
@@ -113,6 +122,7 @@ class ArcaBillComparisonBatch(models.Model):
                     "type": "folder",
                     "folder_id": root_folder.id,
                     "owner_id": False,
+                    "access_internal": DOCUMENTS_INTERNAL_ACCESS,
                 }
             )
         return folder
@@ -133,6 +143,7 @@ class ArcaBillComparisonBatch(models.Model):
                 "folder_id": folder.id,
                 "datas": file_base64,
                 "owner_id": self.env.user.id,
+                "access_internal": DOCUMENTS_INTERNAL_ACCESS,
             }
         )
         self.source_document_id = document.id

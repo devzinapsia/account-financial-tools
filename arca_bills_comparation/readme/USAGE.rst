@@ -170,7 +170,11 @@ Assumptions
   folders are created without an owner so they show up as a shared
   "Company" folder for every user instead of looking privately owned by
   whoever ran the first import; the file itself is owned by the user who
-  ran the wizard.
+  ran the wizard. Folders and files are created with internal users'
+  access set to **Viewer** (Documents' own default is "None", which made
+  a run's file readable only by its uploader, so any other accountant got
+  an access error opening or reprocessing that run); files stored before
+  version 19.0.1.1.12 are switched to Viewer on upgrade.
 - **Reprocess** re-parses that same stored file and re-runs the full
   comparison, discarding the run's previous result lines first (so it's
   safe to click more than once). It requires the stored file to still be
