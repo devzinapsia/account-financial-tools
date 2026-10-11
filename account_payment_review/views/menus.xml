@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_payment_review"
+              name="Payments to review"
+              parent="account.menu_finance_payables"
+              action="action_payment_review"
+              groups="account_payment_review.group_payment_reviewer"
+              sequence="21"/>
+
+</odoo>

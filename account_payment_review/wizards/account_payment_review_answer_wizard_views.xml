@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_payment_review_answer_wizard_view_form" model="ir.ui.view">
+        <field name="name">account.payment.review.answer.wizard.form</field>
+        <field name="model">account.payment.review.answer.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Answer observations">
+                <group>
+                    <field name="payment_id" readonly="1" force_save="1"/>
+                    <field name="review_user_id"/>
+                    <field name="review_comment"/>
+                    <field name="answer" placeholder="Explain what was done about the observations"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" string="Send answer" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Discard" special="cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

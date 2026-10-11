@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_payment_review" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.payment.review</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="print_vendor_checks_setting_container" position="inside">
+                <setting id="payment_review"
+                         company_dependent="1"
+                         help="Confirmed vendor payments wait for a reviewer to sign them off or record observations.">
+                    <field name="payment_review_enabled"/>
+                    <div class="content-group" invisible="not payment_review_enabled">
+                        <div class="row mt16">
+                            <label for="payment_reviewer_ids" class="col-lg-5 o_light_label"/>
+                            <field name="payment_reviewer_ids" widget="many2many_tags" class="col-lg-7"
+                                   options="{'no_create': True}"/>
+                        </div>
+                        <div class="row">
+                            <label for="payment_review_min_amount" class="col-lg-5 o_light_label"/>
+                            <field name="payment_review_min_amount" class="col-lg-7"/>
+                        </div>
+                        <div class="row">
+                            <label for="payment_review_answer_days" class="col-lg-5 o_light_label"/>
+                            <field name="payment_review_answer_days" class="col-lg-7"/>
+                        </div>
+                        <div class="mt8">
+                            <label for="payment_review_exempt_domain" class="o_light_label"/>
+                            <field name="payment_review_exempt_domain" widget="domain"
+                                   options="{'model': 'account.payment', 'in_dialog': True}"/>
+                        </div>
+                    </div>
+                </setting>
+            </block>
+        </field>
+    </record>
+
+</odoo>

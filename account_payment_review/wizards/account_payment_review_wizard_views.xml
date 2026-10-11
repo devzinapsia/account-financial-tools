@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_payment_review_wizard_view_form" model="ir.ui.view">
+        <field name="name">account.payment.review.wizard.form</field>
+        <field name="model">account.payment.review.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Review payments">
+                <field name="is_single" invisible="1"/>
+                <!-- A single payment: just a result and a comment. -->
+                <group invisible="not is_single">
+                    <field name="result" widget="radio" options="{'horizontal': true}"/>
+                    <field name="comment" required="is_single and result == 'observed'"
+                           placeholder="Required when recording observations"/>
+                </group>
+                <!-- Several payments: one line each, with its own result and
+                     comment. Lines can be removed to leave a payment out. -->
+                <field name="line_ids" invisible="is_single" nolabel="1">
+                    <list editable="bottom" create="0">
+                        <field name="payment_id" readonly="1" force_save="1"/>
+                        <field name="date"/>
+                        <field name="partner_id"/>
+                        <field name="journal_id" optional="show"/>
+                        <field name="payment_method_line_id" optional="show"/>
+                        <field name="amount"/>
+                        <field name="currency_id" column_invisible="True"/>
+                        <field name="review_state" widget="badge" optional="show"
+                               decoration-muted="review_state == 'not_required'"
+                               decoration-info="review_state == 'pending'"
+                               decoration-success="review_state == 'reviewed'"
+                               decoration-danger="review_state == 'observed'"
+                               decoration-warning="review_state == 'answered'"/>
+                        <field name="result"/>
+                        <field name="comment" required="result == 'observed'"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Discard" special="cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

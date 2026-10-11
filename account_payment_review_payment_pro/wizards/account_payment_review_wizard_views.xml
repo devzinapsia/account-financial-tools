@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_payment_review_wizard_view_form" model="ir.ui.view">
+        <field name="name">account.payment.review.wizard.form.payment.pro</field>
+        <field name="model">account.payment.review.wizard</field>
+        <field name="inherit_id" ref="account_payment_review.account_payment_review_wizard_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/list/field[@name='amount']" position="replace">
+                <field name="payment_total"/>
+                <field name="destination_currency_id" column_invisible="True"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

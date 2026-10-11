@@ -1,0 +1,612 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_review
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-11 13:05+0000\n"
+"PO-Revision-Date: 2026-10-11 13:05+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "%(user)s answered the observations on %(date)s"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "%s has no observations to answer."
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "A comment is required to record observations."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__amount
+msgid "Amount"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__answer
+msgid "Answer"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_payment.py:0
+#: model_terms:ir.ui.view,arch_db:account_payment_review.account_payment_review_answer_wizard_view_form
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_form_review
+msgid "Answer observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model,name:account_payment_review.model_account_payment_review_answer_wizard
+msgid "Answer payment review observations"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+#: model:mail.activity.type,summary:account_payment_review.mail_activity_payment_review_observation
+msgid "Answer the review observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__review_answer
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__review_answer
+msgid "Answer to observation"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Answer:"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment__review_state__answered
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_review_mixin__review_state__answered
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_search_review
+msgid "Answered"
+msgstr ""
+
+#. module: account_payment_review
+#: model:res.groups,comment:account_payment_review.group_payment_reviewer
+msgid ""
+"Can review confirmed vendor payments: sign them off as reviewed or record "
+"observations."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__comment
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__comment
+msgid "Comment"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_account_payment__review_comment
+#: model:ir.model.fields,help:account_payment_review.field_account_payment_review_answer_wizard__review_comment
+#: model:ir.model.fields,help:account_payment_review.field_account_review_mixin__review_comment
+msgid "Comment left by the reviewer on the last review."
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Comment:"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model,name:account_payment_review.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model,name:account_payment_review.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.account_payment_review_wizard_view_form
+msgid "Confirm"
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.actions.act_window,help:account_payment_review.action_payment_review
+msgid ""
+"Confirmed vendor payments show up here until a reviewer signs them off as "
+"reviewed or records observations on them."
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.res_config_settings_view_form_payment_review
+msgid ""
+"Confirmed vendor payments wait for a reviewer to sign them off or record "
+"observations."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__create_uid
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__create_uid
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__create_date
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__create_date
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__currency_id
+msgid "Currency"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__review_state
+msgid "Current review status"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__partner_id
+msgid "Customer/Vendor"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__date
+msgid "Date"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_res_company__payment_review_answer_days
+#: model:ir.model.fields,field_description:account_payment_review.field_res_config_settings__payment_review_answer_days
+msgid "Days to answer observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_res_company__payment_review_answer_days
+#: model:ir.model.fields,help:account_payment_review.field_res_config_settings__payment_review_answer_days
+msgid ""
+"Deadline of the activity assigned to the issuer of a payment when the "
+"reviewer records observations on it."
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.account_payment_review_answer_wizard_view_form
+#: model_terms:ir.ui.view,arch_db:account_payment_review.account_payment_review_wizard_view_form
+msgid "Discard"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__display_name
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__display_name
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__display_name
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__display_name
+#: model:ir.model.fields,field_description:account_payment_review.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_payment_review.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_account_payment__review_state
+#: model:ir.model.fields,help:account_payment_review.field_account_payment_review_wizard_line__review_state
+#: model:ir.model.fields,help:account_payment_review.field_account_review_mixin__review_state
+msgid ""
+"Empty until the document is confirmed. Set to 'Pending review' or 'Not "
+"required' on confirmation, depending on the review settings."
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.account_payment_review_answer_wizard_view_form
+msgid "Explain what was done about the observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__id
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__id
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__id
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__id
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__id
+#: model:ir.model.fields,field_description:account_payment_review.field_res_company__id
+#: model:ir.model.fields,field_description:account_payment_review.field_res_config_settings__id
+msgid "ID"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Invalid review result."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__is_single
+msgid "Is Single"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__review_issuer_id
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__review_issuer_id
+msgid "Issued by"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__journal_id
+msgid "Journal"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__write_uid
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__write_uid
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__write_date
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__write_date
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_account_payment__review_answer
+#: model:ir.model.fields,help:account_payment_review.field_account_review_mixin__review_answer
+msgid "Last answer given by the issuer to the reviewer's observations."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_account_payment_review_wizard_line__payment_method_line_id
+msgid ""
+"Manual: Pay or Get paid by any method outside of Odoo.\n"
+"Payment Providers: Each payment provider has its own Payment Method. Request a transaction on/to a card thanks to a payment token saved by the partner when buying or subscribing online.\n"
+"Check: Pay bills by check and print it from Odoo.\n"
+"Batch Deposit: Collect several customer checks at once generating and submitting a batch deposit to your bank. Module account_batch_payment is necessary.\n"
+"SEPA Credit Transfer: Pay in the SEPA zone by submitting a SEPA Credit Transfer file to your bank. Module account_iso20022 is necessary.\n"
+"SEPA Direct Debit: Get paid in the SEPA zone thanks to a mandate your partner will have granted to you. Module account_iso20022 is necessary.\n"
+"U.S. ISO20022: Pay in the US by submitting an ISO20022 file to your bank. Module account_iso20022 is necessary.\n"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Marked as not requiring review by %(user)s on %(date)s"
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_search_review
+msgid "My payments with observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.actions.act_window,help:account_payment_review.action_payment_review
+msgid "No payments waiting for your review"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment__review_state__not_required
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment_review_wizard__result__not_required
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment_review_wizard_line__result__not_required
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_review_mixin__review_state__not_required
+msgid "Not required"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment_review_wizard__result__reviewed
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment_review_wizard_line__result__reviewed
+msgid "OK"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__review_comment
+msgid "Observations"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Only confirmed vendor payments can be reviewed. These can't: %s"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Only payment reviewers can review payments."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__payment_id
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__payment_id
+msgid "Payment"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__payment_method_line_id
+msgid "Payment Method"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_res_company__payment_review_enabled
+#: model:ir.model.fields,field_description:account_payment_review.field_res_config_settings__payment_review_enabled
+#: model:mail.message.subtype,description:account_payment_review.mt_payment_review
+#: model:mail.message.subtype,name:account_payment_review.mt_payment_review
+#: model:res.groups.privilege,name:account_payment_review.res_groups_privilege_payment_review
+msgid "Payment review"
+msgstr ""
+
+#. module: account_payment_review
+#: model:mail.activity.type,name:account_payment_review.mail_activity_payment_review_answer
+msgid "Payment review answer"
+msgstr ""
+
+#. module: account_payment_review
+#: model:mail.activity.type,name:account_payment_review.mail_activity_payment_review_observation
+msgid "Payment review observation"
+msgstr ""
+
+#. module: account_payment_review
+#: model:res.groups,name:account_payment_review.group_payment_reviewer
+msgid "Payment reviewer"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_res_config_settings__payment_reviewer_ids
+msgid "Payment reviewers"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model,name:account_payment_review.model_account_payment
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__line_ids
+msgid "Payments"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_res_company__payment_review_exempt_domain
+#: model:ir.model.fields,field_description:account_payment_review.field_res_config_settings__payment_review_exempt_domain
+msgid "Payments that don't require review"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.actions.act_window,name:account_payment_review.action_payment_review
+#: model:ir.ui.menu,name:account_payment_review.menu_payment_review
+msgid "Payments to review"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment__review_state__pending
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_review_mixin__review_state__pending
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_search_review
+msgid "Pending review"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Please write an answer."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model,name:account_payment_review.model_account_review_mixin
+msgid "Post-confirmation review"
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.account_payment_review_wizard_view_form
+msgid "Required when recording observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard__result
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__result
+msgid "Result"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.actions.server,name:account_payment_review.action_server_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_form_review
+msgid "Review"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__review_comment
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__review_comment
+msgid "Review comment"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__review_date
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__review_date
+msgid "Review date"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Review fields can only be changed through the review actions."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_res_company__payment_review_min_amount
+#: model:ir.model.fields,field_description:account_payment_review.field_res_config_settings__payment_review_min_amount
+msgid "Review from amount"
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_search_review
+msgid "Review not required"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_payment.py:0
+#: model:ir.model,name:account_payment_review.model_account_payment_review_wizard
+#: model_terms:ir.ui.view,arch_db:account_payment_review.account_payment_review_wizard_view_form
+msgid "Review payments"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model,name:account_payment_review.model_account_payment_review_wizard_line
+msgid "Review payments line"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__review_state
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__review_state
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_search_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_supplier_payment_tree_review
+msgid "Review status"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+#: model:mail.activity.type,summary:account_payment_review.mail_activity_payment_review_answer
+msgid "Review the answer to your observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__review_is_reviewable
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__review_is_reviewable
+msgid "Reviewable"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment__review_state__reviewed
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_review_mixin__review_state__reviewed
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_search_review
+msgid "Reviewed"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Reviewed by %(user)s on %(date)s: OK"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "Reviewed by %(user)s on %(date)s: with observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment__review_user_id
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_answer_wizard__review_user_id
+#: model:ir.model.fields,field_description:account_payment_review.field_account_review_mixin__review_user_id
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_search_review
+msgid "Reviewer"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/wizards/account_payment_review_wizard.py:0
+msgid "Select at least one payment to review."
+msgstr ""
+
+#. module: account_payment_review
+#: model_terms:ir.ui.view,arch_db:account_payment_review.account_payment_review_answer_wizard_view_form
+msgid "Send answer"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_account_payment_review_wizard_line__currency_id
+msgid "The payment's currency."
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/wizards/account_payment_review_wizard.py:0
+msgid "There are no payments left to review."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_account_payment__review_issuer_id
+#: model:ir.model.fields,help:account_payment_review.field_account_review_mixin__review_issuer_id
+msgid ""
+"User who confirmed the document. Observations are assigned to this user, who"
+" can't review the document themselves."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_account_payment__review_user_id
+#: model:ir.model.fields,help:account_payment_review.field_account_payment_review_answer_wizard__review_user_id
+#: model:ir.model.fields,help:account_payment_review.field_account_review_mixin__review_user_id
+msgid "User who recorded the last review decision."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_res_config_settings__payment_reviewer_ids
+msgid ""
+"Users allowed to review vendor payments, in every company. Same as giving "
+"them the 'Payment reviewer' access right on their user form."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_res_company__payment_review_min_amount
+#: model:ir.model.fields,help:account_payment_review.field_res_config_settings__payment_review_min_amount
+msgid ""
+"Vendor payments below this amount, in company currency, don't require "
+"review. Leave it at 0 to review payments of any amount."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_res_company__payment_review_enabled
+#: model:ir.model.fields,help:account_payment_review.field_res_config_settings__payment_review_enabled
+msgid ""
+"Vendor payments confirmed from now on enter the review circuit as 'Pending "
+"review', unless an exemption below applies."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,help:account_payment_review.field_res_company__payment_review_exempt_domain
+#: model:ir.model.fields,help:account_payment_review.field_res_config_settings__payment_review_exempt_domain
+msgid ""
+"Vendor payments matching these conditions don't require review, e.g. a petty"
+" cash journal. Leave it empty to apply no exemption."
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment__review_state__observed
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment_review_wizard__result__observed
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_payment_review_wizard_line__result__observed
+#: model:ir.model.fields.selection,name:account_payment_review.selection__account_review_mixin__review_state__observed
+#: model_terms:ir.ui.view,arch_db:account_payment_review.view_account_payment_search_review
+msgid "With observations"
+msgstr ""
+
+#. module: account_payment_review
+#: model:ir.model.fields,field_description:account_payment_review.field_account_payment_review_wizard_line__wizard_id
+msgid "Wizard"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/wizards/account_payment_review_wizard.py:0
+msgid "Write a comment for every payment with observations: %s"
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "You are not allowed to answer the observations of %s."
+msgstr ""
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid "You can't review payments you registered or confirmed yourself: %s"
+msgstr ""

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Form: review buttons in the header, status badge under the number
+         and a "Review" page. High priority so the page lands after any
+         other module's pages in the same notebook (e.g. ingadhoc's). -->
+    <record id="view_account_payment_form_review" model="ir.ui.view">
+        <field name="name">account.payment.form.review</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="priority" eval="999"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <field name="review_is_reviewable" invisible="1"/>
+                <button name="action_open_review_wizard" string="Review" type="object"
+                        groups="account_payment_review.group_payment_reviewer"
+                        invisible="not review_is_reviewable"/>
+                <button name="action_open_review_answer_wizard" string="Answer observations" type="object"
+                        class="btn-primary"
+                        groups="account.group_account_invoice"
+                        invisible="not review_is_reviewable or review_state != 'observed'"/>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="inside">
+                <field name="review_state" widget="badge"
+                       invisible="not review_is_reviewable or not review_state"
+                       decoration-muted="review_state == 'not_required'"
+                       decoration-info="review_state == 'pending'"
+                       decoration-success="review_state == 'reviewed'"
+                       decoration-danger="review_state == 'observed'"
+                       decoration-warning="review_state == 'answered'"/>
+            </xpath>
+            <xpath expr="//notebook[@name='payment_notebook']" position="inside">
+                <page name="review" string="Review" invisible="not review_is_reviewable">
+                    <group>
+                        <group>
+                            <field name="review_state" widget="badge"
+                                   decoration-muted="review_state == 'not_required'"
+                                   decoration-info="review_state == 'pending'"
+                                   decoration-success="review_state == 'reviewed'"
+                                   decoration-danger="review_state == 'observed'"
+                                   decoration-warning="review_state == 'answered'"/>
+                            <field name="review_issuer_id"/>
+                        </group>
+                        <group>
+                            <field name="review_user_id"/>
+                            <field name="review_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="review_comment" invisible="not review_comment"/>
+                        <field name="review_answer" invisible="not review_answer"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- All payment lists: status badge next to the number, same pattern as
+         core's "To review" badge on journal entries
+         (char_with_placeholder_field_to_check). The supplier and "various"
+         lists are primary views inheriting this one, so they get it too. -->
+    <record id="view_account_payment_tree_review" model="ir.ui.view">
+        <field name="name">account.payment.list.review</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="attributes">
+                <attribute name="widget">review_badge_char</attribute>
+            </field>
+            <field name="name" position="after">
+                <field name="review_state" column_invisible="True"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Vendor payments list only: optional review columns. -->
+    <record id="view_account_supplier_payment_tree_review" model="ir.ui.view">
+        <field name="name">account.supplier.payment.list.review</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_supplier_payment_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="review_state" string="Review status" widget="badge" optional="hide"
+                       decoration-muted="review_state == 'not_required'"
+                       decoration-info="review_state == 'pending'"
+                       decoration-success="review_state == 'reviewed'"
+                       decoration-danger="review_state == 'observed'"
+                       decoration-warning="review_state == 'answered'"/>
+                <field name="review_user_id" optional="hide"/>
+                <field name="review_date" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Search: review filters in their own block. Filters of the same
+         block are OR-ed, so "Pending review" + "Answered" (the reviewer's
+         inbox) combine as expected; "My payments with observations" is in
+         a block of its own so it narrows instead. -->
+    <record id="view_account_payment_search_review" model="ir.ui.view">
+        <field name="name">account.payment.search.review</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="review_user_id"/>
+                <field name="review_issuer_id"/>
+            </field>
+            <filter name="reconciled" position="after">
+                <separator/>
+                <filter string="Pending review" name="review_pending"
+                        domain="[('review_state', '=', 'pending'), ('review_is_reviewable', '=', True)]"/>
+                <filter string="Reviewed" name="review_reviewed"
+                        domain="[('review_state', '=', 'reviewed'), ('review_is_reviewable', '=', True)]"/>
+                <filter string="With observations" name="review_observed"
+                        domain="[('review_state', '=', 'observed'), ('review_is_reviewable', '=', True)]"/>
+                <filter string="Answered" name="review_answered"
+                        domain="[('review_state', '=', 'answered'), ('review_is_reviewable', '=', True)]"/>
+                <filter string="Review not required" name="review_not_required"
+                        domain="[('review_state', '=', 'not_required'), ('review_is_reviewable', '=', True)]"/>
+                <separator/>
+                <filter string="My payments with observations" name="review_my_observed"
+                        domain="[('review_state', '=', 'observed'), ('review_issuer_id', '=', uid), ('review_is_reviewable', '=', True)]"/>
+            </filter>
+            <filter name="state" position="after">
+                <filter string="Review status" name="groupby_review_state" context="{'group_by': 'review_state'}"/>
+                <filter string="Reviewer" name="groupby_review_user" context="{'group_by': 'review_user_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- "Review" from the list's Actions menu (several payments at once). -->
+    <record id="action_server_payment_review" model="ir.actions.server">
+        <field name="name">Review</field>
+        <field name="model_id" ref="account.model_account_payment"/>
+        <field name="binding_model_id" ref="account.model_account_payment"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[Command.link(ref('account_payment_review.group_payment_reviewer'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_open_review_wizard()</field>
+    </record>
+
+    <!-- Reviewer's inbox: confirmed vendor payments, opened on pending and
+         answered ones. -->
+    <record id="action_payment_review" model="ir.actions.act_window">
+        <field name="name">Payments to review</field>
+        <field name="res_model">account.payment</field>
+        <field name="path">payments-to-review</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="account.view_account_supplier_payment_tree"/>
+        <field name="domain">[('review_is_reviewable', '=', True)]</field>
+        <field name="context">{
+            'create': False,
+            'search_default_review_pending': 1,
+            'search_default_review_answered': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No payments waiting for your review
+            </p><p>
+                Confirmed vendor payments show up here until a reviewer signs them off as reviewed or records observations on them.
+            </p>
+        </field>
+    </record>
+
+</odoo>

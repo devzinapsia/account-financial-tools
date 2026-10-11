@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- One-group privilege: shows up on the user form as a "No / Payment
+         reviewer" selector under Accounting, same pattern as core's
+         account.res_group_privilege_accounting_bank. -->
+    <record id="res_groups_privilege_payment_review" model="res.groups.privilege">
+        <field name="name">Payment review</field>
+        <field name="category_id" ref="base.module_category_accounting"/>
+        <field name="sequence">60</field>
+    </record>
+
+    <!-- Implies read-only accounting access only: reviewing writes the
+         review fields as superuser after an explicit group check, so a
+         reviewer never needs (nor gets) rights to modify payments. -->
+    <record id="group_payment_reviewer" model="res.groups">
+        <field name="name">Payment reviewer</field>
+        <field name="comment">Can review confirmed vendor payments: sign them off as reviewed or record observations.</field>
+        <field name="privilege_id" ref="res_groups_privilege_payment_review"/>
+        <field name="implied_ids" eval="[Command.link(ref('account.group_account_readonly'))]"/>
+    </record>
+
+</odoo>

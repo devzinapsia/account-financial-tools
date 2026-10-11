@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Deadlines are set by the code from the company's "Days to answer
+             observations" setting, not from these types' own delay. -->
+        <record id="mail_activity_payment_review_observation" model="mail.activity.type">
+            <field name="name">Payment review observation</field>
+            <field name="summary">Answer the review observations</field>
+            <field name="icon">fa-commenting-o</field>
+            <field name="res_model">account.payment</field>
+            <field name="decoration_type">warning</field>
+        </record>
+
+        <record id="mail_activity_payment_review_answer" model="mail.activity.type">
+            <field name="name">Payment review answer</field>
+            <field name="summary">Review the answer to your observations</field>
+            <field name="icon">fa-check-square-o</field>
+            <field name="res_model">account.payment</field>
+        </record>
+
+    </data>
+</odoo>
