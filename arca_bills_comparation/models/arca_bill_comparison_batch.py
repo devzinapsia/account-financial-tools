@@ -60,18 +60,13 @@ class ArcaBillComparisonBatch(models.Model):
     currency_id = fields.Many2one(related="company_id.currency_id")
     # Snapshot of the company's tolerances used by the last (re)processing,
     # so a run's results can still be interpreted after the settings change.
-    amount_tolerance = fields.Monetary(
-        string="Amount tolerance",
-        readonly=True,
-        copy=False,
-        default=lambda self: self.env.company.arca_comparison_amount_tolerance,
-    )
+    # Static defaults (the former fixed tolerance, which every run processed
+    # before this setting existed used), never read from res.company: on
+    # upgrade, Odoo fills these columns for existing runs before the new
+    # res.company columns exist, so a company lookup there breaks the update.
+    amount_tolerance = fields.Monetary(string="Amount tolerance", readonly=True, copy=False, default=0.02)
     percent_tolerance = fields.Float(
-        string="Percentage tolerance",
-        digits=(16, 4),
-        readonly=True,
-        copy=False,
-        default=lambda self: self.env.company.arca_comparison_percent_tolerance,
+        string="Percentage tolerance", digits=(16, 4), readonly=True, copy=False, default=0.0
     )
 
     @api.depends("date_from", "date_to")
