@@ -45,6 +45,9 @@
                         <field name="user_id"/>
                         <field name="last_processed_on"/>
                         <field name="source_document_id"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="amount_tolerance"/>
+                        <field name="percent_tolerance"/>
                     </group>
                 </sheet>
             </form>

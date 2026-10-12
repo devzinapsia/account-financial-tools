@@ -1,5 +1,6 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import float_compare, float_round
 from odoo.tools.misc import format_date
 
 from ..tools.arca_file_parser import (
@@ -10,7 +11,10 @@ from ..tools.arca_file_parser import (
     split_document_number,
 )
 
-AMOUNT_TOLERANCE = 0.02
+# Below this, an amount is treated as zero (e.g. "no VAT at all"). Not the
+# configurable comparison tolerance, which only decides how far two non-zero
+# amounts may disagree and still be reported as a match.
+ZERO_AMOUNT_THRESHOLD = 0.02
 
 # Fixed Documents app path where every processed file is filed away, so
 # accountants can find the original ARCA export later without digging
@@ -53,6 +57,22 @@ class ArcaBillComparisonBatch(models.Model):
         "documents.document", string="Source file", readonly=True, copy=False
     )
     last_processed_on = fields.Datetime(string="Last processed on", readonly=True, copy=False)
+    currency_id = fields.Many2one(related="company_id.currency_id")
+    # Snapshot of the company's tolerances used by the last (re)processing,
+    # so a run's results can still be interpreted after the settings change.
+    amount_tolerance = fields.Monetary(
+        string="Amount tolerance",
+        readonly=True,
+        copy=False,
+        default=lambda self: self.env.company.arca_comparison_amount_tolerance,
+    )
+    percent_tolerance = fields.Float(
+        string="Percentage tolerance",
+        digits=(16, 4),
+        readonly=True,
+        copy=False,
+        default=lambda self: self.env.company.arca_comparison_percent_tolerance,
+    )
 
     @api.depends("date_from", "date_to")
     def _compute_name(self):
@@ -191,6 +211,13 @@ class ArcaBillComparisonBatch(models.Model):
         """
         self.ensure_one()
         self.line_ids.unlink()
+        # Always the company's current settings, also when reprocessing.
+        self.write(
+            {
+                "amount_tolerance": self.company_id.arca_comparison_amount_tolerance,
+                "percent_tolerance": self.company_id.arca_comparison_percent_tolerance,
+            }
+        )
         candidate_moves = self._get_candidate_moves()
         move_index = self._index_moves(candidate_moves)
         move_index_by_issuer = self._index_moves_by_issuer(candidate_moves)
@@ -245,7 +272,7 @@ class ArcaBillComparisonBatch(models.Model):
         # with ARCA's, so the match is never accepted on number alone.
         for row in still_unmatched_rows:
             moves = self._find_matching_moves(move_index_by_pos, row["point_of_sale"], row, consumed_move_ids)
-            moves = moves.filtered(lambda move: abs(move.amount_total - row["total_amount"]) <= AMOUNT_TOLERANCE)
+            moves = moves.filtered(lambda move: self._total_amount_agrees(row, move))
             if moves:
                 consumed_move_ids.update(moves.ids)
                 detail = self._issuer_mismatch_detail(row, moves)
@@ -386,18 +413,86 @@ class ArcaBillComparisonBatch(models.Model):
         )
         return self.env["account.move"].concat(*(move for move, _number in matches))
 
-    def _compare_soft_fields(self, row, moves):
-        diffs = []
+    def _amounts_differ(self, arca_amount, odoo_amount):
+        """Whether two amounts disagree beyond the run's tolerance.
+
+        The allowed difference is the larger of the fixed amount and the
+        percentage of ARCA's amount. Compared at cent precision, so a
+        difference exactly at the limit (e.g. 0.02 vs 0.02) never trips on
+        binary float noise.
+        """
+        allowed = max(self.amount_tolerance, abs(arca_amount) * self.percent_tolerance / 100.0)
+        difference = float_round(abs(arca_amount - odoo_amount), precision_digits=2)
+        return float_compare(difference, allowed, precision_digits=2) > 0
+
+    def _get_comparable_amounts(self, row, moves):
+        """Return ARCA's and Odoo's amounts in a common currency, plus a conversion note.
+
+        The result dict holds "arca"/"odoo" (each a (total, untaxed, tax)
+        tuple), "currency_diff" (a detail line when currencies don't agree and
+        couldn't be reconciled, else "") and "note" (a detail line explaining
+        a conversion, else ""). When one side is in a foreign currency and the
+        other in the company currency, both are brought to the company
+        currency: ARCA's foreign amounts with ARCA's own exchange rate, Odoo's
+        foreign bills with their booked company-currency amounts.
+        """
+        arca = (
+            row["total_amount"],
+            row["untaxed_total"] + row["non_taxed_amount"] + row["exempt_operations"],
+            row["total_vat"] + row["other_taxes"],
+        )
+        odoo = (
+            sum(moves.mapped("amount_total")),
+            sum(moves.mapped("amount_untaxed")),
+            sum(moves.mapped("amount_tax")),
+        )
+        result = {"arca": arca, "odoo": odoo, "currency_diff": "", "note": ""}
 
         arca_currency_code = resolve_currency_code(row["currency_raw"])
         odoo_currency_codes = sorted(set(moves.currency_id.mapped("name")))
+        company_currency_code = self.company_id.currency_id.name
         if arca_currency_code is None:
-            diffs.append(_("Currency: unrecognized ARCA symbol '%s'") % row["currency_raw"])
-        elif odoo_currency_codes != [arca_currency_code]:
-            diffs.append(
-                _("Currency: ARCA %(arca)s vs Odoo %(odoo)s")
-                % {"arca": arca_currency_code, "odoo": ", ".join(odoo_currency_codes)}
+            result["currency_diff"] = _("Currency: unrecognized ARCA symbol '%s'") % row["currency_raw"]
+        elif odoo_currency_codes == [arca_currency_code]:
+            pass
+        elif odoo_currency_codes == [company_currency_code] and row["exchange_rate"]:
+            rate = row["exchange_rate"]
+            result["arca"] = tuple(amount * rate for amount in arca)
+            result["note"] = _(
+                "ARCA amounts in %(currency)s converted to %(company_currency)s at ARCA's exchange rate %(rate)s"
+            ) % {
+                "currency": arca_currency_code,
+                "company_currency": company_currency_code,
+                "rate": ("%.6f" % rate).rstrip("0").rstrip("."),
+            }
+        elif arca_currency_code == company_currency_code and len(odoo_currency_codes) == 1:
+            # The signed company-currency amounts are negative on vendor
+            # bills; take each bill's absolute value, like amount_total.
+            result["odoo"] = (
+                sum(abs(amount) for amount in moves.mapped("amount_total_signed")),
+                sum(abs(amount) for amount in moves.mapped("amount_untaxed_signed")),
+                sum(abs(amount) for amount in moves.mapped("amount_tax_signed")),
             )
+            result["note"] = _("Odoo amounts in %(currency)s converted to %(company_currency)s at the bill's rate") % {
+                "currency": odoo_currency_codes[0],
+                "company_currency": company_currency_code,
+            }
+        else:
+            result["currency_diff"] = _("Currency: ARCA %(arca)s vs Odoo %(odoo)s") % {
+                "arca": arca_currency_code,
+                "odoo": ", ".join(odoo_currency_codes),
+            }
+        return result
+
+    def _total_amount_agrees(self, row, move):
+        amounts = self._get_comparable_amounts(row, move)
+        return not self._amounts_differ(amounts["arca"][0], amounts["odoo"][0])
+
+    def _compare_soft_fields(self, row, moves):
+        diffs = []
+        amounts = self._get_comparable_amounts(row, moves)
+        if amounts["currency_diff"]:
+            diffs.append(amounts["currency_diff"])
 
         odoo_dates = sorted({move_date for move_date in moves.mapped("invoice_date") if move_date})
         if odoo_dates != [row["date"]]:
@@ -406,42 +501,38 @@ class ArcaBillComparisonBatch(models.Model):
                 % {"arca": row["date"], "odoo": ", ".join(d.isoformat() for d in odoo_dates)}
             )
 
-        odoo_total = sum(moves.mapped("amount_total"))
-        arca_total = row["total_amount"]
-        if abs(arca_total - odoo_total) > AMOUNT_TOLERANCE:
+        arca_total, arca_untaxed, arca_tax = amounts["arca"]
+        odoo_total, odoo_untaxed, odoo_tax = amounts["odoo"]
+        if self._amounts_differ(arca_total, odoo_total):
             diffs.append(
                 _("Total amount: ARCA %(arca).2f vs Odoo %(odoo).2f")
                 % {"arca": arca_total, "odoo": odoo_total}
             )
 
-        odoo_tax = sum(moves.mapped("amount_tax"))
-        arca_tax = row["total_vat"] + row["other_taxes"]
         # ARCA sometimes reports every breakdown column as zero for vouchers
         # with no VAT at all (e.g. certain exempt insurance premiums), while
         # Odoo still books the full amount as untaxed base. When neither side
         # reports any VAT, only the total (already checked above) is
         # meaningful; comparing the untaxed/tax split would flag a false
         # difference driven purely by that reporting quirk.
-        has_vat = abs(arca_tax) > AMOUNT_TOLERANCE or abs(odoo_tax) > AMOUNT_TOLERANCE
+        has_vat = abs(arca_tax) > ZERO_AMOUNT_THRESHOLD or abs(odoo_tax) > ZERO_AMOUNT_THRESHOLD
 
         if has_vat:
-            odoo_untaxed = sum(moves.mapped("amount_untaxed"))
-            arca_untaxed = row["untaxed_total"] + row["non_taxed_amount"] + row["exempt_operations"]
-            if abs(arca_untaxed - odoo_untaxed) > AMOUNT_TOLERANCE:
+            if self._amounts_differ(arca_untaxed, odoo_untaxed):
                 diffs.append(
                     _("Net amounts: ARCA %(arca).2f vs Odoo %(odoo).2f")
                     % {"arca": arca_untaxed, "odoo": odoo_untaxed}
                 )
 
-            if abs(arca_tax - odoo_tax) > AMOUNT_TOLERANCE:
+            if self._amounts_differ(arca_tax, odoo_tax):
                 diffs.append(
                     _("Taxes: ARCA %(arca).2f vs Odoo %(odoo).2f")
                     % {"arca": arca_tax, "odoo": odoo_tax}
                 )
 
         if diffs:
-            return "difference", "\n".join(diffs)
-        return "match", ""
+            return "difference", "\n".join(filter(None, [amounts["note"]] + diffs))
+        return "match", amounts["note"]
 
     def _prepare_line_from_row(self, row, move, result, detail):
         values = {("arca_%s" % key): value for key, value in row.items()}

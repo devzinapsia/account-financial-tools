@@ -74,7 +74,26 @@ totals above.
 Assumptions
 ~~~~~~~~~~~
 
-- Amounts are compared with a 0.02 tolerance to absorb rounding differences.
+- Amounts are compared with the company's configured tolerance (see
+  Configuration; 0.02 by default), at cent precision, so a difference
+  exactly at the limit is never flagged because of floating point noise
+  (observed case: net amounts 2314049.57 vs 2314049.59 flagged with the
+  former fixed 0.02 tolerance).
+- When ARCA and the Odoo bill are in different currencies and one of them
+  is the company currency, both sides are compared in the company currency
+  instead of being flagged as a currency difference:
+
+  - ARCA in a foreign currency (e.g. USD), bill in pesos: ARCA's amounts
+    are converted with ARCA's own "Tipo Cambio" column.
+  - ARCA in pesos, bill in a foreign currency: the bill's booked amounts
+    in pesos are used, i.e. the rate on the bill itself
+    (``invoice_currency_rate``): Odoo's currency rate for the bill date
+    by default, or whatever the user typed in manually on that bill.
+
+  The same tolerance applies to the converted amounts, and the result's
+  detail always includes a note with the conversion made, also when it
+  ends up as a "Match". Any other currency combination is still reported
+  as a "Currency" difference.
 - The Odoo universe considered is every non-cancelled vendor bill/refund
   (draft included) on a purchase journal with "Use Documents" enabled, that
   already has a document number assigned.

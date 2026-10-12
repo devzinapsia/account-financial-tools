@@ -71,7 +71,7 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
     def _load_rows(self, filename):
         return parse_arca_file((DATA_DIR / filename).read_bytes(), filename)
 
-    def _create_bill(self, partner, doc_type, document_number, invoice_date, price_unit, tax=False):
+    def _create_bill(self, partner, doc_type, document_number, invoice_date, price_unit, tax=False, currency=None):
         line_vals = {
             "name": "Test line",
             "quantity": 1,
@@ -87,7 +87,7 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
                 "partner_id": partner.id,
                 "journal_id": self.journal_purchase.id,
                 "invoice_date": invoice_date,
-                "currency_id": self.ars.id,
+                "currency_id": (currency or self.ars).id,
                 "l10n_latam_document_type_id": doc_type.id,
                 "l10n_latam_document_number": document_number,
                 "invoice_line_ids": [(0, 0, line_vals)],
@@ -746,3 +746,98 @@ class TestArcaBillComparison(AccountTestInvoicingCommon):
 
         pending_in_odoo_lines = batch.line_ids.filtered(lambda line: line.result == "pending_in_odoo")
         self.assertEqual(len(pending_in_odoo_lines), len(rows) - 2)
+
+    # ------------------------------------------------------------------
+    # Configurable tolerance and currency conversion
+    # ------------------------------------------------------------------
+
+    def _new_batch(self):
+        return self.env["arca.bill.comparison.batch"].create(
+            {"company_id": self.company.id, "date_from": "2026-08-01", "date_to": "2026-08-31"}
+        )
+
+    def test_default_tolerance_absorbs_float_noise_at_the_limit(self):
+        batch = self._new_batch()
+        self.assertEqual(batch.amount_tolerance, 0.02)
+        self.assertEqual(batch.percent_tolerance, 0.0)
+        # Real case: ARCA 2314049.57 vs Odoo 2314049.59 was flagged, since
+        # the float difference lands slightly above 0.02.
+        self.assertFalse(batch._amounts_differ(2314049.57, 2314049.59))
+        self.assertTrue(batch._amounts_differ(100.0, 100.03))
+
+    def test_larger_of_amount_and_percentage_tolerance_applies(self):
+        batch = self._new_batch()
+        batch.write({"amount_tolerance": 1.0, "percent_tolerance": 0.1})
+        self.assertFalse(batch._amounts_differ(1000.0, 1001.0))
+        self.assertTrue(batch._amounts_differ(1000.0, 1001.5))
+        # 0.1% of 10000 = 10, larger than the fixed 1.
+        self.assertFalse(batch._amounts_differ(10000.0, 10009.0))
+        self.assertTrue(batch._amounts_differ(10000.0, 10011.0))
+
+    def test_company_tolerance_is_used_when_reprocessing(self):
+        move = self._create_bill(self.partner_amx, self.doc_type_a, "1-1", "2026-08-12", price_unit=100.8)
+        rows = [self._make_row(date=date(2026, 8, 12), total_amount=100.0)]
+        batch = self._new_batch()
+
+        self.company.arca_comparison_amount_tolerance = 1.0
+        batch._run_comparison(rows)
+        self.assertEqual(batch.amount_tolerance, 1.0)
+        self.assertEqual(batch.line_ids.filtered(lambda line: line.move_id == move).result, "match")
+
+        self.company.arca_comparison_amount_tolerance = 0.02
+        batch._run_comparison(rows)
+        self.assertEqual(batch.amount_tolerance, 0.02)
+        line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertEqual(line.result, "difference")
+        self.assertIn("Total amount", line.difference_detail)
+
+    def test_arca_foreign_currency_converted_with_arca_rate(self):
+        # Real case: ARCA reports USD 99.22 at rate 1530, the bill was
+        # booked in pesos (the company currency) for 151806.60. Here the
+        # test company's currency plays the pesos role and ARS the foreign.
+        company_currency = self.company.currency_id
+        self.assertNotEqual(company_currency, self.ars)
+        move = self._create_bill(
+            self.partner_amx, self.doc_type_a, "1-1", "2026-08-12", price_unit=151806.60, currency=company_currency
+        )
+        rows = [self._make_row(date=date(2026, 8, 12), total_amount=99.22, exchange_rate=1530.0)]
+        batch = self._new_batch()
+        batch._run_comparison(rows)
+
+        line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertEqual(line.result, "match")
+        self.assertIn("converted to %s" % company_currency.name, line.difference_detail)
+        self.assertIn("1530", line.difference_detail)
+        self.assertNotIn("Currency:", line.difference_detail)
+
+    def test_arca_foreign_currency_beyond_tolerance_is_a_difference(self):
+        company_currency = self.company.currency_id
+        move = self._create_bill(
+            self.partner_amx, self.doc_type_a, "1-1", "2026-08-12", price_unit=1200.0, currency=company_currency
+        )
+        rows = [self._make_row(date=date(2026, 8, 12), total_amount=500.0, exchange_rate=2.0)]
+        batch = self._new_batch()
+        batch._run_comparison(rows)
+
+        line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertEqual(line.result, "difference")
+        self.assertIn("converted to", line.difference_detail)
+        self.assertIn("Total amount: ARCA 1000.00 vs Odoo 1200.00", line.difference_detail)
+
+    def test_odoo_foreign_currency_converted_with_bill_rate(self):
+        company_currency = self.company.currency_id
+        self.env["res.currency.rate"].create(
+            {"currency_id": self.ars.id, "name": "2026-08-01", "rate": 1000.0, "company_id": self.company.id}
+        )
+        move = self._create_bill(self.partner_amx, self.doc_type_a, "1-1", "2026-08-12", price_unit=100000.0)
+        rows = [
+            self._make_row(
+                date=date(2026, 8, 12), currency_raw=company_currency.name, total_amount=100.0, exchange_rate=1.0
+            )
+        ]
+        batch = self._new_batch()
+        batch._run_comparison(rows)
+
+        line = batch.line_ids.filtered(lambda line: line.move_id == move)
+        self.assertEqual(line.result, "match")
+        self.assertIn("Odoo amounts in ARS converted to %s" % company_currency.name, line.difference_detail)

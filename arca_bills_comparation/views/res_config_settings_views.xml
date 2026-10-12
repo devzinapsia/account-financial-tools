@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_arca_comparison" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.arca.comparison</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="account_vendor_bills" position="inside">
+                <setting id="arca_comparison_tolerance"
+                         string="ARCA comparison tolerance"
+                         company_dependent="1"
+                         groups="account.group_account_user"
+                         help="Amount differences against ARCA are not flagged while they don't exceed the larger of both tolerances, evaluated separately for each amount compared on each voucher (total, net amounts and taxes).">
+                    <div class="content-group">
+                        <div class="row mt16">
+                            <label for="arca_comparison_amount_tolerance" string="Amount" class="col-lg-5 o_light_label"/>
+                            <field name="arca_comparison_amount_tolerance" class="col-lg-7"/>
+                        </div>
+                        <div class="row">
+                            <label for="arca_comparison_percent_tolerance" string="Percentage" class="col-lg-5 o_light_label"/>
+                            <field name="arca_comparison_percent_tolerance" class="col-lg-7"/>
+                        </div>
+                    </div>
+                </setting>
+            </block>
+        </field>
+    </record>
+
+</odoo>

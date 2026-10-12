@@ -95,6 +95,7 @@ msgid "Created on"
 msgstr "Creado el"
 
 #. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__currency_id
 #: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_line__arca_currency_raw
 #: model_terms:ir.ui.view,arch_db:arca_bills_comparation.view_arca_bill_comparison_line_list
 msgid "Currency"
@@ -560,3 +561,94 @@ msgstr "Código de tipo de comprobante"
 #: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
 msgid "Voucher type: ARCA %(arca)s vs Odoo %(odoo)s"
 msgstr "Tipo de comprobante: ARCA %(arca)s vs Odoo %(odoo)s"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_res_company__arca_comparison_amount_tolerance
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_res_config_settings__arca_comparison_amount_tolerance
+msgid "ARCA comparison amount tolerance"
+msgstr "Tolerancia en importe de la comparación con ARCA"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_res_company__arca_comparison_percent_tolerance
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_res_config_settings__arca_comparison_percent_tolerance
+msgid "ARCA comparison percentage tolerance"
+msgstr "Tolerancia porcentual de la comparación con ARCA"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,help:arca_bills_comparation.field_res_company__arca_comparison_amount_tolerance
+#: model:ir.model.fields,help:arca_bills_comparation.field_res_config_settings__arca_comparison_amount_tolerance
+msgid ""
+"Maximum difference, in the company currency, between ARCA's and Odoo's "
+"amounts still reported as a match in the ARCA vouchers comparison."
+msgstr ""
+"Diferencia máxima, en la moneda de la compañía, entre los importes de ARCA y "
+"los de Odoo que se sigue informando como coincidencia en la comparación con "
+"ARCA."
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,help:arca_bills_comparation.field_res_company__arca_comparison_percent_tolerance
+#: model:ir.model.fields,help:arca_bills_comparation.field_res_config_settings__arca_comparison_percent_tolerance
+msgid ""
+"Maximum difference, as a percentage of ARCA's amount, still reported as a "
+"match in the ARCA vouchers comparison. Whichever of both tolerances is "
+"larger applies."
+msgstr ""
+"Diferencia máxima, como porcentaje del importe de ARCA, que se sigue "
+"informando como coincidencia en la comparación con ARCA. Se aplica la mayor "
+"de ambas tolerancias."
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__amount_tolerance
+msgid "Amount tolerance"
+msgstr "Tolerancia en importe"
+
+#. module: arca_bills_comparation
+#: model:ir.model.fields,field_description:arca_bills_comparation.field_arca_bill_comparison_batch__percent_tolerance
+msgid "Percentage tolerance"
+msgstr "Tolerancia porcentual"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.res_config_settings_view_form_arca_comparison
+msgid "ARCA comparison tolerance"
+msgstr "Tolerancia en la comparación con ARCA"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.res_config_settings_view_form_arca_comparison
+msgid ""
+"Amount differences against ARCA are not flagged while they don't exceed the "
+"larger of both tolerances, evaluated separately for each amount compared on "
+"each voucher (total, net amounts and taxes)."
+msgstr ""
+"Las diferencias de importe con ARCA no se marcan mientras no superen la "
+"mayor de ambas tolerancias, evaluada por separado en cada importe comparado "
+"de cada comprobante (total, netos e impuestos)."
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.res_config_settings_view_form_arca_comparison
+msgid "Amount"
+msgstr "Importe"
+
+#. module: arca_bills_comparation
+#: model_terms:ir.ui.view,arch_db:arca_bills_comparation.res_config_settings_view_form_arca_comparison
+msgid "Percentage"
+msgstr "Porcentaje"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid ""
+"ARCA amounts in %(currency)s converted to %(company_currency)s at ARCA's "
+"exchange rate %(rate)s"
+msgstr ""
+"Importes de ARCA en %(currency)s convertidos a %(company_currency)s con el "
+"tipo de cambio de ARCA %(rate)s"
+
+#. module: arca_bills_comparation
+#. odoo-python
+#: code:addons/arca_bills_comparation/models/arca_bill_comparison_batch.py:0
+msgid ""
+"Odoo amounts in %(currency)s converted to %(company_currency)s at the bill's "
+"rate"
+msgstr ""
+"Importes de Odoo en %(currency)s convertidos a %(company_currency)s con el "
+"tipo de cambio de la factura"
