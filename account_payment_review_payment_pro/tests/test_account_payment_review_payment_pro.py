@@ -15,7 +15,7 @@ class TestAccountPaymentReviewPaymentPro(TransactionCase):
             {
                 "payment_review_enabled": True,
                 "payment_review_min_amount": 1000.0,
-                "payment_review_exempt_domain": "[]",
+                "payment_review_domain": "[]",
             }
         )
         cls.bank_journal = cls.env["account.journal"].create(

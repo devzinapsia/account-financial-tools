@@ -16,20 +16,23 @@ Go to **Accounting ‣ Configuration ‣ Settings ‣ Vendor Payments ‣ Paymen
 review** (per company):
 
 * **Payment review**: enables the circuit. Vendor payments confirmed from
-  then on start as *Pending review*, unless an exemption applies.
+  then on start as *Pending review*, if they meet the conditions below.
 * **Review from amount**: vendor payments below this amount, in company
   currency, start as *Not required*. Leave it at 0 to review payments of
   any amount.
-* **Payments that don't require review**: conditions built with Odoo's
-  filter editor, e.g. *Journal = Petty cash* or a given vendor. Matching
-  payments start as *Not required*. Leave it empty for no exemption.
+* **Payments that require review**: conditions built with Odoo's filter
+  editor, e.g. *Journal in (the journals of a given bank)*. Only matching
+  payments start as *Pending review*; the rest start as *Not required*.
+  Leave it empty to review every vendor payment.
 * **Days to answer observations**: deadline of the activity assigned to
   the issuer when the reviewer records observations (3 by default).
 
-Exemptions are evaluated once, when a payment is confirmed: changing them
-does not reclassify payments already confirmed. A reviewer can still
-review any *Not required* payment on purpose, or mark pending ones as
-*Not required* from the review wizard.
+The amount and the conditions are evaluated once, when a payment is
+confirmed: changing them does not reclassify payments already confirmed.
+A reviewer can still review any *Not required* payment on purpose, or
+mark pending ones as *Not required* from the review wizard, e.g. the ones
+confirmed before the conditions were adjusted, so they leave the
+*Payments to review* list without being signed off as reviewed.
 
 Vendor payments confirmed before the module was installed start as *Not
 required*, so the circuit applies from the installation onwards.

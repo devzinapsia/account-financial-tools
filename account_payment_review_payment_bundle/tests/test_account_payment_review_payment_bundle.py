@@ -16,7 +16,7 @@ class TestAccountPaymentReviewPaymentBundle(TransactionCase):
             {
                 "payment_review_enabled": True,
                 "payment_review_min_amount": 10000.0,
-                "payment_review_exempt_domain": "[]",
+                "payment_review_domain": "[]",
             }
         )
         # Same bundle setup as l10n_ar_payment_bundle's own tests.
@@ -128,3 +128,9 @@ class TestAccountPaymentReviewPaymentBundle(TransactionCase):
         self.assertEqual(main.review_state, "observed")
         self.assertEqual(main.review_issuer_id, self.issuer)
         self.assertEqual(main.activity_ids.user_id, self.issuer)
+
+    def test_bundle_list_is_not_the_default_payment_list(self):
+        # Opening payments without a forced view (e.g. from the activities
+        # menu) must not use the bundle's linked payments list.
+        default_list = self.env["ir.ui.view"].default_view("account.payment", "list")
+        self.assertEqual(default_list, self.env.ref("account.view_account_payment_tree").id)

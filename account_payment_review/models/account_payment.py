@@ -41,6 +41,19 @@ class AccountPayment(models.Model):
     def _review_answer_days(self):
         return self.company_id.payment_review_answer_days
 
+    def _review_observation_hint(self):
+        return _(
+            "To answer, mark this activity as done and write your answer, "
+            "or use the 'Answer observations' button of the payment."
+        )
+
+    def _review_answer_hint(self):
+        return _(
+            "Marking this activity as done signs the payment off as "
+            "reviewed. To record new observations instead, use the 'Mark "
+            "as reviewed' button of the payment."
+        )
+
     def _review_amount(self):
         """Amount compared against the company's "Review from amount"
         setting, in company currency. Extended by glue modules whose
@@ -56,9 +69,8 @@ class AccountPayment(models.Model):
         min_amount = company.payment_review_min_amount
         if min_amount and company.currency_id.compare_amounts(self._review_amount(), min_amount) < 0:
             return "not_required"
-        domain = safe_eval(company.payment_review_exempt_domain or "[]", {"uid": self.env.uid})
-        # An empty condition means "no exemption", not "everything matches".
-        if domain and self.filtered_domain(domain):
+        domain = safe_eval(company.payment_review_domain or "[]", {"uid": self.env.uid})
+        if domain and not self.filtered_domain(domain):
             return "not_required"
         return "pending"
 

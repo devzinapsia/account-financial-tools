@@ -130,6 +130,21 @@ class AccountReviewMixin(models.AbstractModel):
         """Days the issuer has to answer an observation."""
         return 3
 
+    def _review_observation_hint(self):
+        """How the issuer answers, appended to the observation activity."""
+        return _(
+            "To answer, mark this activity as done and write your answer, "
+            "or use the 'Answer observations' button of the document."
+        )
+
+    def _review_answer_hint(self):
+        """How the reviewer closes the review, appended to the answer activity."""
+        return _(
+            "Marking this activity as done signs the document off as "
+            "reviewed. To record new observations instead, use the 'Mark "
+            "as reviewed' button of the document."
+        )
+
     def _review_initial_state(self):
         """Review status a document gets when it's confirmed: 'pending',
         'not_required', or False to stay out of the review circuit."""
@@ -311,7 +326,7 @@ class AccountReviewMixin(models.AbstractModel):
                     record._review_observation_activity_xmlid(),
                     issuer,
                     record_lang.env._("Answer the review observations"),
-                    comment,
+                    f"{comment}\n\n{record_lang._review_observation_hint()}",
                 )
         return True
 
@@ -340,6 +355,36 @@ class AccountReviewMixin(models.AbstractModel):
                     record._review_answer_activity_xmlid(),
                     reviewer,
                     record_lang.env._("Review the answer to your observations"),
-                    answer,
+                    f"{answer}\n\n{record_lang._review_answer_hint()}",
                 )
         return True
+
+    def _review_activity_done(self, activity, feedback):
+        """Act on a review activity marked as done from the activity itself
+        rather than from the document's buttons, so both paths do the same:
+        the issuer's activity answers the observations with the feedback,
+        the reviewer's one signs the document off as reviewed.
+
+        Returns True when the activity was handled here (and thus already
+        removed by the review action), False to let it be marked as done
+        normally (e.g. a stale activity whose review moved on meanwhile)."""
+        self.ensure_one()
+        activity_type = activity.activity_type_id
+        if activity_type == self.env.ref(self._review_observation_activity_xmlid(), raise_if_not_found=False):
+            if self.review_state != "observed":
+                return False
+            if not (feedback or "").strip():
+                raise UserError(
+                    _(
+                        "Write your answer to the observations of %s before marking the activity as done.",
+                        self.display_name,
+                    )
+                )
+            self._review_answer(feedback)
+            return True
+        if activity_type == self.env.ref(self._review_answer_activity_xmlid(), raise_if_not_found=False):
+            if self.review_state != "answered":
+                return False
+            self._review_set_result("reviewed", feedback)
+            return True
+        return False

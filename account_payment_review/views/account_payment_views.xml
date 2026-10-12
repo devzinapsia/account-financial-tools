@@ -12,7 +12,7 @@
         <field name="arch" type="xml">
             <xpath expr="//header/field[@name='state']" position="before">
                 <field name="review_is_reviewable" invisible="1"/>
-                <button name="action_open_review_wizard" string="Review" type="object"
+                <button name="action_open_review_wizard" string="Mark as reviewed" type="object"
                         groups="account_payment_review.group_payment_reviewer"
                         invisible="not review_is_reviewable"/>
                 <button name="action_open_review_answer_wizard" string="Answer observations" type="object"
@@ -128,9 +128,10 @@
         </field>
     </record>
 
-    <!-- "Review" from the list's Actions menu (several payments at once). -->
+    <!-- "Mark as reviewed" from the list's Actions menu (several payments
+         at once). -->
     <record id="action_server_payment_review" model="ir.actions.server">
-        <field name="name">Review</field>
+        <field name="name">Mark as reviewed</field>
         <field name="model_id" ref="account.model_account_payment"/>
         <field name="binding_model_id" ref="account.model_account_payment"/>
         <field name="binding_view_types">list</field>

@@ -23,8 +23,9 @@ Review statuses:
   answer.
 * **Answered**: the issuer answered the observations; back to the
   reviewer.
-* **Not required**: confirmed before the module was installed, matching an
-  exemption, or explicitly marked so by the reviewer.
+* **Not required**: confirmed before the module was installed, below the
+  minimum amount or not matching the review conditions, or explicitly
+  marked so by the reviewer.
 
 Customer payments are not part of the circuit.
 
@@ -54,20 +55,23 @@ Go to **Accounting ‣ Configuration ‣ Settings ‣ Vendor Payments ‣ Paymen
 review** (per company):
 
 * **Payment review**: enables the circuit. Vendor payments confirmed from
-  then on start as *Pending review*, unless an exemption applies.
+  then on start as *Pending review*, if they meet the conditions below.
 * **Review from amount**: vendor payments below this amount, in company
   currency, start as *Not required*. Leave it at 0 to review payments of
   any amount.
-* **Payments that don't require review**: conditions built with Odoo's
-  filter editor, e.g. *Journal = Petty cash* or a given vendor. Matching
-  payments start as *Not required*. Leave it empty for no exemption.
+* **Payments that require review**: conditions built with Odoo's filter
+  editor, e.g. *Journal in (the journals of a given bank)*. Only matching
+  payments start as *Pending review*; the rest start as *Not required*.
+  Leave it empty to review every vendor payment.
 * **Days to answer observations**: deadline of the activity assigned to
   the issuer when the reviewer records observations (3 by default).
 
-Exemptions are evaluated once, when a payment is confirmed: changing them
-does not reclassify payments already confirmed. A reviewer can still
-review any *Not required* payment on purpose, or mark pending ones as
-*Not required* from the review wizard.
+The amount and the conditions are evaluated once, when a payment is
+confirmed: changing them does not reclassify payments already confirmed.
+A reviewer can still review any *Not required* payment on purpose, or
+mark pending ones as *Not required* from the review wizard, e.g. the ones
+confirmed before the conditions were adjusted, so they leave the
+*Payments to review* list without being signed off as reviewed.
 
 Vendor payments confirmed before the module was installed start as *Not
 required*, so the circuit applies from the installation onwards.
@@ -83,11 +87,11 @@ confirmed vendor payments filtered by *Pending review* and *Answered*; use
 the standard filters and group-bys (date, journal, payment method, vendor,
 amount) to pick which ones to review.
 
-* **One payment**: open it and click **Review**. Choose *OK*, *With
+* **One payment**: open it and click **Mark as reviewed**. Choose *OK*, *With
   observations* (comment required) or *Not required*, plus an optional
   comment.
 * **Several payments**: select them in the list and use **Actions ‣
-  Review**. The wizard shows one line per payment, all set to *OK* by
+  Mark as reviewed**. The wizard shows one line per payment, all set to *OK* by
   default; change the result and add a comment per line where needed
   (required for *With observations*). Remove a line to leave a payment
   out.
@@ -106,10 +110,26 @@ Answering observations (issuer)
 When the reviewer records observations, the user who confirmed the
 payment gets a *Payment review observation* activity with the comment,
 due in the configured number of days. Make whatever adjustment is needed
-(this module never changes the payment) and click **Answer observations**
-on the payment: the activity is closed, the answer is posted in the
-chatter, the payment becomes *Answered* and the reviewer gets an activity
-to review it again. Any accounting user can answer on the issuer's behalf.
+(this module never changes the payment) and answer in either of two
+equivalent ways:
+
+* mark the activity as done and write the answer in its feedback box
+  (marking it done without an answer is refused, so the observation can't
+  be left unanswered by mistake);
+* or click **Answer observations** on the payment.
+
+Either way the activity is closed, the answer is posted in the chatter,
+the payment becomes *Answered* and the reviewer gets an activity to
+review it again. Any accounting user can answer on the issuer's behalf.
+
+Closing the review (reviewer)
+-----------------------------
+
+An *Answered* payment stays in the reviewer's **Payments to review** list
+until the reviewer decides on it again: once the answer is read, either
+mark the reviewer's activity as done (which signs the payment off as
+*Reviewed*, the activity's feedback becoming the review comment), or use
+**Mark as reviewed** to choose *OK* or record new observations.
 
 The **My payments with observations** filter lists the issuer's own
 payments still waiting for an answer.

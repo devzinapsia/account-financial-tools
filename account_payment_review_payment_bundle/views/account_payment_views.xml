@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- l10n_ar_payment_bundle's list of a bundle's linked payments is a
+         primary account.payment list with the default priority, and views
+         of equal priority are ordered by name: "account.payment.custom.list"
+         sorts before core's "account.payment.list", so it became the
+         default payments list wherever no view is forced (e.g. opening the
+         payments from the activities menu). Its "parent.*" column condition
+         then crashes outside the bundle form. It's only meant for that
+         form, which references it explicitly, so push it down. -->
+    <record id="l10n_ar_payment_bundle.view_account_payment_custom_list" model="ir.ui.view">
+        <field name="priority" eval="100"/>
+    </record>
+
+</odoo>

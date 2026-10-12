@@ -8,7 +8,7 @@ class ResCompany(models.Model):
         string="Payment review",
         default=True,
         help="Vendor payments confirmed from now on enter the review "
-        "circuit as 'Pending review', unless an exemption below applies.",
+        "circuit as 'Pending review', if they meet the conditions below.",
     )
     payment_review_min_amount = fields.Monetary(
         string="Review from amount",
@@ -16,12 +16,12 @@ class ResCompany(models.Model):
         help="Vendor payments below this amount, in company currency, don't "
         "require review. Leave it at 0 to review payments of any amount.",
     )
-    payment_review_exempt_domain = fields.Char(
-        string="Payments that don't require review",
+    payment_review_domain = fields.Char(
+        string="Payments that require review",
         default="[]",
-        help="Vendor payments matching these conditions don't require "
-        "review, e.g. a petty cash journal. Leave it empty to apply no "
-        "exemption.",
+        help="Only vendor payments matching these conditions require review, "
+        "e.g. the ones paid from a given bank's journals. The rest start as "
+        "'Not required'. Leave it empty to review every vendor payment.",
     )
     payment_review_answer_days = fields.Integer(
         string="Days to answer observations",

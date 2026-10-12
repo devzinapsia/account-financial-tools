@@ -6,11 +6,11 @@ confirmed vendor payments filtered by *Pending review* and *Answered*; use
 the standard filters and group-bys (date, journal, payment method, vendor,
 amount) to pick which ones to review.
 
-* **One payment**: open it and click **Review**. Choose *OK*, *With
+* **One payment**: open it and click **Mark as reviewed**. Choose *OK*, *With
   observations* (comment required) or *Not required*, plus an optional
   comment.
 * **Several payments**: select them in the list and use **Actions ‣
-  Review**. The wizard shows one line per payment, all set to *OK* by
+  Mark as reviewed**. The wizard shows one line per payment, all set to *OK* by
   default; change the result and add a comment per line where needed
   (required for *With observations*). Remove a line to leave a payment
   out.
@@ -29,10 +29,26 @@ Answering observations (issuer)
 When the reviewer records observations, the user who confirmed the
 payment gets a *Payment review observation* activity with the comment,
 due in the configured number of days. Make whatever adjustment is needed
-(this module never changes the payment) and click **Answer observations**
-on the payment: the activity is closed, the answer is posted in the
-chatter, the payment becomes *Answered* and the reviewer gets an activity
-to review it again. Any accounting user can answer on the issuer's behalf.
+(this module never changes the payment) and answer in either of two
+equivalent ways:
+
+* mark the activity as done and write the answer in its feedback box
+  (marking it done without an answer is refused, so the observation can't
+  be left unanswered by mistake);
+* or click **Answer observations** on the payment.
+
+Either way the activity is closed, the answer is posted in the chatter,
+the payment becomes *Answered* and the reviewer gets an activity to
+review it again. Any accounting user can answer on the issuer's behalf.
+
+Closing the review (reviewer)
+-----------------------------
+
+An *Answered* payment stays in the reviewer's **Payments to review** list
+until the reviewer decides on it again: once the answer is read, either
+mark the reviewer's activity as done (which signs the payment off as
+*Reviewed*, the activity's feedback becoming the review comment), or use
+**Mark as reviewed** to choose *OK* or record new observations.
 
 The **My payments with observations** filter lists the issuer's own
 payments still waiting for an answer.

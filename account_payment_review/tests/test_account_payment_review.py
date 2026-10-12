@@ -22,7 +22,7 @@ class TestAccountPaymentReview(AccountTestInvoicingCommon):
             {
                 "payment_review_enabled": True,
                 "payment_review_min_amount": 0.0,
-                "payment_review_exempt_domain": "[]",
+                "payment_review_domain": "[]",
                 "payment_review_answer_days": 3,
             }
         )
@@ -103,8 +103,9 @@ class TestAccountPaymentReview(AccountTestInvoicingCommon):
         self.assertEqual(small.review_state, "not_required")
         self.assertEqual(big.review_state, "pending")
 
-    def test_domain_exemption(self):
-        self.company.payment_review_exempt_domain = str([("journal_id", "=", self.cash_journal.id)])
+    def test_review_conditions(self):
+        # Only payments matching the conditions require review.
+        self.company.payment_review_domain = str([("journal_id", "=", self.bank_journal.id)])
         cash = self._create_payment(journal=self.cash_journal)
         bank = self._create_payment()
         self.assertEqual(cash.review_state, "not_required")
@@ -177,6 +178,53 @@ class TestAccountPaymentReview(AccountTestInvoicingCommon):
         self.assertEqual(payment.review_state, "reviewed")
         self.assertFalse(payment.activity_ids)
         self.assertFalse(payment.review_answer)
+
+    def test_answer_by_marking_the_activity_done(self):
+        payment = self._create_payment()
+        self._review(payment, "observed", "Missing receipt")
+        activity = payment.activity_ids.with_user(self.issuer)
+        self.assertIn("Answer observations", activity.note)
+        # Marking it done without an answer is refused, the observation
+        # would be left unanswered.
+        with self.assertRaises(UserError):
+            activity.action_feedback()
+        activity.action_feedback(feedback="Receipt attached")
+        self.assertEqual(payment.review_state, "answered")
+        self.assertEqual(payment.review_answer, "Receipt attached")
+        self.assertEqual(payment.activity_ids.activity_type_id, self.answer_type)
+        self.assertEqual(payment.activity_ids.user_id, self.reviewer)
+
+    def test_answer_button_closes_the_activity(self):
+        payment = self._create_payment()
+        self._review(payment, "observed", "Missing receipt")
+        payment.with_user(self.issuer)._review_answer("Receipt attached")
+        self.assertFalse(payment.activity_ids.filtered(lambda a: a.activity_type_id == self.observation_type))
+
+    def test_review_by_marking_the_answer_activity_done(self):
+        payment = self._create_payment()
+        self._review(payment, "observed", "Missing receipt")
+        payment.with_user(self.issuer)._review_answer("Receipt attached")
+        payment.activity_ids.with_user(self.reviewer).action_done()
+        self.assertEqual(payment.review_state, "reviewed")
+        self.assertEqual(payment.review_user_id, self.reviewer)
+        self.assertFalse(payment.activity_ids)
+        # Out of the reviewer's inbox (pending + answered).
+        inbox = self.env["account.payment"].search(
+            [("review_is_reviewable", "=", True), ("review_state", "in", ("pending", "answered"))]
+        )
+        self.assertNotIn(payment, inbox)
+
+    def test_stale_review_activity_is_just_done(self):
+        # A review activity whose review moved on meanwhile (e.g. scheduled
+        # by hand) is marked as done as any other one.
+        payment = self._create_payment()
+        self._review(payment, "reviewed")
+        activity = payment.activity_schedule(
+            "account_payment_review.mail_activity_payment_review_observation", user_id=self.issuer.id
+        )
+        activity.with_user(self.issuer).action_done()
+        self.assertFalse(activity.active)
+        self.assertEqual(payment.review_state, "reviewed")
 
     def test_reviewer_can_change_their_mind(self):
         payment = self._create_payment()

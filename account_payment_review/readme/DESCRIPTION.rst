@@ -19,7 +19,8 @@ Review statuses:
   answer.
 * **Answered**: the issuer answered the observations; back to the
   reviewer.
-* **Not required**: confirmed before the module was installed, matching an
-  exemption, or explicitly marked so by the reviewer.
+* **Not required**: confirmed before the module was installed, below the
+  minimum amount or not matching the review conditions, or explicitly
+  marked so by the reviewer.
 
 Customer payments are not part of the circuit.

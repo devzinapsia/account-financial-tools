@@ -26,8 +26,8 @@
                             <field name="payment_review_answer_days" class="col-lg-7"/>
                         </div>
                         <div class="mt8">
-                            <label for="payment_review_exempt_domain" class="o_light_label"/>
-                            <field name="payment_review_exempt_domain" widget="domain"
+                            <label for="payment_review_domain" class="o_light_label"/>
+                            <field name="payment_review_domain" widget="domain"
                                    options="{'model': 'account.payment', 'in_dialog': True}"/>
                         </div>
                     </div>

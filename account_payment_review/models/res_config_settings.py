@@ -14,8 +14,8 @@ class ResConfigSettings(models.TransientModel):
         related="company_id.payment_review_min_amount",
         readonly=False,
     )
-    payment_review_exempt_domain = fields.Char(
-        related="company_id.payment_review_exempt_domain",
+    payment_review_domain = fields.Char(
+        related="company_id.payment_review_domain",
         readonly=False,
     )
     payment_review_answer_days = fields.Integer(
