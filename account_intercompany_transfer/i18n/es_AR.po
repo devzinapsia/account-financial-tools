@@ -1,0 +1,813 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-13 23:26+0000\n"
+"PO-Revision-Date: 2026-10-13 23:26+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"%(company)s has no intercompany transfer bridge account. Set it in the "
+"accounting settings of that company."
+msgstr ""
+"%(company)s no tiene cuenta puente de transferencias intercompany. "
+"Configúrela en los ajustes contables de esa empresa."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"%(company)s has no intercompany transfer sequence. Update the module "
+"'Transferencias intercompany' to create it."
+msgstr ""
+"%(company)s no tiene secuencia de transferencias intercompany. Actualice el "
+"módulo 'Transferencias intercompany' para crearla."
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_form
+msgid "<span class=\"o_stat_text\">Destination payment</span>"
+msgstr "<span class=\"o_stat_text\">Pago destino</span>"
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_form
+msgid "<span class=\"o_stat_text\">Origin payment</span>"
+msgstr "<span class=\"o_stat_text\">Pago origen</span>"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_payment.py:0
+msgid "A payment can't be linked to an intercompany transfer by hand."
+msgstr "Un pago no se puede vincular a mano a una transferencia intercompany."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_payment.py:0
+msgid ""
+"A payment of an intercompany transfer can't be turned into an internal "
+"transfer."
+msgstr ""
+"Un pago de una transferencia intercompany no se puede convertir en una "
+"transferencia interna."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_needaction
+msgid "Action Needed"
+msgstr "Acción requerida"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_ids
+msgid "Activities"
+msgstr "Actividades"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Decoración de actividad de excepción"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_state
+msgid "Activity State"
+msgstr "Estado de la actividad"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icono del tipo de actividad"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__amount
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__amount
+msgid "Amount"
+msgstr "Importe"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_attachment_count
+msgid "Attachment Count"
+msgstr "Número de archivos adjuntos"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"Both companies of an intercompany transfer must be among your allowed "
+"companies."
+msgstr ""
+"Las dos empresas de una transferencia intercompany deben estar entre sus "
+"empresas permitidas."
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_form
+msgid ""
+"Both payments of this transfer will be cancelled, in both companies. A "
+"cancelled transfer can't be posted again. Continue?"
+msgstr ""
+"Se cancelarán los dos pagos de esta transferencia, en las dos empresas. Una "
+"transferencia cancelada no se puede volver a publicar. ¿Continuar?"
+
+#. module: account_intercompany_transfer
+#: model:res.groups,comment:account_intercompany_transfer.group_intercompany_transfer_user
+msgid ""
+"Can create, read and cancel intercompany transfers between the companies the"
+" user is allowed in."
+msgstr ""
+"Puede crear, consultar y cancelar transferencias intercompany entre las "
+"empresas permitidas del usuario."
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields.selection,name:account_intercompany_transfer.selection__account_intercompany_transfer__state__cancelled
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_form
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_search
+msgid "Cancelled"
+msgstr "Cancelada"
+
+#. module: account_intercompany_transfer
+#: model:ir.model,name:account_intercompany_transfer.model_res_company
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: account_intercompany_transfer
+#: model:ir.model,name:account_intercompany_transfer.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_wizard_view_form
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_res_company__intercompany_transfer_account_id
+#: model:ir.model.fields,help:account_intercompany_transfer.field_res_config_settings__intercompany_transfer_account_id
+msgid ""
+"Counterpart of the payments created by intercompany transfers sent or "
+"received by this company. Its ledger grouped by partner shows the balance "
+"with each of the other companies."
+msgstr ""
+"Contrapartida de los pagos creados por las transferencias intercompany "
+"enviadas o recibidas por esta empresa. Su mayor agrupado por contacto "
+"muestra el saldo con cada una de las otras empresas."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__create_uid
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "Created by the intercompany transfer %s."
+msgstr "Creado por la transferencia intercompany %s."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__create_date
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__currency_id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__date
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__date
+msgid "Date"
+msgstr "Fecha"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__destination_company_id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__destination_company_id
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_search
+msgid "Destination company"
+msgstr "Empresa destino"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__destination_company_domain
+msgid "Destination company domain"
+msgstr "Dominio de la empresa destino"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__destination_journal_id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__destination_journal_id
+msgid "Destination journal"
+msgstr "Diario destino"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__destination_journal_domain
+msgid "Destination journal domain"
+msgstr "Dominio del diario destino"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__destination_payment_id
+msgid "Destination payment"
+msgstr "Pago destino"
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_wizard_view_form
+msgid "Discard"
+msgstr "Descartar"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__display_name
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__display_name
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.actions.act_window,help:account_intercompany_transfer.action_account_intercompany_transfer
+msgid ""
+"Each transfer creates a payment out of the origin journal and a payment into the\n"
+"                destination journal of the other company, balanced through the bridge account of\n"
+"                each company."
+msgstr ""
+"Cada transferencia crea un pago que sale del diario origen y un pago que entra al\n"
+"                diario destino de la otra empresa, compensados mediante la cuenta puente de\n"
+"                cada empresa."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (contactos)"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono de Font Awesome, por ejemplo, fa-tasks"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__has_message
+msgid "Has Message"
+msgstr "Tiene un mensaje"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_move__id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_payment__id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_res_company__id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_res_config_settings__id
+msgid "ID"
+msgstr "ID"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_exception_icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icono que indica una actividad de excepción."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está seleccionado, hay nuevos mensajes que requieren tu atención."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__message_has_error
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si está seleccionado, algunos mensajes tienen error de envío."
+
+#. module: account_intercompany_transfer
+#: model:ir.model,name:account_intercompany_transfer.model_account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_payment__intercompany_transfer_id
+msgid "Intercompany transfer"
+msgstr "Transferencia intercompany"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_res_company__intercompany_transfer_account_id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_res_config_settings__intercompany_transfer_account_id
+msgid "Intercompany transfer bridge account"
+msgstr "Cuenta puente de transferencias intercompany"
+
+#. module: account_intercompany_transfer
+#: model:ir.model,name:account_intercompany_transfer.model_account_intercompany_transfer_wizard
+msgid "Intercompany transfer wizard"
+msgstr "Asistente de transferencia intercompany"
+
+#. module: account_intercompany_transfer
+#: model:ir.actions.act_window,name:account_intercompany_transfer.action_account_intercompany_transfer
+#: model:ir.ui.menu,name:account_intercompany_transfer.menu_account_intercompany_transfer
+#: model:res.groups.privilege,name:account_intercompany_transfer.res_groups_privilege_intercompany_transfer
+msgid "Intercompany transfers"
+msgstr "Transferencias intercompany"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/res_company.py:0
+msgid "Intercompany transfers (%(company)s)"
+msgstr "Transferencias intercompany (%(company)s)"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "Intercompany transfers can only be created from the transfer wizard."
+msgstr ""
+"Las transferencias intercompany solo se pueden crear desde el asistente de "
+"transferencia."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "Intercompany transfers can't be deleted. Cancel them instead."
+msgstr ""
+"Las transferencias intercompany no se pueden eliminar. Cancélelas en su "
+"lugar."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_is_follower
+msgid "Is Follower"
+msgstr "Es un seguidor"
+
+#. module: account_intercompany_transfer
+#: model:ir.model,name:account_intercompany_transfer.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__write_uid
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__write_date
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__memo
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__memo
+msgid "Memo"
+msgstr "Memo"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_has_error
+msgid "Message Delivery error"
+msgstr "Error de envío de mensaje"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_search
+msgid "Month"
+msgstr "Mes"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Fecha límite de mi actividad"
+
+#. module: account_intercompany_transfer
+#: model:ir.actions.act_window,name:account_intercompany_transfer.action_account_intercompany_transfer_wizard
+msgid "New intercompany transfer"
+msgstr "Nueva transferencia intercompany"
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_list
+msgid "New transfer"
+msgstr "Nueva transferencia"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Fecha límite de la siguiente actividad"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de la siguiente actividad"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_type_id
+msgid "Next Activity Type"
+msgstr "Tipo de la siguiente actividad"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__name
+msgid "Number"
+msgstr "Número"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Número de acciones"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_has_error_counter
+msgid "Number of errors"
+msgstr "Número de errores"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Número de mensajes que requieren una acción"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de envío"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "Only posted intercompany transfers can be cancelled."
+msgstr "Solo se pueden cancelar transferencias intercompany publicadas."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"Only the memo of an intercompany transfer can be changed. Cancel it and "
+"create a new one instead. Fields: %(fields)s"
+msgstr ""
+"Solo se puede cambiar el memo de una transferencia intercompany. Cancélela y"
+" cree una nueva en su lugar. Campos: %(fields)s"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__company_id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__company_id
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_search
+msgid "Origin company"
+msgstr "Empresa origen"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__origin_journal_id
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__origin_journal_id
+msgid "Origin journal"
+msgstr "Diario origen"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__origin_journal_domain
+msgid "Origin journal domain"
+msgstr "Dominio del diario origen"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__origin_payment_id
+msgid "Origin payment"
+msgstr "Pago origen"
+
+#. module: account_intercompany_transfer
+#: model:ir.model,name:account_intercompany_transfer.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_payment.py:0
+msgid ""
+"Payments of intercompany transfers can only be created by the transfer "
+"wizard."
+msgstr ""
+"Los pagos de transferencias intercompany solo los puede crear el asistente "
+"de transferencia."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_payment.py:0
+msgid "Payments of intercompany transfers can't be deleted."
+msgstr "Los pagos de transferencias intercompany no se pueden eliminar."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer_wizard__picker_company_ids
+msgid "Picker companies"
+msgstr "Empresas de los selectores"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields.selection,name:account_intercompany_transfer.selection__account_intercompany_transfer__state__posted
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_search
+msgid "Posted"
+msgstr "Publicada"
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_search
+msgid "Received by the current company"
+msgstr "Recibidas por la empresa actual"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario responsable"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error en el envío del SMS"
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_search
+msgid "Sent by the current company"
+msgstr "Enviadas por la empresa actual"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__state
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_search
+msgid "Status"
+msgstr "Estado"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Estado según las actividades\n"
+"Vencida: ya pasó la fecha límite\n"
+"Hoy: hoy es la fecha de la actividad\n"
+"Planeada: futuras actividades."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "The amount of the transfer must be greater than zero."
+msgstr "El importe de la transferencia debe ser mayor que cero."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "The currency of the transfer must be the currency of its journals."
+msgstr "La moneda de la transferencia debe ser la moneda de sus diarios."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"The date %(date)s is in a closed period of %(company)s (%(lock_dates)s)."
+msgstr ""
+"La fecha %(date)s está en un período cerrado de %(company)s "
+"(%(lock_dates)s)."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/res_company.py:0
+msgid ""
+"The intercompany transfer bridge account %(account)s does not belong to "
+"%(company)s."
+msgstr ""
+"La cuenta puente de transferencias intercompany %(account)s no pertenece a "
+"%(company)s."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/res_company.py:0
+msgid "The intercompany transfer bridge account %(account)s is archived."
+msgstr ""
+"La cuenta puente de transferencias intercompany %(account)s está archivada."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/res_company.py:0
+msgid ""
+"The intercompany transfer bridge account %(account)s is the outstanding "
+"account of the payment method %(method)s of the journal %(journal)s. Use a "
+"dedicated account."
+msgstr ""
+"La cuenta puente de transferencias intercompany %(account)s es la cuenta de "
+"pagos pendientes del método de pago %(method)s del diario %(journal)s. Use "
+"una cuenta exclusiva."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/res_company.py:0
+msgid ""
+"The intercompany transfer bridge account %(account)s must be a current asset"
+" or a current liability account."
+msgstr ""
+"La cuenta puente de transferencias intercompany %(account)s debe ser una "
+"cuenta de activo corriente o de pasivo corriente."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "The journal %(journal)s does not belong to %(company)s."
+msgstr "El diario %(journal)s no pertenece a %(company)s."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"The journal %(journal)s has no manual payment method to %(direction)s money."
+msgstr ""
+"El diario %(journal)s no tiene un método de pago manual para %(direction)s "
+"dinero."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "The journal %(journal)s must be a bank or cash journal."
+msgstr "El diario %(journal)s debe ser un diario de banco o de efectivo."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "The origin and destination companies must be different."
+msgstr "Las empresas origen y destino deben ser distintas."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"The origin journal %(origin)s is in %(origin_currency)s and the destination "
+"journal %(destination)s is in %(destination_currency)s. Intercompany "
+"transfers require both journals in the same currency."
+msgstr ""
+"El diario origen %(origin)s está en %(origin_currency)s y el diario destino "
+"%(destination)s está en %(destination_currency)s. Las transferencias "
+"intercompany requieren los dos diarios en la misma moneda."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_payment.py:0
+msgid ""
+"The payment %(payment)s belongs to the intercompany transfer %(transfer)s. "
+"Cancel the transfer instead of changing its payments."
+msgstr ""
+"El pago %(payment)s pertenece a la transferencia intercompany %(transfer)s. "
+"Cancele la transferencia en lugar de modificar sus pagos."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_payment.py:0
+msgid ""
+"The payment %(payment)s is an internal transfer (%(markers)s) and can't be "
+"part of the intercompany transfer %(transfer)s."
+msgstr ""
+"El pago %(payment)s es una transferencia interna (%(markers)s) y no puede "
+"formar parte de la transferencia intercompany %(transfer)s."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_payment.py:0
+msgid ""
+"The payment %(payment)s was not created by the intercompany transfer "
+"%(transfer)s."
+msgstr ""
+"El pago %(payment)s no fue creado por la transferencia intercompany "
+"%(transfer)s."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"The payment method %(method)s of the journal %(journal)s has no outstanding "
+"account. Set it on the journal, in the incoming/outgoing payments tab."
+msgstr ""
+"El método de pago %(method)s del diario %(journal)s no tiene cuenta de pagos"
+" pendientes. Configúrela en el diario, en la pestaña de pagos "
+"entrantes/salientes."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"The transfer %(transfer)s can't be cancelled: the payment %(payment)s of "
+"%(company)s %(reason)s. Undo that reconciliation first."
+msgstr ""
+"La transferencia %(transfer)s no se puede cancelar: el pago %(payment)s de "
+"%(company)s %(reason)s. Deshaga primero esa conciliación."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"The transfer %(transfer)s can't be cancelled: the payment %(payment)s of "
+"%(company)s is dated in a closed period. %(error)s"
+msgstr ""
+"La transferencia %(transfer)s no se puede cancelar: el pago %(payment)s de "
+"%(company)s tiene fecha en un período cerrado. %(error)s"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"This payment of %(transfer)s belongs to %(company)s. Select that company in "
+"the company switcher to open it."
+msgstr ""
+"Este pago de %(transfer)s pertenece a %(company)s. Seleccione esa empresa en"
+" el selector de empresas para abrirlo."
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.ui.view,arch_db:account_intercompany_transfer.account_intercompany_transfer_view_list
+msgid "Total"
+msgstr "Total"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"Transfer cancelled: %(origin)s in %(company)s and %(destination)s in "
+"%(destination_company)s were cancelled."
+msgstr ""
+"Transferencia cancelada: se cancelaron %(origin)s en %(company)s y "
+"%(destination)s en %(destination_company)s."
+
+#. module: account_intercompany_transfer
+#: model_terms:ir.actions.act_window,help:account_intercompany_transfer.action_account_intercompany_transfer
+msgid "Transfer money to another company"
+msgstr "Transfiera dinero a otra empresa"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid ""
+"Transfer posted: %(origin)s in %(company)s and %(destination)s in "
+"%(destination_company)s."
+msgstr ""
+"Transferencia publicada: %(origin)s en %(company)s y %(destination)s en "
+"%(destination_company)s."
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__user_id
+msgid "Transferred by"
+msgstr "Transferida por"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipo de la actividad de excepción registrada."
+
+#. module: account_intercompany_transfer
+#: model:res.groups,name:account_intercompany_transfer.group_intercompany_transfer_user
+msgid "User"
+msgstr "Usuario"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del sitio web"
+
+#. module: account_intercompany_transfer
+#: model:ir.model.fields,help:account_intercompany_transfer.field_account_intercompany_transfer__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "You are not allowed to make intercompany transfers."
+msgstr "No tiene permiso para hacer transferencias intercompany."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "You are not allowed to use the selected journals."
+msgstr "No tiene permiso para usar los diarios seleccionados."
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "has its journal item on %(account)s reconciled with %(entries)s"
+msgstr "tiene su apunte en %(account)s conciliado con %(entries)s"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "is reconciled with the bank statement line %(lines)s"
+msgstr "está conciliado con la línea de extracto bancario %(lines)s"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "receive"
+msgstr "recibir"
+
+#. module: account_intercompany_transfer
+#. odoo-python
+#: code:addons/account_intercompany_transfer/models/account_intercompany_transfer.py:0
+msgid "send"
+msgstr "enviar"

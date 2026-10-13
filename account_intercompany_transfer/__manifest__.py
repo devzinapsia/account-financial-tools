@@ -1,0 +1,25 @@
+{
+    "name": "Transferencias intercompany",
+    "version": "19.0.1.0.0",
+    "summary": "Transferencias de dinero entre diarios de banco o caja de empresas distintas "
+    "de la misma base, mediante una cuenta puente por empresa.",
+    "author": "Zinapsia",
+    "website": "https://www.zinapsia.com",
+    "license": "AGPL-3",
+    "category": "Accounting/Accounting",
+    "depends": ["account"],
+    "data": [
+        "security/account_intercompany_transfer_security.xml",
+        "security/ir.model.access.csv",
+        "views/res_config_settings_views.xml",
+        "wizards/account_intercompany_transfer_wizard_views.xml",
+        "views/account_intercompany_transfer_views.xml",
+        "views/account_payment_views.xml",
+        "views/menus.xml",
+    ],
+    "post_init_hook": "post_init_hook",
+    "uninstall_hook": "uninstall_hook",
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+}

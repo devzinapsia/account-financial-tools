@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Accounting > Accounting > Transactions, right below "Analytic Items"
+         (sequence 31). Bank and Cash would be the natural place, but that
+         menu belongs to ingadhoc's account_internal_transfer: the bridge
+         module account_intercompany_transfer_adhoc moves this entry there
+         when that module is installed. -->
+    <menuitem id="menu_account_intercompany_transfer"
+              name="Intercompany transfers"
+              parent="account.account_transactions_menu"
+              action="action_account_intercompany_transfer"
+              groups="account_intercompany_transfer.group_intercompany_transfer_user"
+              sequence="32"/>
+
+</odoo>

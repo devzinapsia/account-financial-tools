@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_payment_search_intercompany_transfer" model="ir.ui.view">
+        <field name="name">account.payment.search.intercompany.transfer</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="after">
+                <field name="intercompany_transfer_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- The vendor and "various" payment lists are primary extensions of
+         this one, so they get the column too. -->
+    <record id="view_account_payment_tree_intercompany_transfer" model="ir.ui.view">
+        <field name="name">account.payment.list.intercompany.transfer</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="after">
+                <field name="intercompany_transfer_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_payment_form_intercompany_transfer" model="ir.ui.view">
+        <field name="name">account.payment.form.intercompany.transfer</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='group1']/field[@name='memo']" position="after">
+                <field name="intercompany_transfer_id" invisible="not intercompany_transfer_id"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

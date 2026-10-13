@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_intercompany_transfer_view_list" model="ir.ui.view">
+        <field name="name">account.intercompany.transfer.list</field>
+        <field name="model">account.intercompany.transfer</field>
+        <field name="arch" type="xml">
+            <list create="false" delete="false" decoration-muted="state == 'cancelled'">
+                <header>
+                    <button name="%(action_account_intercompany_transfer_wizard)d" type="action"
+                            string="New transfer" class="btn-primary" display="always"/>
+                </header>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="company_id"/>
+                <field name="origin_journal_id"/>
+                <field name="destination_company_id"/>
+                <field name="destination_journal_id"/>
+                <field name="amount" sum="Total"/>
+                <field name="currency_id"/>
+                <field name="state" widget="badge" decoration-success="state == 'posted'" decoration-muted="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="account_intercompany_transfer_view_form" model="ir.ui.view">
+        <field name="name">account.intercompany.transfer.form</field>
+        <field name="model">account.intercompany.transfer</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false">
+                <header>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state != 'posted'"
+                            confirm="Both payments of this transfer will be cancelled, in both companies. A cancelled transfer can't be posted again. Continue?"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_origin_payment" type="object" class="oe_stat_button"
+                                icon="fa-arrow-circle-up" invisible="not origin_payment_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Origin payment</span>
+                                <field name="origin_payment_id" class="o_stat_value" readonly="1"/>
+                            </div>
+                        </button>
+                        <button name="action_open_destination_payment" type="object" class="oe_stat_button"
+                                icon="fa-arrow-circle-down" invisible="not destination_payment_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Destination payment</span>
+                                <field name="destination_payment_id" class="o_stat_value" readonly="1"/>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Cancelled" bg_color="text-bg-danger" invisible="state != 'cancelled'"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <!-- no_open: the destination company and journal belong to a
+                         company that is often not ticked in the switcher. -->
+                    <group name="origin">
+                            <field name="company_id" options="{'no_open': True}"/>
+                            <field name="origin_journal_id" options="{'no_open': True}"/>
+                            <field name="date"/>
+                            <field name="user_id" options="{'no_open': True}"/>
+                        </group>
+                        <group name="destination">
+                            <field name="destination_company_id" options="{'no_open': True}"/>
+                            <field name="destination_journal_id" options="{'no_open': True}"/>
+                            <field name="amount"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="memo"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="account_intercompany_transfer_view_search" model="ir.ui.view">
+        <field name="name">account.intercompany.transfer.search</field>
+        <field name="model">account.intercompany.transfer</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="company_id"/>
+                <field name="destination_company_id"/>
+                <field name="origin_journal_id"/>
+                <field name="destination_journal_id"/>
+                <field name="memo"/>
+                <filter name="posted" string="Posted" domain="[('state', '=', 'posted')]"/>
+                <filter name="cancelled" string="Cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="sent_by_current_company" string="Sent by the current company"
+                        domain="[('company_id', '=', allowed_company_ids[0])]"/>
+                <filter name="received_by_current_company" string="Received by the current company"
+                        domain="[('destination_company_id', '=', allowed_company_ids[0])]"/>
+                <group>
+                    <filter name="group_by_company" string="Origin company" context="{'group_by': 'company_id'}"/>
+                    <filter name="group_by_destination_company" string="Destination company" context="{'group_by': 'destination_company_id'}"/>
+                    <filter name="group_by_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_by_month" string="Month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_account_intercompany_transfer" model="ir.actions.act_window">
+        <field name="name">Intercompany transfers</field>
+        <field name="res_model">account.intercompany.transfer</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="account_intercompany_transfer_view_search"/>
+        <field name="group_ids" eval="[Command.link(ref('group_intercompany_transfer_user'))]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Transfer money to another company</p>
+            <p>Each transfer creates a payment out of the origin journal and a payment into the
+                destination journal of the other company, balanced through the bridge account of
+                each company.</p>
+        </field>
+    </record>
+
+</odoo>

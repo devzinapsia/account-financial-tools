@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- One-group privilege: shows up on the user form as a "No / User"
+         selector under Accounting. -->
+    <record id="res_groups_privilege_intercompany_transfer" model="res.groups.privilege">
+        <field name="name">Intercompany transfers</field>
+        <field name="category_id" ref="base.module_category_accounting"/>
+        <field name="sequence">70</field>
+    </record>
+
+    <!-- Implies nothing and is implied by nothing: it is granted to specific
+         users only. The payments of a transfer are created with the user's
+         own rights, so the user also needs accounting rights (billing or
+         above) in both companies. -->
+    <record id="group_intercompany_transfer_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="comment">Can create, read and cancel intercompany transfers between the companies the user is allowed in.</field>
+        <field name="privilege_id" ref="res_groups_privilege_intercompany_transfer"/>
+    </record>
+
+    <!-- A transfer concerns two companies: it is visible when either of them
+         is among the user's allowed companies, whether or not it is ticked
+         in the company switcher. -->
+    <record id="account_intercompany_transfer_rule_company" model="ir.rule">
+        <field name="name">Intercompany transfer: origin or destination company allowed</field>
+        <field name="model_id" ref="model_account_intercompany_transfer"/>
+        <field name="domain_force">['|', ('company_id', 'in', user.company_ids.ids), ('destination_company_id', 'in', user.company_ids.ids)]</field>
+    </record>
+
+</odoo>
