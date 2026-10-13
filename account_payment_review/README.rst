@@ -128,6 +128,9 @@ Either way the activity is closed, the answer is posted in the chatter,
 the payment becomes *Answered* and the reviewer gets an activity to
 review it again. Any accounting user can answer on the issuer's behalf.
 
+The **My payments with observations** filter lists the issuer's own
+payments still waiting for an answer.
+
 Closing the review (reviewer)
 -----------------------------
 
@@ -136,9 +139,6 @@ until the reviewer decides on it again: once the answer is read, either
 mark the reviewer's activity as done (which signs the payment off as
 *Reviewed*, the activity's feedback becoming the review comment), or use
 **Mark as reviewed** to choose *OK* or record new observations.
-
-The **My payments with observations** filter lists the issuer's own
-payments still waiting for an answer.
 
 Visibility
 ----------
