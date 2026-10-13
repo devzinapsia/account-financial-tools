@@ -119,12 +119,24 @@ class TestAccountPaymentReview(AccountTestInvoicingCommon):
         self._review(payment, "reviewed")
         self.assertEqual(payment.review_state, "reviewed")
 
-    def test_reconfirm_keeps_decision(self):
+    def test_reset_to_draft_restarts_the_review(self):
+        # Back to draft the payment may be changed: a past decision no
+        # longer applies, and it's evaluated again as a new one.
         payment = self._create_payment()
-        self._review(payment, "reviewed")
-        payment.action_draft()
-        payment.action_post()
-        self.assertEqual(payment.review_state, "reviewed")
+        self._review(payment, "observed", "Wrong journal")
+        payment.with_user(self.issuer).action_draft()
+        self.assertFalse(payment.review_state)
+        self.assertFalse(payment.review_user_id)
+        self.assertFalse(payment.review_comment)
+        self.assertFalse(payment.activity_ids, "The issuer's activity is gone.")
+        self.assertIn("Review reset", self._review_messages(payment)[0].body)
+        self.company.payment_review_min_amount = 1000.0
+        payment.with_user(self.issuer).action_post()
+        self.assertEqual(payment.review_state, "not_required", "Classified with the current settings.")
+        self.company.payment_review_min_amount = 0.0
+        payment.with_user(self.issuer).action_draft()
+        payment.with_user(self.issuer).action_post()
+        self.assertEqual(payment.review_state, "pending")
 
     # ------------------------------------------------------------------
     # Reviewing

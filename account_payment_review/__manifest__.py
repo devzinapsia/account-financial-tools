@@ -1,6 +1,6 @@
 {
     "name": "Revisión de órdenes de pago",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.2.0",
     "summary": "Control interno posterior de los pagos a proveedores ya confirmados: "
     "un revisor los firma como revisados o deja observaciones que el emisor responde.",
     "author": "Zinapsia",

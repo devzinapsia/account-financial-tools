@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-12 22:28+0000\n"
-"PO-Revision-Date: 2026-10-12 22:28+0000\n"
+"POT-Creation-Date: 2026-10-13 00:24+0000\n"
+"PO-Revision-Date: 2026-10-13 00:24+0000\n"
 "Last-Translator: Zinapsia\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -516,6 +516,15 @@ msgstr "Revisar pagos"
 #: model:ir.model,name:account_payment_review.model_account_payment_review_wizard_line
 msgid "Review payments line"
 msgstr "Línea de revisión de pagos"
+
+#. module: account_payment_review
+#. odoo-python
+#: code:addons/account_payment_review/models/account_review_mixin.py:0
+msgid ""
+"Review reset by %(user)s on %(date)s: the document was reset to draft and "
+"will be evaluated again when confirmed."
+msgstr ""
+"Revisión reiniciada por %(user)s el %(date)s: el documento volvió a borrador y se evaluará de nuevo al confirmarlo."
 
 #. module: account_payment_review
 #: model:ir.model.fields,field_description:account_payment_review.field_account_payment__review_state

@@ -52,6 +52,12 @@
                     </group>
                 </page>
             </xpath>
+            <!-- Answering or closing a review by marking its activity as
+                 done changes the review status: reload the form so the
+                 badge and buttons follow. -->
+            <xpath expr="//chatter" position="attributes">
+                <attribute name="reload_on_activity">1</attribute>
+            </xpath>
         </field>
     </record>
 

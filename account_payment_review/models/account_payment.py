@@ -89,10 +89,13 @@ class AccountPayment(models.Model):
         # action_post(): the "Register Payment" wizard writes 'in_process'
         # on its own before calling action_post(), and action_post() itself
         # only assigns the state.
-        to_confirm = self.browse()
+        to_confirm = to_reset = self.browse()
         if vals.get("state") in CONFIRMED_STATES:
             to_confirm = self.filtered(lambda p: p.state not in CONFIRMED_STATES)
+        elif vals.get("state") == "draft":
+            to_reset = self.filtered(lambda p: p.state != "draft")
         result = super().write(vals)
+        to_reset._review_reset()
         to_confirm._review_on_confirm()
         return result
 

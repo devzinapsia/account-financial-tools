@@ -208,14 +208,40 @@ class AccountReviewMixin(models.AbstractModel):
 
     def _review_classify_on_confirm(self):
         """Give a just-confirmed document its initial review status. Only
-        documents with no review status yet: a decision already recorded on
-        it (e.g. before it was reset and confirmed again) is kept."""
+        documents with no review status yet (a document reset to draft
+        loses its status, see _review_reset())."""
         for record in self.filtered(lambda r: r.review_is_reviewable and not r.review_state):
             state = record._review_initial_state()
             if state:
                 # No tracking: one message per confirmation would only add
                 # noise to the chatter, the status is visible on the record.
                 record.sudo().with_context(tracking_disable=True).write({"review_state": state})
+
+    def _review_reset(self):
+        """Take documents sent back to draft out of the review circuit: they
+        may be changed before being confirmed again, so a past decision no
+        longer applies. They are classified again as new documents on the
+        next confirmation. The previous decisions stay in the chatter."""
+        to_reset = self.filtered("review_state")
+        for record in to_reset:
+            record._review_write(
+                {
+                    "review_state": False,
+                    "review_user_id": False,
+                    "review_date": False,
+                    "review_comment": False,
+                    "review_answer": False,
+                }
+            )
+            record._review_clear_activities()
+            record._review_post(
+                _(
+                    "Review reset by %(user)s on %(date)s: the document was reset to draft "
+                    "and will be evaluated again when confirmed.",
+                    user=self.env.user.display_name,
+                    date=format_datetime(self.env, fields.Datetime.now()),
+                )
+            )
 
     def _review_check_can_review(self):
         if not self.env.user.has_group(self._review_reviewer_group()):

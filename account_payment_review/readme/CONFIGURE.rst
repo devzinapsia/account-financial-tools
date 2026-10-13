@@ -34,5 +34,11 @@ mark pending ones as *Not required* from the review wizard, e.g. the ones
 confirmed before the conditions were adjusted, so they leave the
 *Payments to review* list without being signed off as reviewed.
 
+Resetting a payment to draft takes it out of the circuit: its review
+status, reviewer, comment, answer and pending review activities are
+cleared, since the payment may be changed before it's confirmed again.
+On the next confirmation it's evaluated as a new payment, with the
+current settings. The previous decisions stay in the chatter.
+
 Vendor payments confirmed before the module was installed start as *Not
 required*, so the circuit applies from the installation onwards.
