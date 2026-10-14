@@ -1,0 +1,19 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_intercompany_transfer_adhoc
+#
+# No translatable terms: this module only moves account_intercompany_transfer's
+# menu, which is translated in that module.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-13 00:00+0000\n"
+"PO-Revision-Date: 2026-10-13 00:00+0000\n"
+"Last-Translator: Zinapsia\n"
+"Language-Team: \n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Bank and Cash, right below ingadhoc's "Transfers" (sequence 30).
+         The uninstall hook puts it back under Accounting > Transactions. -->
+    <record id="account_intercompany_transfer.menu_account_intercompany_transfer" model="ir.ui.menu">
+        <field name="parent_id" ref="account_internal_transfer.menu_finance_bank_and_cash"/>
+        <field name="sequence">31</field>
+    </record>
+
+</odoo>
