@@ -74,8 +74,11 @@
         Payment items list, shared by receivables and payables (e.g.
         account_ux's Customers / Vendors Ledger). There's no move_type to
         tell them apart, so the header button follows the opening action:
-        "Collect" when it filters receivables only, "Pay" otherwise (vendors,
-        partner ledger with both, Amounts to Settle).
+        "Collect" when its context has collect_payment_items, "Pay"
+        otherwise. A dedicated key is needed: the search_default_* keys an
+        action uses to pick receivables are removed from the context by the
+        web client's search model before the list sees them. Glue modules
+        set the key on the relevant actions (account_ux's Customers Ledger).
     -->
     <record id="view_move_line_payment_tree" model="ir.ui.view">
         <field name="name">account.move.line.payment.list.account_translation_improvements</field>
@@ -83,12 +86,12 @@
         <field name="inherit_id" ref="account.view_move_line_payment_tree"/>
         <field name="arch" type="xml">
             <xpath expr="//header/button[@name='action_payment_items_register_payment']" position="attributes">
-                <attribute name="invisible" add="(context.get('search_default_trade_receivable') and not context.get('search_default_trade_payable'))" separator=" or "/>
+                <attribute name="invisible" add="context.get('collect_payment_items')" separator=" or "/>
             </xpath>
             <xpath expr="//header/button[@name='action_payment_items_register_payment']" position="after">
                 <button name="action_payment_items_register_payment" type="object" string="Collect"
                         groups="account.group_account_user"
-                        invisible="not context.get('search_default_trade_receivable') or context.get('search_default_trade_payable')"/>
+                        invisible="not context.get('collect_payment_items')"/>
             </xpath>
         </field>
     </record>

@@ -15,13 +15,15 @@ only:
   becomes "Collect" ("Cobrar").
 * **Payment items list** (the list used, for example, by the "Customers
   Ledger" / "Vendors Ledger" menus of ingadhoc's ``account_ux``): the
-  "Pay" header button becomes "Collect" ("Cobrar") when the list is opened
-  on receivables only (its action filters
-  ``search_default_trade_receivable`` and not
-  ``search_default_trade_payable``). This list is shared by customers and
-  vendors and has no document type to tell them apart, so the opening
-  action decides; anywhere else (vendors ledger, partner ledger with both,
-  Amounts to Settle) it keeps "Pay".
+  "Pay" header button becomes "Collect" ("Cobrar") when the action that
+  opens the list has ``collect_payment_items`` in its context. This list
+  is shared by customers and vendors and has no document type to tell
+  them apart, so the opening action decides; anywhere else it keeps
+  "Pay". The ``search_default_*`` keys an action uses to filter
+  receivables can't be used for this: the web client's search model
+  removes them from the context before the list sees them. The glue
+  module ``account_translation_improvements_account_ux`` (installed
+  automatically) sets the key on ``account_ux``'s Customers Ledger.
 * **Gear (⚙) menu action of the invoice form**: renamed to "Pay / Collect"
   ("Pagar / Cobrar"), since Odoo can't show a different action name per
   document type.

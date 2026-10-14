@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Adds collect_payment_items to the context of account_ux's Customers
+        Ledger action, so account_translation_improvements' payment items
+        list shows "Collect" there. The search_default_trade_receivable key
+        that action already has can't be used: the web client removes the
+        search_default_* keys from the context before the list sees them.
+
+        The key is added to whatever context account_ux defines, nothing
+        else is changed. account_ux's own upgrade rewrites the context, and
+        this module (a dependent, so upgraded right after it) adds it back.
+    -->
+    <function model="ir.module.module" name="_account_translation_improvements_account_ux_set_context"/>
+
+</odoo>

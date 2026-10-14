@@ -134,15 +134,15 @@ class TestAccountTranslationImprovements(TransactionCase):
             self.assertEqual(button[0].get("string"), expected, view_xmlid)
 
     def test_payment_items_list_button(self):
-        """The payment items list (e.g. account_ux's Customers / Vendors
-        Ledger) shows "Collect" only when opened on receivables alone."""
+        """The payment items list shows "Collect" only when the opening
+        action's context has collect_payment_items (set by glue modules,
+        e.g. on account_ux's Customers Ledger)."""
         arch = self._arch("account.view_move_line_payment_tree", "list")
         buttons = arch.xpath("//header/button[@name='action_payment_items_register_payment']")
         self.assertEqual(len(buttons), 2)
         for context, expected in (
-            ({"search_default_trade_receivable": 1}, ["Collect"]),
-            ({"search_default_trade_payable": 1}, ["Pay"]),
-            ({"search_default_trade_receivable": 1, "search_default_trade_payable": 1}, ["Pay"]),
+            ({"collect_payment_items": True}, ["Collect"]),
+            ({"collect_payment_items": False}, ["Pay"]),
             ({}, ["Pay"]),
         ):
             visible = [
