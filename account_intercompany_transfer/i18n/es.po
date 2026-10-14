@@ -20,7 +20,7 @@ msgid ""
 "%(company)s has no intercompany transfer bridge account. Set it in the "
 "accounting settings of that company."
 msgstr ""
-"%(company)s no tiene cuenta puente de transferencias intercompany. "
+"%(company)s no tiene cuenta transitoria intercompañía. "
 "Configúrela en los ajustes contables de esa empresa."
 
 #. module: account_intercompany_transfer
@@ -243,8 +243,8 @@ msgid ""
 "                each company."
 msgstr ""
 "Cada transferencia crea un pago que sale del diario origen y un pago que entra al\n"
-"                diario destino de la otra empresa, compensados mediante la cuenta puente de\n"
-"                cada empresa."
+"                diario destino de la otra empresa, compensados mediante la cuenta transitoria\n"
+"                intercompañía de cada empresa."
 
 #. module: account_intercompany_transfer
 #: model:ir.model.fields,field_description:account_intercompany_transfer.field_account_intercompany_transfer__message_follower_ids
@@ -307,7 +307,7 @@ msgstr "Transferencia intercompany"
 #: model:ir.model.fields,field_description:account_intercompany_transfer.field_res_company__intercompany_transfer_account_id
 #: model:ir.model.fields,field_description:account_intercompany_transfer.field_res_config_settings__intercompany_transfer_account_id
 msgid "Intercompany transfer bridge account"
-msgstr "Cuenta puente de transferencias intercompany"
+msgstr "Transitoria intercompañía"
 
 #. module: account_intercompany_transfer
 #: model:ir.model,name:account_intercompany_transfer.model_account_intercompany_transfer_wizard
@@ -579,7 +579,7 @@ msgid ""
 "The intercompany transfer bridge account %(account)s does not belong to "
 "%(company)s."
 msgstr ""
-"La cuenta puente de transferencias intercompany %(account)s no pertenece a "
+"La cuenta transitoria intercompañía %(account)s no pertenece a "
 "%(company)s."
 
 #. module: account_intercompany_transfer
@@ -587,7 +587,7 @@ msgstr ""
 #: code:addons/account_intercompany_transfer/models/res_company.py:0
 msgid "The intercompany transfer bridge account %(account)s is archived."
 msgstr ""
-"La cuenta puente de transferencias intercompany %(account)s está archivada."
+"La cuenta transitoria intercompañía %(account)s está archivada."
 
 #. module: account_intercompany_transfer
 #. odoo-python
@@ -597,7 +597,7 @@ msgid ""
 "account of the payment method %(method)s of the journal %(journal)s. Use a "
 "dedicated account."
 msgstr ""
-"La cuenta puente de transferencias intercompany %(account)s es la cuenta de "
+"La cuenta transitoria intercompañía %(account)s es la cuenta de "
 "pagos pendientes del método de pago %(method)s del diario %(journal)s. Use "
 "una cuenta exclusiva."
 
@@ -608,7 +608,7 @@ msgid ""
 "The intercompany transfer bridge account %(account)s must be a current asset"
 " or a current liability account."
 msgstr ""
-"La cuenta puente de transferencias intercompany %(account)s debe ser una "
+"La cuenta transitoria intercompañía %(account)s debe ser una "
 "cuenta de activo corriente o de pasivo corriente."
 
 #. module: account_intercompany_transfer

@@ -1,6 +1,6 @@
 {
     "name": "Transferencias intercompany",
-    "version": "19.0.1.0.1",
+    "version": "19.0.1.0.2",
     "summary": "Transferencias de dinero entre diarios de banco o caja de empresas distintas "
     "de la misma base, mediante una cuenta puente por empresa.",
     "author": "Zinapsia",
