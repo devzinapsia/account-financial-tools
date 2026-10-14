@@ -5,12 +5,16 @@
          (sequence 31). Bank and Cash would be the natural place, but that
          menu belongs to ingadhoc's account_internal_transfer: the bridge
          module account_intercompany_transfer_adhoc moves this entry there
-         when that module is installed. -->
-    <menuitem id="menu_account_intercompany_transfer"
-              name="Intercompany transfers"
-              parent="account.account_transactions_menu"
-              action="action_account_intercompany_transfer"
-              groups="account_intercompany_transfer.group_intercompany_transfer_user"
-              sequence="32"/>
+         when that module is installed.
+         noupdate: a menuitem rewrites its parent, sequence and active flag on
+         every module update, which would undo the bridge module's move. -->
+    <data noupdate="1">
+        <menuitem id="menu_account_intercompany_transfer"
+                  name="Intercompany transfers"
+                  parent="account.account_transactions_menu"
+                  action="action_account_intercompany_transfer"
+                  groups="account_intercompany_transfer.group_intercompany_transfer_user"
+                  sequence="32"/>
+    </data>
 
 </odoo>
