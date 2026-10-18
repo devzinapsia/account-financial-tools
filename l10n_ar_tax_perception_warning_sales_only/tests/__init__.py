@@ -1,0 +1,1 @@
+from . import test_l10n_ar_tax_perception_warning_sales_only

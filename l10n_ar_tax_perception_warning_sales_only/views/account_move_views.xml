@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- l10n_ar_tax only adds perception taxes on sale documents, but its
+         warning banner is shown on any move whose fiscal position has
+         perception lines, vendor bills included. Restrict it to sales. -->
+    <record id="view_move_form" model="ir.ui.view">
+        <field name="name">account.move.form.l10n.ar.tax.perception.warning.sales.only</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="l10n_ar_tax.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('alert-warning')][field[@name='fiscal_position_id']]" position="attributes">
+                <attribute name="invisible">invoice_date or not perceptions_fiscal_positon or move_type not in ('out_invoice', 'out_refund', 'out_receipt')</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
