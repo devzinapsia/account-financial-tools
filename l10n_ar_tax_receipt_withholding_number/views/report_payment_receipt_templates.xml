@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- l10n_ar_tax prints one row per withholding line in the payments table
+         of the payment receipt / payment order, showing only the tax label.
+         Append each line's own certificate number to that label. Lines
+         without a number yet (draft) or with the "/" placeholder that
+         l10n_ar_tax sets on zero-amount lines are left unchanged. -->
+    <template id="report_payment_receipt_document" inherit_id="l10n_ar_tax.report_payment_receipt_document">
+        <xpath expr="//t[@t-as='line'][contains(@t-foreach, 'l10n_ar_withholding_line_ids')]/tr/td[1]" position="inside">
+            <t t-if="line.name and line.name != '/'"> - Cert. No. <t t-out="line.name"/></t>
+        </xpath>
+    </template>
+
+</odoo>
