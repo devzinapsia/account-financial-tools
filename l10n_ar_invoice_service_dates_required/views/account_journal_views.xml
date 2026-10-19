@@ -6,7 +6,9 @@
         <field name="model">account.journal</field>
         <field name="inherit_id" ref="l10n_ar.view_account_journal_form"/>
         <field name="arch" type="xml">
-            <field name="l10n_ar_afip_pos_partner_id" position="after">
+            <!-- Right column of the journal header, so the ARCA options don't
+                 push the left column down -->
+            <field name="country_code" position="after">
                 <field name="l10n_ar_service_period_dates_required"
                        invisible="not l10n_ar_is_pos or type != 'sale'"/>
                 <field name="l10n_ar_service_period_default"
