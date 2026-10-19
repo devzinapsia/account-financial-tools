@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-10 00:00+0000\n"
-"PO-Revision-Date: 2026-08-10 00:00+0000\n"
+"POT-Creation-Date: 2026-10-19 11:34+0000\n"
+"PO-Revision-Date: 2026-10-19 00:00+0000\n"
 "Last-Translator: Zinapsia\n"
 "Language-Team: \n"
 "Language: es_AR\n"
@@ -17,10 +17,50 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: l10n_ar_invoice_service_dates_required
-#. odoo-python
-#: code:addons/l10n_ar_invoice_service_dates_required/models/account_move.py:0
-msgid "You must fill in the service billing period required by ARCA, in the Other Info tab."
-msgstr "Debe completar el período correspondiente a la facturación de servicios para ARCA dentro de la solapa OTRA INFORMACIÓN"
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_dates_required
+msgid "ARCA service period dates required"
+msgstr "Fechas del período de servicio ARCA requeridas"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_default
+msgid "Default service period"
+msgstr "Período del servicio por defecto"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields.selection,name:l10n_ar_invoice_service_dates_required.selection__account_journal__l10n_ar_service_period_default__empty
+msgid "Empty"
+msgstr "Vacío"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields.selection,name:l10n_ar_invoice_service_dates_required.selection__account_journal__l10n_ar_service_period_default__invoice_day
+msgid "Invoice day"
+msgstr "Día de la factura"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields.selection,name:l10n_ar_invoice_service_dates_required.selection__account_journal__l10n_ar_service_period_default__invoice_month
+msgid "Invoice month"
+msgstr "Mes de la factura"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_print
+msgid "Print service period on documents"
+msgstr "Se imprime en comprobantes"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_default
+msgid ""
+"Service billing period proposed on electronic invoices of this journal with an ARCA concept of Services or Products and Services:\n"
+"- Empty: nothing is proposed, the user enters the dates.\n"
+"- Invoice month: first to last day of the invoice date's month.\n"
+"- Invoice day: the invoice date itself, as both start and end.\n"
+"If the dates are still empty when the invoice is confirmed, they are filled in with the invoice day when that option is selected, or with the invoice month otherwise, since ARCA requires them."
+msgstr ""
+"Período de facturación del servicio propuesto en las facturas electrónicas de este diario con un concepto ARCA de servicios o productos y servicios:\n"
+"- Vacío: no se propone nada, el usuario ingresa las fechas.\n"
+"- Mes de la factura: del primer al último día del mes de la fecha de la factura.\n"
+"- Día de la factura: la propia fecha de la factura, como desde y hasta.\n"
+"Si las fechas siguen vacías al confirmar la factura, se completan con el día de la factura cuando esa opción está seleccionada, o con el mes de la factura en los demás casos, ya que ARCA las exige."
 
 #. module: l10n_ar_invoice_service_dates_required
 #: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_dates_required
@@ -28,11 +68,32 @@ msgid "Validate ARCA service period date entry"
 msgstr "Valida ingreso de fechas del período del servicio ARCA"
 
 #. module: l10n_ar_invoice_service_dates_required
-#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_dates_required
-msgid "When enabled, sales invoices posted through this journal with an ARCA concept of Services or Products and Services must have the service billing period (start/end dates) filled in."
-msgstr "Si está activo, las facturas de venta contabilizadas en este diario con un concepto ARCA de servicios o productos y servicios deben tener completado el período de facturación del servicio (fechas desde/hasta)."
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_print
+msgid ""
+"When disabled, the invoiced period is not printed on the electronic invoices"
+" of this journal with an ARCA concept of Services or Products and Services."
+msgstr ""
+"Si está desactivado, el período facturado no se imprime en las facturas "
+"electrónicas de este diario con un concepto ARCA de servicios o productos y "
+"servicios."
 
 #. module: l10n_ar_invoice_service_dates_required
-#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_dates_required
-msgid "ARCA service period dates required"
-msgstr "Fechas del período de servicio ARCA requeridas"
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_journal__l10n_ar_service_period_dates_required
+msgid ""
+"When enabled, sales invoices posted through this journal with an ARCA "
+"concept of Services or Products and Services must have the service billing "
+"period (start/end dates) filled in."
+msgstr ""
+"Si está activo, las facturas de venta contabilizadas en este diario con un "
+"concepto ARCA de servicios o productos y servicios deben tener completado el"
+" período de facturación del servicio (fechas desde/hasta)."
+
+#. module: l10n_ar_invoice_service_dates_required
+#. odoo-python
+#: code:addons/l10n_ar_invoice_service_dates_required/models/account_move.py:0
+msgid ""
+"You must fill in the service billing period required by ARCA, in the Other "
+"Info tab."
+msgstr ""
+"Debe completar el período correspondiente a la facturación de servicios para"
+" ARCA dentro de la solapa OTRA INFORMACIÓN"

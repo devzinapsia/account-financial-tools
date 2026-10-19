@@ -9,6 +9,10 @@
             <field name="l10n_ar_afip_pos_partner_id" position="after">
                 <field name="l10n_ar_service_period_dates_required"
                        invisible="not l10n_ar_is_pos or type != 'sale'"/>
+                <field name="l10n_ar_service_period_default"
+                       invisible="not l10n_ar_is_pos or type != 'sale'"/>
+                <field name="l10n_ar_service_period_print"
+                       invisible="not l10n_ar_is_pos or type != 'sale'"/>
             </field>
         </field>
     </record>

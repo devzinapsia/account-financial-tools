@@ -22,3 +22,24 @@ the dates empty; the check only blocks the confirm/post action:
 
 The validation can be enabled or disabled per sales journal, so it only
 applies where it is actually needed.
+
+Two more options, scoped to the same electronic service invoices, let each
+sales journal control how the service period is proposed and printed:
+
+- **Default service period**: the period proposed on the invoice form as
+  soon as the invoice date is set and the dates are still empty.
+
+  - *Empty*: nothing is proposed, the user enters the dates.
+  - *Invoice month* (default): first to last day of the invoice date's
+    month.
+  - *Invoice day*: the invoice date itself, as both start and end.
+
+  Dates already entered by the user are never overwritten. If the dates
+  are still empty when the invoice is confirmed (and their entry is not
+  required), they are filled in with the invoice day when that option is
+  selected, or with the invoice month otherwise (the standard ``l10n_ar``
+  behavior), since ARCA requires them. This happens before the CAE is
+  requested, so the dates sent to ARCA match the ones on the invoice.
+- **Print service period on documents** (enabled by default): when
+  disabled, the "Invoiced period" line is not printed on the invoice PDF.
+  The period is still informed to ARCA.
