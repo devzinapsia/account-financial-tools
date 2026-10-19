@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Form view: header buttons (next to "Confirm") + new "Authorization"
+    <!-- Form view: header buttons (next to "Pay") + new "Authorization"
          page, only for vendor bills and vendor credit/debit notes. High
          priority so the page is appended after any other module's pages,
          right after "Other Info", regardless of module load order. -->
@@ -11,38 +11,28 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="priority" eval="999"/>
         <field name="arch" type="xml">
-            <!-- Authorize only: does not confirm the vendor bill. Available
-                 on any draft bill the current user is a pending authorizer
-                 for, even before anyone attempts (and is blocked from)
-                 confirming it. Once authorized, the regular "Confirm"
-                 button lets anyone finish confirming it, not just an
-                 authorized user; see account_move.py action_post(). -->
-            <!-- For an authorizer looking at a bill pending their
-                 authorization, the regular "Confirm" button is replaced by
-                 "Authorize + Confirm" (shown under exactly the opposite
-                 condition), so that authorizing is always an explicit
-                 choice. Server-side, action_post() still authorizes and
-                 confirms when an authorizer confirms by any other path
-                 (e.g. the list's bulk action). -->
-            <xpath expr="//header/button[@name='action_post'][last()]" position="attributes">
-                <attribute name="invisible" separator=" or " add="(state == 'draft' and move_type in ('in_invoice', 'in_refund') and not is_blocked and authorization_state not in ('authorized', 'rejected') and uid in pending_authorizer_ids)"/>
+            <!-- Authorization happens once the bill is confirmed: the
+                 bill can't be paid until it is authorized, so the "Pay"
+                 buttons are hidden meanwhile (and refused server-side, see
+                 account_move.py _check_vendor_bill_authorization_before_payment()). -->
+            <xpath expr="//header/button[@id='account_invoice_payment_btn']" position="attributes">
+                <attribute name="invisible" separator=" or " add="(move_type in ('in_invoice', 'in_refund') and authorization_state in ('to_authorize', 'rejected'))"/>
             </xpath>
-            <xpath expr="//header/button[@name='action_post'][last()]" position="after">
-                <button name="action_authorize_and_confirm_bill" string="Authorize + Confirm" type="object"
-                        class="oe_highlight"
-                        invisible="state != 'draft' or move_type not in ('in_invoice', 'in_refund') or is_blocked or authorization_state in ('authorized', 'rejected') or uid not in pending_authorizer_ids"
-                        groups="account.group_account_invoice"/>
+            <xpath expr="//header/button[@id='account_invoice_payment_secondary_btn']" position="attributes">
+                <attribute name="invisible" separator=" or " add="(move_type in ('in_invoice', 'in_refund') and authorization_state in ('to_authorize', 'rejected'))"/>
+            </xpath>
+            <xpath expr="//header/button[@id='account_invoice_payment_btn']" position="before">
                 <button name="action_authorize_bill" string="Authorize" type="object"
-                        invisible="state != 'draft' or move_type not in ('in_invoice', 'in_refund') or is_blocked or authorization_state in ('authorized', 'rejected') or uid not in pending_authorizer_ids"
+                        class="oe_highlight"
+                        invisible="state != 'posted' or move_type not in ('in_invoice', 'in_refund') or authorization_state != 'to_authorize' or uid not in pending_authorizer_ids"
                         groups="account.group_account_invoice"/>
                 <button name="action_reject_bill" string="Reject" type="object"
-                        invisible="state != 'draft' or move_type not in ('in_invoice', 'in_refund') or is_blocked or authorization_state in ('authorized', 'rejected') or uid not in pending_authorizer_ids"
+                        invisible="state != 'posted' or move_type not in ('in_invoice', 'in_refund') or authorization_state != 'to_authorize' or uid not in pending_authorizer_ids"
                         groups="account.group_account_invoice"/>
-                <!-- Undoes a mistaken Authorize click: only shown once the
-                     bill is authorized but not yet confirmed. See
-                     account_move.py action_unauthorize_bill(). -->
+                <!-- Undoes a mistaken Authorize click, while the bill has no
+                     payment yet. See account_move.py action_unauthorize_bill(). -->
                 <button name="action_unauthorize_bill" string="Unauthorize" type="object"
-                        invisible="state != 'draft' or move_type not in ('in_invoice', 'in_refund') or authorization_state != 'authorized' or uid not in pending_authorizer_ids"
+                        invisible="state != 'posted' or move_type not in ('in_invoice', 'in_refund') or authorization_state != 'authorized' or payment_state != 'not_paid' or uid not in pending_authorizer_ids"
                         groups="account.group_account_invoice"/>
             </xpath>
             <xpath expr="//page[@id='other_tab']" position="after">
@@ -102,29 +92,24 @@
         <field name="arch" type="xml">
             <filter name="cancel" position="after">
                 <separator/>
-                <!-- Both filters target vendor bills that are actually
-                     actionable right now: a draft that still has a pending
-                     authorizer, isn't permanently blocked, and hasn't
-                     already been authorized or rejected. This matches
-                     exactly what makes the "Authorize" / "Reject" buttons
-                     visible on the form. -->
+                <!-- Both filters target confirmed vendor bills that are
+                     actionable right now: awaiting authorization, with a
+                     pending authorizer. This matches exactly what makes the
+                     "Authorize" / "Reject" buttons visible on the form. -->
                 <filter string="To authorize" name="authorization_to_authorize"
-                        domain="[('state', '=', 'draft'),
-                                 ('pending_authorizer_ids', '!=', False),
-                                 ('is_blocked', '=', False),
-                                 ('authorization_state', 'not in', ['authorized', 'rejected'])]"/>
+                        domain="[('state', '=', 'posted'),
+                                 ('authorization_state', '=', 'to_authorize'),
+                                 ('pending_authorizer_ids', '!=', False)]"/>
                 <filter string="To authorize by me" name="authorization_to_authorize_by_me"
-                        domain="[('state', '=', 'draft'),
-                                 ('pending_authorizer_ids', 'in', [uid]),
-                                 ('is_blocked', '=', False),
-                                 ('authorization_state', 'not in', ['authorized', 'rejected'])]"/>
-                <!-- Vendor bills I loaded myself that needed authorization,
-                     already got it, but that still haven't been confirmed:
-                     easy to lose track of among many drafts otherwise. -->
-                <filter string="Authorized, not confirmed by me yet" name="authorization_authorized_unconfirmed_by_me"
-                        domain="[('state', '=', 'draft'),
+                        domain="[('state', '=', 'posted'),
+                                 ('authorization_state', '=', 'to_authorize'),
+                                 ('pending_authorizer_ids', 'in', [uid])]"/>
+                <!-- Authorized vendor bills that still haven't been (fully)
+                     paid: ready to be paid. -->
+                <filter string="Authorized, pending payment" name="authorization_authorized_pending_payment"
+                        domain="[('state', '=', 'posted'),
                                  ('authorization_state', '=', 'authorized'),
-                                 ('create_uid', '=', uid)]"/>
+                                 ('payment_state', 'in', ['not_paid', 'partial'])]"/>
             </filter>
         </field>
     </record>

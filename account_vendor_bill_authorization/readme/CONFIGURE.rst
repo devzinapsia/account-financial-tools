@@ -7,14 +7,14 @@ A policy has:
 * **Company**: defaults to your current company when creating a new
   policy; leave it empty to apply the policy to every company instead.
 * **Conditions**: a domain built with Odoo's standard filter editor,
-  evaluated against the vendor bill (``account.move``). An empty domain
-  matches any vendor bill or vendor credit/debit note (a catch-all policy).
-  A new policy's domain starts pre-filled with **Type is in Vendor Bill,
-  Vendor Credit Note** and **Status = Draft** -- this module never actually
-  evaluates a policy outside those conditions, so keeping them keeps the
-  record count shown while editing the domain accurate; remove any of them
-  if you really mean to build a domain that reads as broader. Any field of
-  the bill can be used, e.g.:
+  evaluated against the vendor bill (``account.move``) when it is
+  confirmed. An empty domain matches any vendor bill or vendor
+  credit/debit note (a catch-all policy). A new policy's domain starts
+  pre-filled with **Type is in Vendor Bill, Vendor Credit Note**, which
+  keeps the record count shown while editing the domain accurate. Don't
+  add a condition on the bill's **Status**: policies are evaluated while
+  the bill is being confirmed. Any other field of the bill can be used,
+  e.g.:
 
   * ``classification_id`` -- matches bills with (or without) a given
     classification (see the *Account Move Classification* module). To
@@ -29,28 +29,25 @@ A policy has:
     another for ``amount_total >= 5000`` authorized by user D.
 
 * **Always block**: if checked, any bill matching this policy's conditions
-  can never be confirmed nor approved by anyone, regardless of the
-  Authorizers field (which is then ignored and hidden) and regardless of
-  any other matching policy. Use this to explicitly and permanently deny a
-  category of bills -- e.g. a policy with the condition "classification is
-  not set" and Always block checked means vendor bills without a
-  classification can never be confirmed.
-* **Authorizers**: the users allowed to approve a bill matching this
-  policy (ignored if Always block is checked). If a policy matches a bill
-  but has no authorizers configured and Always block is not checked, that
-  bill can also never be approved by anyone -- same practical effect as
-  Always block, but it usually means the field was left empty by mistake
-  rather than on purpose. Prefer checking Always block when that is the
-  actual intent, so the policy documents itself.
+  can never be **confirmed** by anyone, regardless of the Authorizers field
+  (which is then ignored and hidden) and regardless of any other matching
+  policy. Use this to explicitly and permanently deny a category of bills
+  -- e.g. a policy with the condition "classification is not set" and
+  Always block checked means vendor bills without a classification can
+  never be confirmed.
+* **Authorizers**: the users allowed to authorize the payment of a bill
+  matching this policy (ignored if Always block is checked). If a policy
+  matches a bill but has no authorizers configured and Always block is not
+  checked, that bill can never be authorized, nor paid, by anyone -- it
+  usually means the field was left empty by mistake.
 
 If a bill matches more than one policy at the same time, it is enough for
-the bill to be approved by **any** authorized user from **any** of the
+the bill to be authorized by **any** authorized user from **any** of the
 matching (non-blocking) policies (the set of allowed approvers is the
 union across all matching policies, not their intersection) -- unless at
 least one of the matching policies has Always block checked, in which case
-the bill can never be confirmed regardless of what the other matching
-policies allow.
+the bill can't be confirmed at all.
 
-Policies are always evaluated against their current configuration when
-someone tries to confirm, authorize, reject or unauthorize a bill, so
-changing a policy takes effect immediately for every draft bill.
+Whether a bill requires authorization is decided **when it is confirmed**:
+changing the policies afterwards does not affect bills that were already
+confirmed (nor bills confirmed before this module was installed).

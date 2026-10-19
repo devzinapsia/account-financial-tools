@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 00:00+0000\n"
-"PO-Revision-Date: 2026-10-01 00:00+0000\n"
+"POT-Creation-Date: 2026-10-18 00:00+0000\n"
+"PO-Revision-Date: 2026-10-18 00:00+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -27,8 +27,8 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
-"%(requester)s requested your authorization to confirm vendor bill %(bill)s "
-"(%(amount)s %(currency)s) from %(partner)s."
+"%(requester)s confirmed vendor bill %(bill)s (%(amount)s %(currency)s) from "
+"%(partner)s: it requires your authorization before it can be paid."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -65,8 +65,8 @@ msgstr ""
 msgid ""
 "Authorization policies define, through a domain condition on\n"
 "                the vendor bill or vendor credit/debit note, which users must\n"
-"                authorize it before it can be confirmed, or whether it must\n"
-"                always be blocked."
+"                authorize it once it is confirmed, before it can be paid, or\n"
+"                whether it must never be confirmed."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -80,7 +80,7 @@ msgstr ""
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
 "Authorization reset: this vendor bill was reset to draft after %s authorized"
-" it, so it must be authorized again before it can be confirmed."
+" it, so it will need to be authorized again once it is confirmed."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -88,7 +88,7 @@ msgstr ""
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
 "Authorization reset: this vendor bill's data changed after %s authorized it,"
-" so it must be authorized again before it can be confirmed."
+" so it must be authorized again before it can be paid."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -109,11 +109,6 @@ msgid "Authorize"
 msgstr ""
 
 #. module: account_vendor_bill_authorization
-#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_move_form_authorization
-msgid "Authorize + Confirm"
-msgstr ""
-
-#. module: account_vendor_bill_authorization
 #: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__authorized
 msgid "Authorized"
 msgstr ""
@@ -126,7 +121,7 @@ msgstr ""
 
 #. module: account_vendor_bill_authorization
 #: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_account_bill_filter_authorization
-msgid "Authorized, not confirmed by me yet"
+msgid "Authorized, pending payment"
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -162,15 +157,14 @@ msgstr ""
 #: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__domain
 msgid ""
 "Conditions a vendor bill or vendor credit/debit note must meet (logical AND)"
-" to match this policy, evaluated against account.move fields -- e.g. the "
-"classification (classification_id), the vendor, the journal, or the total "
-"amount, e.g. to build amount tiers with several policies. An empty domain "
-"matches any vendor bill or vendor credit/debit note (catch-all policy). The "
-"Type and Status conditions match what this module only ever actually "
-"evaluates against (draft vendor bills and vendor credit/debit notes), so "
-"they keep the record count shown while editing this domain accurate -- "
-"remove them if you really want to build a domain that reads as broader than "
-"that."
+" to match this policy, evaluated against account.move fields when the bill "
+"is confirmed -- e.g. the classification (classification_id), the vendor, the"
+" journal, or the total amount, e.g. to build amount tiers with several "
+"policies. An empty domain matches any vendor bill or vendor credit/debit "
+"note (catch-all policy). The Type condition matches what this module only "
+"ever actually evaluates against, so it keeps the record count shown while "
+"editing this domain accurate. Don't add a condition on the Status: policies "
+"are evaluated while the bill is being confirmed."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -197,6 +191,8 @@ msgstr ""
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_payment_register__display_name
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__display_name
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__display_name
 msgid "Display Name"
@@ -214,6 +210,8 @@ msgstr ""
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move_line__id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_payment_register__id
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__id
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__id
 msgid "ID"
@@ -222,16 +220,21 @@ msgstr ""
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__always_block
 msgid ""
-"If checked, a vendor bill matching this policy can never be confirmed nor "
-"approved by anyone, regardless of the Authorizers field (which is ignored in"
-" that case) and regardless of any other matching policy. Use this to "
-"explicitly and permanently deny a category of vendor bills, e.g. bills "
-"without a classification."
+"If checked, a vendor bill matching this policy can never be confirmed by "
+"anyone, regardless of the Authorizers field (which is ignored in that case) "
+"and regardless of any other matching policy. Use this to explicitly and "
+"permanently deny a category of vendor bills, e.g. bills without a "
+"classification."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model,name:account_vendor_bill_authorization.model_account_move
 msgid "Journal Entry"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model,name:account_vendor_bill_authorization.model_account_move_line
+msgid "Journal Item"
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -265,6 +268,11 @@ msgstr ""
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__not_required
 msgid "Not required"
+msgstr ""
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model,name:account_vendor_bill_authorization.model_account_payment_register
+msgid "Pay"
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -328,16 +336,16 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
-"The following vendor bills require authorization before they can be "
-"confirmed: %s."
+"The authorization of vendor bill %s can't be revoked: it already has "
+"payments."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
-"These vendor bills require authorization before they can be confirmed: %s. "
-"An activity has been assigned to the authorized user(s) of each."
+"The following vendor bills can't be paid until they are authorized (they are"
+" pending authorization or were rejected): %s."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -370,24 +378,9 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
-"This vendor bill is permanently blocked by the following policy/policies: "
-"%s."
-msgstr ""
-
-#. module: account_vendor_bill_authorization
-#. odoo-python
-#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid ""
 "This vendor bill matches an authorization policy with no authorized users "
-"configured. It cannot be approved until a user is added to that policy."
-msgstr ""
-
-#. module: account_vendor_bill_authorization
-#. odoo-python
-#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid ""
-"This vendor bill requires authorization before it can be confirmed. An "
-"activity has been assigned to the authorized user(s)."
+"configured. It cannot be authorized (nor paid) until a user is added to that"
+" policy."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -417,12 +410,11 @@ msgstr ""
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__authorized_user_ids
 msgid ""
-"Users allowed to approve a vendor bill matching this policy. Ignored if "
-"'Always block' is checked. If left empty (and 'Always block' is not "
-"checked), any vendor bill matching this policy can never be approved either "
-"-- this has the same practical effect as 'Always block', but leaving the box"
-" unchecked here usually means it was left empty by mistake rather than on "
-"purpose."
+"Users allowed to authorize the payment of a confirmed vendor bill matching "
+"this policy. Ignored if 'Always block' is checked. If left empty (and "
+"'Always block' is not checked), any vendor bill matching this policy can "
+"never be authorized, nor paid, either -- leaving it empty usually means it "
+"was left empty by mistake rather than on purpose."
 msgstr ""
 
 #. module: account_vendor_bill_authorization
@@ -468,15 +460,7 @@ msgstr ""
 #. module: account_vendor_bill_authorization
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid ""
-"Vendor bill authorized and confirmed directly by %s (already an authorized "
-"user for a matching policy)."
-msgstr ""
-
-#. module: account_vendor_bill_authorization
-#. odoo-python
-#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid "Vendor bill authorized by %s. Awaiting confirmation."
+msgid "Vendor bill authorized by %s. It can now be paid."
 msgstr ""
 
 #. module: account_vendor_bill_authorization

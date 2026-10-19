@@ -2,40 +2,40 @@
 Autorización de facturas de proveedor
 =====================================
 
-Some users load vendor bills, but certain bills should not be confirmed
-without another user's approval first -- for example, bills above a given
-amount, bills from a sensitive vendor, or bills with a particular
+Some users load and confirm vendor bills, but certain bills should not be
+paid without another user's approval first -- for example, bills above a
+given amount, bills from a sensitive vendor, or bills with a particular
 classification.
 
 This module adds configurable **vendor bill authorization policies**. Each
 policy defines a set of conditions on the bill (any field: classification,
 vendor, journal, amount...) and a list of users allowed to authorize a bill
-matching those conditions. A draft bill matching at least one policy can
-only be confirmed once one of those users has authorized it; a policy can
-also be marked **Always block**, so that matching bills can never be
-confirmed at all.
+matching those conditions. A bill matching at least one policy can be
+confirmed as usual, but it **can't be paid** until one of those users has
+authorized it. A policy can also be marked **Always block**, so that
+matching bills can never be confirmed at all.
 
 The flow has three separable steps:
 
-#. Whoever loads the bill leaves it in draft (and may try to confirm it,
-   which is refused and notifies the authorizers).
-#. An authorizer reviews it and **authorizes** it (without confirming it),
-   or **rejects** it with a reason.
-#. Then whoever loaded the bill, the authorizer, or anyone else allowed to
-   confirm bills, **confirms** it.
-
-Authorizers also get an **Authorize + Confirm** button that does steps 2
-and 3 in a single click.
+#. Whoever loads the bill confirms it. If it matches a policy, it is left
+   *To authorize* and the authorizers are notified.
+#. An authorizer reviews it and **authorizes** it, or **rejects** it with
+   a reason.
+#. Once authorized, whoever is in charge of payments **pays** it, as
+   usual.
 
 **Scope: vendor bills and vendor credit/debit notes only** (journal entries
 of type *Vendor Bill* / *Vendor Credit Note*, i.e. ``in_invoice`` and
-``in_refund``). Customer invoices and credit notes, purchase receipts, and
-miscellaneous journal entries are never affected, whatever the policies
-say.
+``in_refund``; vendor debit notes are ``in_invoice`` bills). Customer
+invoices and credit notes, purchase receipts, and miscellaneous journal
+entries are never affected, whatever the policies say.
 
 This module is independent from *Autorización de pagos a proveedores*
-(``account_payment_authorization``), which applies the same pattern to
-vendor payments: either one can be installed without the other.
+(``account_payment_authorization``), which applies a similar pattern to
+vendor payments: either one can be installed without the other. When
+ingadhoc's ``account_payment_pro`` is installed, the bridge module
+*Autorización de facturas de proveedor - Payment Pro* installs
+automatically and applies the same rules to its payment receipts.
 
 **Table of contents**
 
@@ -54,14 +54,14 @@ A policy has:
 * **Company**: defaults to your current company when creating a new
   policy; leave it empty to apply the policy to every company instead.
 * **Conditions**: a domain built with Odoo's standard filter editor,
-  evaluated against the vendor bill (``account.move``). An empty domain
-  matches any vendor bill or vendor credit/debit note (a catch-all policy).
-  A new policy's domain starts pre-filled with **Type is in Vendor Bill,
-  Vendor Credit Note** and **Status = Draft** -- this module never actually
-  evaluates a policy outside those conditions, so keeping them keeps the
-  record count shown while editing the domain accurate; remove any of them
-  if you really mean to build a domain that reads as broader. Any field of
-  the bill can be used, e.g.:
+  evaluated against the vendor bill (``account.move``) when it is
+  confirmed. An empty domain matches any vendor bill or vendor
+  credit/debit note (a catch-all policy). A new policy's domain starts
+  pre-filled with **Type is in Vendor Bill, Vendor Credit Note**, which
+  keeps the record count shown while editing the domain accurate. Don't
+  add a condition on the bill's **Status**: policies are evaluated while
+  the bill is being confirmed. Any other field of the bill can be used,
+  e.g.:
 
   * ``classification_id`` -- matches bills with (or without) a given
     classification (see the *Account Move Classification* module). To
@@ -76,133 +76,132 @@ A policy has:
     another for ``amount_total >= 5000`` authorized by user D.
 
 * **Always block**: if checked, any bill matching this policy's conditions
-  can never be confirmed nor approved by anyone, regardless of the
-  Authorizers field (which is then ignored and hidden) and regardless of
-  any other matching policy. Use this to explicitly and permanently deny a
-  category of bills -- e.g. a policy with the condition "classification is
-  not set" and Always block checked means vendor bills without a
-  classification can never be confirmed.
-* **Authorizers**: the users allowed to approve a bill matching this
-  policy (ignored if Always block is checked). If a policy matches a bill
-  but has no authorizers configured and Always block is not checked, that
-  bill can also never be approved by anyone -- same practical effect as
-  Always block, but it usually means the field was left empty by mistake
-  rather than on purpose. Prefer checking Always block when that is the
-  actual intent, so the policy documents itself.
+  can never be **confirmed** by anyone, regardless of the Authorizers field
+  (which is then ignored and hidden) and regardless of any other matching
+  policy. Use this to explicitly and permanently deny a category of bills
+  -- e.g. a policy with the condition "classification is not set" and
+  Always block checked means vendor bills without a classification can
+  never be confirmed.
+* **Authorizers**: the users allowed to authorize the payment of a bill
+  matching this policy (ignored if Always block is checked). If a policy
+  matches a bill but has no authorizers configured and Always block is not
+  checked, that bill can never be authorized, nor paid, by anyone -- it
+  usually means the field was left empty by mistake.
 
 If a bill matches more than one policy at the same time, it is enough for
-the bill to be approved by **any** authorized user from **any** of the
+the bill to be authorized by **any** authorized user from **any** of the
 matching (non-blocking) policies (the set of allowed approvers is the
 union across all matching policies, not their intersection) -- unless at
 least one of the matching policies has Always block checked, in which case
-the bill can never be confirmed regardless of what the other matching
-policies allow.
+the bill can't be confirmed at all.
 
-Policies are always evaluated against their current configuration when
-someone tries to confirm, authorize, reject or unauthorize a bill, so
-changing a policy takes effect immediately for every draft bill.
+Whether a bill requires authorization is decided **when it is confirmed**:
+changing the policies afterwards does not affect bills that were already
+confirmed (nor bills confirmed before this module was installed).
 
 Usage
 =====
 
-Loading and confirming a vendor bill
-------------------------------------
+Confirming a vendor bill
+------------------------
 
-Load the vendor bill (or vendor credit/debit note) as usual. As soon as a
-draft bill matches a policy, its **Authorization status** (in the new
-**Authorization** tab, next to *Other Info*) shows *To authorize*, and the
-tab lists the matching policies and the users who can authorize it -- it
-does not wait for someone to first try **Confirm** and be blocked.
+Load and confirm the vendor bill (or vendor credit/debit note) as usual.
+Anyone allowed to confirm bills can do it.
 
-When someone clicks **Confirm**:
+* If the bill does not match any policy, nothing changes: it can be paid
+  right away, exactly as before this module was installed.
+* If the bill matches a policy with **Always block**, it can't be
+  confirmed, by anyone: the error message names the blocking policy so the
+  data can be fixed.
+* If the bill matches any other policy, it is confirmed, and:
 
-* If the bill does not match any policy, it is confirmed immediately,
-  exactly as before this module was installed.
-* If the bill was already authorized (see below), it is confirmed,
-  whoever clicks **Confirm** -- it does not need to be an authorizer.
-* If the user confirming is themselves an authorizer of a matching policy,
-  the bill is authorized and confirmed in the same step.
-* Otherwise the bill is **not** confirmed. Instead:
-
-  * Its **Authorization status** stays *To authorize*.
+  * Its **Authorization status** (in the **Authorization** tab, next to
+    *Other Info*) becomes *To authorize*; the tab also lists the matching
+    policies and the users who can authorize it.
   * An activity is assigned to every authorizer of every matching policy,
     so it shows up in their **My Activities** and triggers an email
-    according to their own notification preferences. Trying to confirm
-    again does not ask the same authorizers twice.
-  * These authorization requests are removed (without cluttering the
-    chatter) as soon as nobody needs to act on them anymore: when the bill
-    is authorized, rejected, confirmed, cancelled, or stops matching any
-    policy.
+    according to their own notification preferences.
   * A message is logged on the bill's chatter noting from whom
     authorization was requested.
-  * The user gets an error message explaining that the bill is pending
-    authorization.
+  * The bill **can't be paid** until it is authorized (see below).
 
-* If the bill matches a policy with **Always block**, it is never
-  confirmed, not even by an authorizer: the error message names the
-  blocking policy so the data can be fixed.
+Confirming a bill does not authorize it, not even when the user
+confirming it is an authorizer: authorizing is always an explicit step.
 
-These checks also apply to every other way of posting a bill (the *Post
-entries* action on the list, auto-posting of future-dated bills, etc.):
-a bill that is blocked or still awaiting authorization is never posted
-from there either. The only exception is the credit note generated by a
-full reversal (*Reverse* with *Full refund and new draft*) of a bill that
-was already confirmed: it cancels a bill that already went through
-authorization, so it is posted right away.
+These rules apply to every way of confirming a bill (the *Confirm* button,
+the *Post entries* action on the list, auto-posting of future-dated
+bills, etc.).
 
-Authorizing or rejecting a pending bill
----------------------------------------
+Authorizing or rejecting a confirmed bill
+-----------------------------------------
 
 Open the bill. If you are one of the users authorized to act on it, the
-header shows **Authorize + Confirm**, **Authorize** and **Reject**
-instead of the regular **Confirm** button, so that authorizing is always
-an explicit choice.
+header shows **Authorize** and **Reject**.
 
-* **Authorize**: does *not* confirm the bill. It only sets the
-  **Authorization status** to *Authorized* and the **Authorized by**
-  field to you, removes the pending authorization requests, and logs it
-  on the chatter. The bill stays in *Draft*. Once authorized, **anyone** with the
-  normal permission to confirm bills can click the regular **Confirm**
-  button -- this lets the person who signs off on a bill be different from
-  the person who actually confirms it.
-* **Authorize + Confirm**: authorizes and confirms the bill in a single
-  click, for when you are already reviewing it and there is no reason to
-  leave it for someone else to confirm.
+* **Authorize**: sets the **Authorization status** to *Authorized* and the
+  **Authorized by** field to you, removes the pending authorization
+  requests, and logs it on the chatter. From then on, **anyone** with the
+  normal permission to pay bills can pay it: the person who signs off on a
+  bill can be different from the person who actually pays it.
 * **Reject**: opens a small window asking for a reason. Once confirmed,
   the bill's **Authorization status** becomes *Rejected*, the reason is
   stored on the bill and shown in the **Authorization** tab, the pending
-  authorization requests are removed, and an activity is created for the user who
-  loaded the bill, informing them of the rejection and the reason.
-  Fixing the bill (see below) or trying to confirm it again requests
-  authorization again.
-* **Unauthorize**: authorized by mistake? While the bill is still a draft,
-  an **Unauthorize** button appears next to **Confirm** for any user who is
-  currently an authorizer of the bill (not only the one who authorized
-  it). It reverts the **Authorization status** back to *To authorize*,
-  clears **Authorized by**, logs it on the chatter, and notifies the user
-  who loaded the bill. Once the bill is confirmed, it no longer applies.
+  authorization requests are removed, and an activity is created for the
+  user who loaded the bill, informing them of the rejection and the
+  reason. A rejected bill can't be paid. To fix it, reset it to draft,
+  edit it and confirm it again (authorization is then requested again),
+  or cancel it with a credit note.
+* **Unauthorize**: authorized by mistake? While the bill has no payment
+  yet, an **Unauthorize** button appears for any user who is currently an
+  authorizer of the bill (not only the one who authorized it). It reverts
+  the **Authorization status** back to *To authorize*, clears
+  **Authorized by**, logs it on the chatter, and notifies the user who
+  loaded the bill.
 
 Only users who are actually listed as authorizers on a matching policy can
 authorize, reject or unauthorize a bill -- this is enforced on the server,
 not just by hiding the buttons. Every authorization event (who authorized,
-who confirmed, who rejected and why) is logged on the bill's chatter.
+who rejected and why) is logged on the bill's chatter.
+
+The authorization requests are removed (without cluttering the chatter)
+as soon as nobody needs to act on them anymore: when the bill is
+authorized, rejected, reset to draft, cancelled, or stops matching any
+policy.
+
+Paying
+------
+
+While a bill is *To authorize* or *Rejected*:
+
+* the **Pay** button is hidden, and refused if called anyway (e.g. from
+  the list's *Pay* action, with several bills selected);
+* the *Register Payment* wizard refuses to create the payment;
+* it can't be reconciled in any other way either: matching it with a
+  payment by hand or from the bank reconciliation, or applying an
+  outstanding credit or a credit note to it from the bill;
+* with ingadhoc's ``account_payment_pro``, payment receipts leave it out
+  of the vendor's debt they fill in, refuse it if it is added by hand, and
+  a bill that requires authorization can't be confirmed with a **pay
+  now** journal (it would be paid before being authorized): remove the pay
+  now journal, confirm it, and pay it once authorized.
+
+The only exception is the credit note generated by a full reversal
+(*Reverse* with *Full refund and new draft*): it cancels the bill rather
+than paying it.
 
 When an authorization is lost
------------------------------
+------------------------------
 
-* Editing an already-authorized (or rejected) draft bill in a way that
-  could change which policies match -- vendor, journal, currency, invoice
-  or accounting date, classification, fiscal position, payment terms, or
-  any of its lines (and therefore its amount) -- throws away that
-  decision: its **Authorization status** goes back to *To authorize* (or
-  *Not required*, if no policy matches anymore), **Authorized by** is
-  cleared, and this is logged on the chatter. A bill can't be authorized
-  for one amount and then confirmed after being changed to a different
-  one. Editing other fields (e.g. the bill reference) keeps the
-  authorization.
-* Resetting an authorized, confirmed bill back to draft also throws away
-  its authorization: it must be authorized again before it can be
-  confirmed again.
+* Editing an authorized (or rejected) bill in a way that could change
+  which policies match -- vendor, journal, currency, invoice or accounting
+  date, classification, fiscal position, payment terms, or any of its
+  lines (and therefore its amount) -- throws away that decision: its
+  **Authorization status** goes back to *To authorize* (or *Not required*,
+  if no policy matches anymore), **Authorized by** is cleared, the
+  authorizers are asked again, and this is logged on the chatter. Editing
+  other fields (e.g. the bill reference) keeps the authorization.
+* Resetting a confirmed bill back to draft throws away its authorization
+  status: it is evaluated again, from scratch, when it is confirmed again.
 
 Finding pending bills
 ---------------------
@@ -210,13 +209,12 @@ Finding pending bills
 The **Bills** and **Refunds** lists (Accounting ‣ Vendors) offer extra
 filters in the search bar:
 
-* **To authorize**: draft bills currently waiting for an authorization
+* **To authorize**: confirmed bills currently waiting for an authorization
   that someone can actually give.
-* **To authorize by me**: draft bills you are personally allowed to
+* **To authorize by me**: confirmed bills you are personally allowed to
   authorize or reject right now.
-* **Authorized, not confirmed by me yet**: bills you loaded yourself that
-  needed authorization, already got it, and are still sitting as a draft
-  waiting to be confirmed.
+* **Authorized, pending payment**: authorized bills that still haven't
+  been (fully) paid.
 
 The **Authorization status** column is also available in both lists
 (hidden by default; enable it from the column selector).

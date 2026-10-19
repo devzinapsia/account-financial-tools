@@ -1,10 +1,7 @@
-from unittest.mock import patch
-
 from lxml import etree
 
 from odoo import Command
 from odoo.exceptions import AccessError, UserError
-from odoo.modules import module as odoo_module
 from odoo.tests import tagged
 from odoo.tools.safe_eval import safe_eval
 
@@ -90,21 +87,31 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
             vals["classification_id"] = classification.id
         return self.env["account.move"].with_user(user or self.user_creator).create(vals)
 
-    def _post_blocked(self, bill, user):
-        """Attempt to confirm ``bill`` as ``user``, expecting it to be
-        blocked.
+    def _create_posted_bill(self, classification=None, user=None, **kwargs):
+        bill = self._create_bill(classification, user=user, **kwargs)
+        bill.with_user(user or self.user_creator).action_post()
+        self.assertEqual(bill.state, "posted")
+        return bill
 
-        Deliberately does not use `self.assertRaises()`: Odoo's test
-        `assertRaises` wraps the call in a cursor savepoint that gets rolled
-        back once the expected exception is caught, which would also erase
-        the authorization state, activities and messages we need to inspect
-        afterwards.
-        """
-        try:
-            bill.with_user(user).action_post()
-            self.fail("Expected a UserError blocking the vendor bill.")
-        except UserError as error:
-            return error
+    def _register_payment(self, bill, user, amount=None):
+        vals = {"amount": amount} if amount else {}
+        wizard = (
+            self.env["account.payment.register"]
+            .with_user(user)
+            .with_context(active_model="account.move", active_ids=bill.ids)
+            .create(vals)
+        )
+        return wizard._create_payments()
+
+    def _assert_payment_blocked(self, bill, user=None):
+        user = user or self.user_other
+        with self.assertRaises(UserError):
+            bill.with_user(user).action_register_payment()
+        with self.assertRaises(UserError):
+            bill.with_user(user).action_force_register_payment()
+        with self.assertRaises(UserError):
+            self._register_payment(bill, user)
+        self.assertEqual(bill.payment_state, "not_paid")
 
     def _search_filter_domain(self, filter_name, user):
         """Evaluate one of the authorization search filters exactly as the
@@ -119,140 +126,48 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
         node = etree.fromstring(view["arch"]).find(f".//filter[@name='{filter_name}']")
         return safe_eval(node.get("domain"), {"uid": user.id})
 
-    def _authorization_activities(self, bill):
+    def _requests(self, bill):
+        return bill._get_authorization_requests()
+
+    def _todo_activities(self, bill):
         return bill.activity_ids.filtered(
             lambda a: a.activity_type_id == self.env.ref("mail.mail_activity_data_todo")
         )
 
-    # -- Scenarios ------------------------------------------------------
+    def _bodies(self, bill):
+        return [body or "" for body in bill.message_ids.mapped("body")]
 
-    def test_no_policy_matches_confirms_directly(self):
-        bill = self._create_bill()
-        self.assertEqual(bill.authorization_state, "not_required")
-        bill.with_user(self.user_creator).action_post()
-        self.assertEqual(bill.state, "posted")
-        self.assertEqual(bill.authorization_state, "not_required")
+    # -- Confirmation ---------------------------------------------------
 
-    def test_untouched_draft_already_shows_to_authorize(self):
+    def test_no_policy_matches_confirms_and_can_be_paid(self):
+        bill = self._create_posted_bill()
+        self.assertEqual(bill.authorization_state, "not_required")
+        self._register_payment(bill, self.user_other)
+        self.assertIn(bill.payment_state, ("paid", "in_payment"))
+
+    def test_draft_matching_bill_is_not_pending_yet(self):
+        """Authorization happens once the bill is confirmed."""
         bill = self._create_bill(self.classification_sensitive)
-        self.assertEqual(bill.authorization_state, "to_authorize")
         self.assertEqual(bill.matched_policy_ids, self.policy_sensitive)
-        self.assertEqual(bill.pending_authorizer_ids, self.user_authorizer)
-        self.assertFalse(bill.is_blocked)
+        self.assertEqual(bill.authorization_state, "not_required")
+        self.assertFalse(self._requests(bill))
 
-    def test_policy_matches_authorized_user_confirms_directly(self):
-        bill = self._create_bill(self.classification_sensitive)
-        bill.with_user(self.user_authorizer).action_post()
-        self.assertEqual(bill.state, "posted")
-        self.assertEqual(bill.authorization_state, "authorized")
-        self.assertEqual(bill.authorized_by_id, self.user_authorizer)
-        self.assertTrue(
-            any("authorized and confirmed directly" in (m or "") for m in bill.message_ids.mapped("body"))
-        )
-
-    def test_policy_matches_unauthorized_user_blocks_bill(self):
-        bill = self._create_bill(self.classification_two)
-        error = self._post_blocked(bill, self.user_creator)
-        self.assertIn("requires authorization", str(error))
-        self.assertEqual(bill.state, "draft")
+    def test_confirming_matching_bill_requests_authorization(self):
+        """Anyone can confirm; the bill is then pending authorization and
+        every authorizer is asked through an activity.
+        """
+        bill = self._create_posted_bill(self.classification_two)
         self.assertEqual(bill.authorization_state, "to_authorize")
-        activities = self._authorization_activities(bill)
-        self.assertEqual(activities.user_id, self.user_authorizer | self.user_authorizer_2)
-        self.assertEqual(len(activities), 2)
-        self.assertTrue(
-            any("Authorization requested from" in (m or "") for m in bill.message_ids.mapped("body"))
-        )
+        self.assertEqual(self._requests(bill).user_id, self.user_authorizer | self.user_authorizer_2)
+        self.assertEqual(len(self._requests(bill)), 2)
+        self.assertTrue(any("Authorization requested from" in b for b in self._bodies(bill)))
 
-    def test_authorizer_authorizes_without_confirming(self):
-        bill = self._create_bill(self.classification_sensitive)
-        self._post_blocked(bill, self.user_creator)
-
-        bill.with_user(self.user_authorizer).action_authorize_bill()
-
-        self.assertEqual(bill.authorization_state, "authorized")
-        self.assertEqual(bill.authorized_by_id, self.user_authorizer)
-        self.assertEqual(bill.state, "draft")
-        self.assertFalse(self._authorization_activities(bill))
-
-    def test_non_authorizer_confirms_after_authorization(self):
-        bill = self._create_bill(self.classification_sensitive)
-        bill.with_user(self.user_authorizer).action_authorize_bill()
-
-        bill.with_user(self.user_other).action_post()
-
-        self.assertEqual(bill.state, "posted")
-        self.assertEqual(bill.authorization_state, "authorized")
-        self.assertEqual(bill.authorized_by_id, self.user_authorizer)
-        self.assertTrue(
-            any("authorized earlier by" in (m or "") for m in bill.message_ids.mapped("body"))
-        )
-
-    def test_authorize_and_confirm_in_one_step(self):
-        bill = self._create_bill(self.classification_sensitive)
-        self._post_blocked(bill, self.user_creator)
-
-        bill.with_user(self.user_authorizer).action_authorize_and_confirm_bill()
-
-        self.assertEqual(bill.state, "posted")
-        self.assertEqual(bill.authorization_state, "authorized")
-        self.assertEqual(bill.authorized_by_id, self.user_authorizer)
-        self.assertFalse(self._authorization_activities(bill))
-
-    def test_authorizer_rejects_with_reason(self):
-        bill = self._create_bill(self.classification_sensitive)
-        self._post_blocked(bill, self.user_creator)
-
-        action = bill.with_user(self.user_authorizer).action_reject_bill()
-        wizard = (
-            self.env[action["res_model"]]
-            .with_user(self.user_authorizer)
-            .with_context(**action["context"])
-            .create({"reason": "Wrong amount"})
-        )
-        wizard.action_confirm()
-
-        self.assertEqual(bill.authorization_state, "rejected")
-        self.assertEqual(bill.authorization_reject_reason, "Wrong amount")
-        self.assertEqual(bill.state, "draft")
-        creator_activity = self._authorization_activities(bill).filtered(
-            lambda a: a.user_id == self.user_creator
-        )
-        self.assertEqual(len(creator_activity), 1)
-        self.assertIn("Wrong amount", str(creator_activity.note))
-        self.assertFalse(
-            self._authorization_activities(bill).filtered(lambda a: a.user_id == self.user_authorizer)
-        )
-        self.assertTrue(
-            any("Reason: Wrong amount" in (m or "") for m in bill.message_ids.mapped("body"))
-        )
-
-    def test_reject_wizard_rechecks_permission_server_side(self):
-        bill = self._create_bill(self.classification_sensitive)
-        wizard = (
-            self.env["account.vendor.bill.authorization.reject.wizard"]
-            .with_user(self.user_other)
-            .create({"move_id": bill.id, "reason": "Not mine to reject"})
-        )
-        with self.assertRaises(AccessError):
-            wizard.action_confirm()
-
-    def test_policy_without_authorizers_blocks_forever(self):
-        bill = self._create_bill(self.classification_blocked)
-        self._post_blocked(bill, self.user_creator)
+    def test_confirming_as_authorizer_does_not_authorize_implicitly(self):
+        bill = self._create_posted_bill(self.classification_sensitive, user=self.user_authorizer)
         self.assertEqual(bill.authorization_state, "to_authorize")
-        self.assertFalse(bill.pending_authorizer_ids)
-        self.assertFalse(self._authorization_activities(bill))
-        for user in (self.user_authorizer, self.user_manager, self.env.user):
-            with self.assertRaises(AccessError):
-                bill.with_user(user).action_authorize_bill()
-            with self.assertRaises(AccessError):
-                bill.with_user(user).action_authorize_and_confirm_bill()
-            with self.assertRaises(AccessError):
-                bill.with_user(user).action_reject_bill()
-        self._post_blocked(bill, self.user_authorizer)
-        self.assertEqual(bill.state, "draft")
+        self.assertFalse(bill.authorized_by_id)
 
-    def test_always_block_wins_over_other_matching_policy(self):
+    def test_always_block_policy_prevents_confirming(self):
         policy_block = self.env["account.vendor.bill.authorization.policy"].create(
             {
                 "name": "Never pay partner B",
@@ -263,23 +178,15 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
         )
         bill = self._create_bill(self.classification_sensitive, partner=self.partner_b)
         self.assertTrue(bill.is_blocked)
-        self.assertEqual(bill.matched_policy_ids, self.policy_sensitive | policy_block)
         # Authorizers of a blocking policy are ignored.
         self.assertEqual(bill.pending_authorizer_ids, self.user_authorizer)
-
-        error = self._post_blocked(bill, self.user_authorizer)
-        self.assertIn(policy_block.name, str(error))
-        self.assertFalse(self._authorization_activities(bill))
-        with self.assertRaises(UserError):
-            bill.with_user(self.user_authorizer).action_authorize_bill()
-        with self.assertRaises(UserError):
-            bill.with_user(self.user_authorizer).action_authorize_and_confirm_bill()
-        self._post_blocked(bill, self.env.user)
+        for user in (self.user_creator, self.user_authorizer, self.env.user):
+            with self.assertRaises(UserError) as error:
+                bill.with_user(user).action_post()
+            self.assertIn(policy_block.name, str(error.exception))
         self.assertEqual(bill.state, "draft")
 
-    def test_always_block_wins_over_earlier_authorization(self):
-        bill = self._create_bill(self.classification_sensitive, partner=self.partner_b)
-        bill.with_user(self.user_authorizer).action_authorize_bill()
+    def test_always_block_also_applies_to_the_post_entries_action(self):
         self.env["account.vendor.bill.authorization.policy"].create(
             {
                 "name": "Never pay partner B",
@@ -287,10 +194,37 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
                 "always_block": True,
             }
         )
-        self._post_blocked(bill, self.user_other)
+        bill = self._create_bill(partner=self.partner_b)
+        wizard = (
+            self.env["validate.account.move"]
+            .with_user(self.user_creator)
+            .create({"move_ids": [Command.set(bill.ids)]})
+        )
+        with self.assertRaises(UserError):
+            wizard.validate_move()
         self.assertEqual(bill.state, "draft")
+
+    def test_post_entries_action_requests_authorization_too(self):
+        bill = self._create_bill(self.classification_sensitive)
+        self.env["validate.account.move"].with_user(self.user_creator).create(
+            {"move_ids": [Command.set(bill.ids)]}
+        ).validate_move()
+        self.assertEqual(bill.state, "posted")
         self.assertEqual(bill.authorization_state, "to_authorize")
-        self.assertFalse(bill.authorized_by_id)
+        self.assertTrue(self._requests(bill))
+
+    def test_policy_without_authorizers_can_never_be_authorized(self):
+        bill = self._create_posted_bill(self.classification_blocked)
+        self.assertEqual(bill.authorization_state, "to_authorize")
+        self.assertFalse(bill.pending_authorizer_ids)
+        self.assertFalse(self._requests(bill))
+        self.assertTrue(any("no authorized users configured" in b for b in self._bodies(bill)))
+        for user in (self.user_authorizer, self.user_manager, self.env.user):
+            with self.assertRaises(AccessError):
+                bill.with_user(user).action_authorize_bill()
+            with self.assertRaises(AccessError):
+                bill.with_user(user).action_reject_bill()
+        self._assert_payment_blocked(bill)
 
     def test_two_matching_policies_union_of_authorizers(self):
         policy_partner = self.env["account.vendor.bill.authorization.policy"].create(
@@ -302,7 +236,7 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
         )
         for authorizer in (self.user_authorizer, self.user_authorizer_2):
             with self.subTest(authorizer=authorizer.login):
-                bill = self._create_bill(self.classification_sensitive, partner=self.partner_b)
+                bill = self._create_posted_bill(self.classification_sensitive, partner=self.partner_b)
                 self.assertEqual(bill.matched_policy_ids, self.policy_sensitive | policy_partner)
                 self.assertEqual(
                     bill.pending_authorizer_ids, self.user_authorizer | self.user_authorizer_2
@@ -310,104 +244,6 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
                 bill.with_user(authorizer).action_authorize_bill()
                 self.assertEqual(bill.authorization_state, "authorized")
                 self.assertEqual(bill.authorized_by_id, authorizer)
-
-    def test_editing_authorized_bill_resets_authorization(self):
-        policy_partner = self.env["account.vendor.bill.authorization.policy"].create(
-            {
-                "name": "Partner B bills",
-                "domain": str([("partner_id", "=", self.partner_b.id)]),
-                "authorized_user_ids": [Command.set([self.user_authorizer_2.id])],
-            }
-        )
-        purchase_journal = self.company_data["default_journal_purchase"]
-        other_journal = purchase_journal.copy(
-            {"code": "BILL2", "default_account_id": purchase_journal.default_account_id.id}
-        )
-        edits = {
-            "partner_id": lambda bill: {"partner_id": self.partner_b.id},
-            "journal_id": lambda bill: {"journal_id": other_journal.id},
-            "invoice_date": lambda bill: {"invoice_date": "2026-02-01"},
-            "invoice_line_ids": lambda bill: {
-                "invoice_line_ids": [Command.update(bill.invoice_line_ids.id, {"price_unit": 5000.0})]
-            },
-            "classification_id": lambda bill: {"classification_id": self.classification_two.id},
-        }
-        for fname, make_vals in edits.items():
-            with self.subTest(field=fname):
-                bill = self._create_bill(self.classification_sensitive)
-                bill.with_user(self.user_authorizer).action_authorize_bill()
-                bill.with_user(self.user_creator).write(make_vals(bill))
-                self.assertEqual(bill.authorization_state, "to_authorize")
-                self.assertFalse(bill.authorized_by_id)
-                self.assertTrue(
-                    any("Authorization reset" in (m or "") for m in bill.message_ids.mapped("body"))
-                )
-                if fname == "partner_id":
-                    self.assertEqual(bill.matched_policy_ids, self.policy_sensitive | policy_partner)
-                if fname == "classification_id":
-                    self.assertEqual(bill.matched_policy_ids, self.policy_two)
-                # The reset bill can no longer be confirmed by a non-authorizer.
-                self._post_blocked(bill, self.user_other)
-                self.assertEqual(bill.state, "draft")
-
-    def test_editing_rejected_bill_resets_rejection(self):
-        bill = self._create_bill(self.classification_sensitive)
-        bill.with_user(self.user_authorizer)._reject_bill("Too expensive")
-        self.assertEqual(bill.authorization_state, "rejected")
-        bill.with_user(self.user_creator).write(
-            {"invoice_line_ids": [Command.update(bill.invoice_line_ids.id, {"price_unit": 50.0})]}
-        )
-        self.assertEqual(bill.authorization_state, "to_authorize")
-
-    def test_edit_resetting_to_unmatched_bill_becomes_not_required(self):
-        bill = self._create_bill(self.classification_sensitive)
-        bill.with_user(self.user_authorizer).action_authorize_bill()
-        bill.with_user(self.user_creator).classification_id = False
-        self.assertFalse(bill.matched_policy_ids)
-        self.assertEqual(bill.authorization_state, "not_required")
-
-    def test_authorization_survives_edit_to_non_sensitive_field(self):
-        bill = self._create_bill(self.classification_sensitive)
-        bill.with_user(self.user_authorizer).action_authorize_bill()
-        bill.with_user(self.user_creator).ref = "SUPPLIER-REF-1"
-        self.assertEqual(bill.authorization_state, "authorized")
-        self.assertEqual(bill.authorized_by_id, self.user_authorizer)
-
-    def test_reset_to_draft_requires_new_authorization(self):
-        bill = self._create_bill(self.classification_sensitive)
-        bill.with_user(self.user_authorizer).action_authorize_and_confirm_bill()
-        self.assertEqual(bill.state, "posted")
-
-        bill.button_draft()
-
-        self.assertEqual(bill.state, "draft")
-        self.assertEqual(bill.authorization_state, "to_authorize")
-        self.assertFalse(bill.authorized_by_id)
-        self.assertTrue(
-            any("was reset to draft" in (m or "") for m in bill.message_ids.mapped("body"))
-        )
-        self._post_blocked(bill, self.user_other)
-        self.assertEqual(bill.state, "draft")
-
-    def test_unauthorize_only_while_draft(self):
-        bill = self._create_bill(self.classification_sensitive)
-        bill.with_user(self.user_authorizer).action_authorize_bill()
-
-        # Any current pending authorizer can unauthorize, not only the one
-        # who authorized it.
-        self.policy_sensitive.authorized_user_ids = [Command.link(self.user_authorizer_2.id)]
-        bill.with_user(self.user_authorizer_2).action_unauthorize_bill()
-        self.assertEqual(bill.authorization_state, "to_authorize")
-        self.assertFalse(bill.authorized_by_id)
-        creator_activity = self._authorization_activities(bill).filtered(
-            lambda a: a.user_id == self.user_creator
-        )
-        self.assertEqual(len(creator_activity), 1)
-
-        bill.with_user(self.user_authorizer).action_authorize_and_confirm_bill()
-        self.assertEqual(bill.state, "posted")
-        with self.assertRaises(UserError):
-            bill.with_user(self.user_authorizer).action_unauthorize_bill()
 
     def test_customer_invoice_never_triggers_authorization(self):
         self.env["account.vendor.bill.authorization.policy"].create(
@@ -423,152 +259,312 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
                 ],
             }
         )
+        invoice.with_user(self.user_creator).action_post()
         self.assertFalse(invoice.matched_policy_ids)
         self.assertEqual(invoice.authorization_state, "not_required")
-        invoice.with_user(self.user_creator).action_post()
-        self.assertEqual(invoice.state, "posted")
-        self.assertEqual(invoice.authorization_state, "not_required")
+        self._register_payment(invoice, self.user_other)
+        self.assertIn(invoice.payment_state, ("paid", "in_payment"))
 
-    def test_vendor_refund_triggers_authorization(self):
-        refund = self._create_bill(self.classification_sensitive, move_type="in_refund")
-        self.assertEqual(refund.authorization_state, "to_authorize")
-        self._post_blocked(refund, self.user_creator)
-        self.assertEqual(refund.state, "draft")
-        self.assertTrue(self._authorization_activities(refund))
-        refund.with_user(self.user_authorizer).action_authorize_and_confirm_bill()
+    def test_policy_change_is_not_retroactive_on_confirmed_bills(self):
+        """Whether a bill requires authorization is decided when it is
+        confirmed: bills confirmed before a policy existed stay payable.
+        """
+        bill = self._create_posted_bill()
+        self.env["account.vendor.bill.authorization.policy"].create(
+            {"name": "Catch-all", "domain": "[]", "authorized_user_ids": [Command.set([self.user_authorizer.id])]}
+        )
+        self._register_payment(bill, self.user_other)
+        self.assertEqual(bill.authorization_state, "not_required")
+        self.assertIn(bill.payment_state, ("paid", "in_payment"))
+
+    # -- Payment blocking -------------------------------------------------
+
+    def test_bill_to_authorize_cannot_be_paid(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        self._assert_payment_blocked(bill)
+        # Not even by an authorizer, before authorizing.
+        self._assert_payment_blocked(bill, self.user_authorizer)
+
+    def test_reconciliation_safety_net(self):
+        """Any reconciliation of the bill's payable line is refused, e.g. a
+        payment registered elsewhere and matched by hand.
+        """
+        bill = self._create_posted_bill(self.classification_sensitive)
+        payment = self.env["account.payment"].create(
+            {
+                "payment_type": "outbound",
+                "partner_type": "supplier",
+                "partner_id": bill.partner_id.id,
+                "amount": bill.amount_total,
+                "journal_id": self.company_data["default_journal_bank"].id,
+                "payment_method_line_id": self.outbound_payment_method_line.id,
+            }
+        )
+        payment.action_post()
+        lines = (bill.line_ids | payment.move_id.line_ids).filtered(
+            lambda line: line.account_id == bill.line_ids.filtered(
+                lambda l: l.account_type == "liability_payable"
+            ).account_id
+        )
+        with self.assertRaises(UserError):
+            lines.reconcile()
+        self.assertEqual(bill.payment_state, "not_paid")
+
+    def test_outstanding_credit_cannot_be_applied(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        refund = self._create_posted_bill(move_type="in_refund", price=40.0)
+        self.assertEqual(refund.authorization_state, "not_required")
+        refund_line = refund.line_ids.filtered(lambda l: l.account_type == "liability_payable")
+        with self.assertRaises(UserError):
+            bill.js_assign_outstanding_line(refund_line.id)
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+        bill.js_assign_outstanding_line(refund_line.id)
+        self.assertEqual(bill.payment_state, "partial")
+
+    def test_authorize_then_anyone_can_pay(self):
+        bill = self._create_posted_bill(self.classification_two)
+        messages_before = bill.message_ids
+        unrelated = bill.activity_schedule(
+            "mail.mail_activity_data_todo", summary="Call the vendor", user_id=self.user_creator.id
+        )
+
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+
+        self.assertEqual(bill.authorization_state, "authorized")
+        self.assertEqual(bill.authorized_by_id, self.user_authorizer)
+        self.assertFalse(self._requests(bill))
+        self.assertTrue(unrelated.exists())
+        new_messages = bill.message_ids - messages_before
+        self.assertEqual(len(new_messages), 1, new_messages.mapped("body"))
+        self.assertIn("It can now be paid", new_messages.body)
+        self.assertFalse(new_messages.mail_activity_type_id)
+
+        self._register_payment(bill, self.user_other)
+        self.assertIn(bill.payment_state, ("paid", "in_payment"))
+
+    def test_rejected_bill_cannot_be_paid(self):
+        bill = self._create_posted_bill(self.classification_two)
+        action = bill.with_user(self.user_authorizer).action_reject_bill()
+        self.env[action["res_model"]].with_user(self.user_authorizer).with_context(
+            **action["context"]
+        ).create({"reason": "Wrong amount"}).action_confirm()
+
+        self.assertEqual(bill.authorization_state, "rejected")
+        self.assertEqual(bill.authorization_reject_reason, "Wrong amount")
+        self.assertFalse(self._requests(bill))
+        notice = self._todo_activities(bill)
+        self.assertEqual(notice.user_id, self.user_creator)
+        self.assertIn("Wrong amount", str(notice.note))
+        self.assertTrue(any("Reason: Wrong amount" in b for b in self._bodies(bill)))
+        self._assert_payment_blocked(bill)
+        with self.assertRaises(UserError):
+            bill.with_user(self.user_authorizer).action_authorize_bill()
+
+    def test_rejected_bill_fixed_and_confirmed_again_requests_authorization(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        bill.with_user(self.user_authorizer)._reject_bill("Wrong amount")
+        bill.button_draft()
+        self.assertEqual(bill.authorization_state, "not_required")
+        bill.write({"invoice_line_ids": [Command.update(bill.invoice_line_ids.id, {"price_unit": 50.0})]})
+        bill.with_user(self.user_creator).action_post()
+        self.assertEqual(bill.authorization_state, "to_authorize")
+        self.assertTrue(self._requests(bill))
+
+    def test_full_reversal_of_bill_awaiting_authorization_is_allowed(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        reversal = (
+            self.env["account.move.reversal"]
+            .with_user(self.user_creator)
+            .with_context(active_model="account.move", active_ids=bill.ids)
+            .create({"journal_id": bill.journal_id.id, "reason": "Cancel it"})
+        )
+        reversal.modify_moves()
+        refund = bill.reversal_move_ids
         self.assertEqual(refund.state, "posted")
+        self.assertEqual(refund.authorization_state, "not_required")
+        self.assertEqual(bill.payment_state, "reversed")
+
+    def test_vendor_refund_requires_authorization_too(self):
+        refund = self._create_posted_bill(self.classification_sensitive, move_type="in_refund")
+        self.assertEqual(refund.authorization_state, "to_authorize")
+        self.assertTrue(self._requests(refund))
+        self._assert_payment_blocked(refund)
+        refund.with_user(self.user_authorizer).action_authorize_bill()
+        self._register_payment(refund, self.user_other)
+        self.assertIn(refund.payment_state, ("paid", "in_payment"))
+
+    def test_refund_awaiting_authorization_cannot_be_applied_to_a_bill(self):
+        bill = self._create_posted_bill()
+        refund = self._create_posted_bill(self.classification_sensitive, move_type="in_refund", price=40.0)
+        refund_line = refund.line_ids.filtered(lambda l: l.account_type == "liability_payable")
+        with self.assertRaises(UserError):
+            bill.js_assign_outstanding_line(refund_line.id)
+
+    # -- Authorization lifecycle ----------------------------------------
+
+    def test_unauthorize_only_while_unpaid(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+
+        # Any current pending authorizer can unauthorize, not only the one
+        # who authorized it.
+        self.policy_sensitive.authorized_user_ids = [Command.link(self.user_authorizer_2.id)]
+        bill.with_user(self.user_authorizer_2).action_unauthorize_bill()
+        self.assertEqual(bill.authorization_state, "to_authorize")
+        self.assertFalse(bill.authorized_by_id)
+        self.assertEqual(self._todo_activities(bill).filtered(lambda a: a.user_id == self.user_creator).user_id,
+                         self.user_creator)
+        self._assert_payment_blocked(bill)
+
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+        self._register_payment(bill, self.user_other, amount=30.0)
+        self.assertEqual(bill.payment_state, "partial")
+        with self.assertRaises(UserError):
+            bill.with_user(self.user_authorizer).action_unauthorize_bill()
 
     def test_non_authorizer_cannot_authorize_reject_or_unauthorize(self):
-        bill = self._create_bill(self.classification_sensitive)
+        bill = self._create_posted_bill(self.classification_sensitive)
         with self.assertRaises(AccessError):
             bill.with_user(self.user_other).action_authorize_bill()
-        with self.assertRaises(AccessError):
-            bill.with_user(self.user_other).action_authorize_and_confirm_bill()
         with self.assertRaises(AccessError):
             bill.with_user(self.user_other).action_reject_bill()
         bill.with_user(self.user_authorizer).action_authorize_bill()
         with self.assertRaises(AccessError):
             bill.with_user(self.user_other).action_unauthorize_bill()
 
-    def test_cannot_reauthorize_or_reject_once_authorized(self):
+    def test_reject_wizard_rechecks_permission_server_side(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        wizard = (
+            self.env["account.vendor.bill.authorization.reject.wizard"]
+            .with_user(self.user_other)
+            .create({"move_id": bill.id, "reason": "Not mine to reject"})
+        )
+        with self.assertRaises(AccessError):
+            wizard.action_confirm()
+
+    def test_draft_bill_cannot_be_authorized(self):
         bill = self._create_bill(self.classification_sensitive)
-        bill.with_user(self.user_authorizer).action_authorize_bill()
         with self.assertRaises(UserError):
             bill.with_user(self.user_authorizer).action_authorize_bill()
-        with self.assertRaises(UserError):
-            bill.with_user(self.user_authorizer).action_reject_bill()
 
-    def test_post_safety_net_blocks_validate_wizard(self):
-        """The "Post entries" list action posts through the
-        validate.account.move wizard, which calls _post() directly without
-        going through action_post().
-        """
-        bill = self._create_bill(self.classification_sensitive)
-        wizard = (
-            self.env["validate.account.move"]
-            .with_user(self.user_creator)
-            .create({"move_ids": [Command.set(bill.ids)]})
-        )
-        with self.assertRaises(UserError):
-            wizard.validate_move()
-        self.assertEqual(bill.state, "draft")
-
+    def test_reset_to_draft_requires_authorization_again(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
         bill.with_user(self.user_authorizer).action_authorize_bill()
-        wizard.with_user(self.user_other).validate_move()
-        self.assertEqual(bill.state, "posted")
 
-    def test_full_reversal_of_posted_bill_is_not_blocked(self):
-        self.env["account.vendor.bill.authorization.policy"].create(
-            {
-                "name": "Catch-all",
-                "domain": "[]",
-                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
-            }
-        )
-        bill = self._create_bill()
-        bill.with_user(self.user_authorizer).action_post()
-        reversal = (
-            self.env["account.move.reversal"]
-            .with_user(self.user_creator)
-            .with_context(active_model="account.move", active_ids=bill.ids)
-            .create({"journal_id": bill.journal_id.id, "reason": "Full refund"})
-        )
-        # "Modify" (full refund + new draft) is the reversal flow that posts
-        # the credit note immediately (move_reverse_cancel).
-        reversal.modify_moves()
-        refund = bill.reversal_move_ids
-        self.assertEqual(refund.state, "posted")
-        self.assertEqual(refund.authorization_state, "not_required")
+        bill.button_draft()
 
-    def test_blocking_a_bill_commits_before_raising_outside_tests(self):
-        """Without an explicit commit before the final raise, every write
-        action_post() just made while blocking a bill (authorization_state,
-        activities, chatter messages) would be rolled back by the RPC
-        dispatcher in real usage. Confirm the commit is called, using a mock
-        instead of a real commit against the shared per-test transaction.
-        """
-        bill = self._create_bill(self.classification_sensitive)
-        with patch.object(odoo_module, "current_test", False), patch.object(
-            self.env.cr, "commit"
-        ) as mock_commit:
-            with self.assertRaises(UserError):
-                bill.with_user(self.user_creator).action_post()
-            mock_commit.assert_called_once()
-
-    def test_policy_condition_change_is_picked_up_on_post(self):
-        """Editing a policy's domain does not recompute stored matches on
-        existing drafts by itself; action_post() must evaluate the live
-        configuration anyway.
-        """
-        bill = self._create_bill()
         self.assertEqual(bill.authorization_state, "not_required")
-        self.policy_sensitive.domain = str([("partner_id", "=", self.partner_a.id)])
-        self._post_blocked(bill, self.user_creator)
-        self.assertEqual(bill.state, "draft")
-        self.assertEqual(bill.matched_policy_ids, self.policy_sensitive)
+        self.assertFalse(bill.authorized_by_id)
+        self.assertTrue(any("was reset to draft" in b for b in self._bodies(bill)))
+        bill.with_user(self.user_creator).action_post()
+        self.assertEqual(bill.authorization_state, "to_authorize")
+        self._assert_payment_blocked(bill)
 
-    def test_amount_tier_policies(self):
-        policy_model = self.env["account.vendor.bill.authorization.policy"]
-        policy_low = policy_model.create(
-            {
-                "name": "Low",
-                "domain": str([("amount_total", "<", 1000)]),
-                "authorized_user_ids": [Command.set([self.user_authorizer.id])],
-            }
+    def test_reset_to_draft_and_cancel_remove_requests(self):
+        bill = self._create_posted_bill(self.classification_two)
+        self.assertTrue(self._requests(bill))
+        bill.button_draft()
+        self.assertFalse(self._requests(bill))
+        bill.button_cancel()
+        self.assertEqual(bill.state, "cancel")
+
+    def test_editing_authorized_confirmed_bill_requests_authorization_again(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+        bill.with_user(self.user_creator).classification_id = self.classification_two
+        self.assertEqual(bill.authorization_state, "to_authorize")
+        self.assertEqual(bill.matched_policy_ids, self.policy_two)
+        self.assertEqual(self._requests(bill).user_id, self.user_authorizer | self.user_authorizer_2)
+        self.assertTrue(any("Authorization reset" in b for b in self._bodies(bill)))
+        self._assert_payment_blocked(bill)
+
+    def test_editing_confirmed_bill_out_of_every_policy_makes_it_payable(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        bill.with_user(self.user_authorizer)._reject_bill("No")
+        bill.with_user(self.user_creator).classification_id = False
+        self.assertEqual(bill.authorization_state, "not_required")
+        self.assertFalse(self._requests(bill))
+
+    def test_authorization_survives_edit_to_non_sensitive_field(self):
+        bill = self._create_posted_bill(self.classification_sensitive)
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+        bill.with_user(self.user_creator).ref = "SUPPLIER-REF-1"
+        self.assertEqual(bill.authorization_state, "authorized")
+
+    def test_draft_authorized_under_the_old_flow_stays_authorized(self):
+        """Left over from versions that authorized before confirming."""
+        bill = self._create_bill(self.classification_sensitive)
+        bill.write({"authorization_state": "authorized", "authorized_by_id": self.user_authorizer.id})
+        bill.with_user(self.user_other).action_post()
+        self.assertEqual(bill.authorization_state, "authorized")
+        self.assertFalse(self._requests(bill))
+        self.assertTrue(any("authorized earlier by" in b for b in self._bodies(bill)))
+        self._register_payment(bill, self.user_other)
+        self.assertIn(bill.payment_state, ("paid", "in_payment"))
+
+    def test_requests_in_another_language_are_recognized(self):
+        lang = self.env["res.lang"]._activate_lang("es_AR")
+        bill = self._create_bill(self.classification_sensitive)
+        bill.with_context(lang=lang.code).with_user(self.user_creator).action_post()
+        self.assertEqual(len(self._requests(bill)), 1)
+        bill.with_user(self.user_authorizer).action_authorize_bill()
+        self.assertFalse(self._requests(bill))
+
+    def test_cleanup_stale_authorization_requests(self):
+        summary = "Vendor bill authorization requested"
+
+        def schedule(bill, user):
+            return bill.activity_schedule(
+                "mail.mail_activity_data_todo", summary=summary, user_id=user.id
+            )
+
+        draft = self._create_bill(self.classification_sensitive)
+        stale = schedule(draft, self.user_authorizer)
+
+        pending = self._create_posted_bill(self.classification_two)
+        first, other = self._requests(pending).sorted("id")
+        duplicate = schedule(pending, first.user_id)
+        unrelated = pending.activity_schedule(
+            "mail.mail_activity_data_todo", summary="Call the vendor", user_id=self.user_authorizer.id
         )
-        policy_high = policy_model.create(
-            {
-                "name": "High",
-                "domain": str([("amount_total", ">=", 1000)]),
-                "authorized_user_ids": [Command.set([self.user_authorizer_2.id])],
-            }
+
+        removed = self.env["account.move"]._cleanup_stale_authorization_requests()
+
+        self.assertEqual(removed, 2)
+        self.assertFalse(stale.exists())
+        self.assertFalse(duplicate.exists())
+        self.assertTrue(first.exists())
+        self.assertTrue(other.exists())
+        self.assertTrue(unrelated.exists())
+
+    def test_always_true_leaf_in_policy_domain(self):
+        """The 19.0.2.0.0 migration replaces the old Status conditions by an
+        always-true leaf: such a domain must keep matching.
+        """
+        self.policy_sensitive.domain = str(
+            [(1, "=", 1), ("classification_id", "=", self.classification_sensitive.id)]
         )
-        bill = self._create_bill(price=100.0)
-        self.assertEqual(bill.matched_policy_ids, policy_low)
-        bill.with_user(self.user_creator).write(
-            {"invoice_line_ids": [Command.update(bill.invoice_line_ids.id, {"price_unit": 5000.0})]}
-        )
-        self.assertEqual(bill.matched_policy_ids, policy_high)
-        self.assertEqual(bill.pending_authorizer_ids, self.user_authorizer_2)
+        bill = self._create_posted_bill(self.classification_sensitive)
+        self.assertEqual(bill.matched_policy_ids, self.policy_sensitive)
+        self.assertEqual(bill.authorization_state, "to_authorize")
+
+    # -- Views --------------------------------------------------------------
 
     def test_search_filters(self):
-        bill_pending = self._create_bill(self.classification_sensitive)
-        bill_other_authorizer = self._create_bill(self.classification_two)
-        bill_authorized = self._create_bill(self.classification_sensitive)
+        bill_pending = self._create_posted_bill(self.classification_sensitive)
+        bill_other_authorizer = self._create_posted_bill(self.classification_two)
+        bill_authorized = self._create_posted_bill(self.classification_sensitive)
         bill_authorized.with_user(self.user_authorizer).action_authorize_bill()
-        bill_authorized_by_other_creator = self._create_bill(
-            self.classification_sensitive, user=self.user_manager
-        )
-        bill_authorized_by_other_creator.with_user(self.user_authorizer).action_authorize_bill()
-        bill_rejected = self._create_bill(self.classification_sensitive)
+        bill_paid = self._create_posted_bill(self.classification_sensitive)
+        bill_paid.with_user(self.user_authorizer).action_authorize_bill()
+        self._register_payment(bill_paid, self.user_other)
+        bill_rejected = self._create_posted_bill(self.classification_sensitive)
         bill_rejected.with_user(self.user_authorizer)._reject_bill("No")
-        bill_confirmed = self._create_bill(self.classification_sensitive)
-        bill_confirmed.with_user(self.user_authorizer).action_authorize_and_confirm_bill()
-        bill_no_authorizers = self._create_bill(self.classification_blocked)
+        bill_draft = self._create_bill(self.classification_sensitive)
+        bill_no_authorizers = self._create_posted_bill(self.classification_blocked)
         bills = (
-            bill_pending | bill_other_authorizer | bill_authorized
-            | bill_authorized_by_other_creator | bill_rejected | bill_confirmed
-            | bill_no_authorizers
+            bill_pending | bill_other_authorizer | bill_authorized | bill_paid
+            | bill_rejected | bill_draft | bill_no_authorizers
         )
 
         def search(filter_name, user):
@@ -584,11 +580,7 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
             bill_other_authorizer,
         )
         self.assertEqual(
-            search("authorization_to_authorize_by_me", self.user_authorizer),
-            bill_pending | bill_other_authorizer,
-        )
-        self.assertEqual(
-            search("authorization_authorized_unconfirmed_by_me", self.user_creator),
+            search("authorization_authorized_pending_payment", self.user_creator),
             bill_authorized,
         )
 
@@ -602,170 +594,24 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
                 self.assertIsNotNone(node)
                 self.assertEqual(node.get("optional"), "hide")
 
-    def test_form_header_replaces_confirm_for_pending_authorizer(self):
-        """For an authorizer on a pending bill, "Confirm" is hidden under
-        exactly the condition that shows "Authorize + Confirm", and
-        "Reject" sits in the header next to them.
-        """
+    def test_form_header_hides_pay_while_awaiting_authorization(self):
         view = self.env["account.move"].get_view(
             view_id=self.env.ref("account.view_move_form").id, view_type="form"
         )
         header = etree.fromstring(view["arch"]).find(".//header")
+        condition = (
+            "(move_type in ('in_invoice', 'in_refund') "
+            "and authorization_state in ('to_authorize', 'rejected'))"
+        )
+        for button_id in ("account_invoice_payment_btn", "account_invoice_payment_secondary_btn"):
+            button = header.find(f".//button[@id='{button_id}']")
+            self.assertIn(condition, button.get("invisible"))
         names = [button.get("name") for button in header.iter("button")]
+        for name in ("action_authorize_bill", "action_reject_bill", "action_unauthorize_bill"):
+            self.assertIn(name, names)
+        self.assertNotIn("action_authorize_and_confirm_bill", names)
         confirm = [b for b in header.iter("button") if b.get("name") == "action_post"][-1]
-        combined = header.find(".//button[@name='action_authorize_and_confirm_bill']")
-        self.assertIn(
-            "(state == 'draft' and move_type in ('in_invoice', 'in_refund') and not is_blocked "
-            "and authorization_state not in ('authorized', 'rejected') "
-            "and uid in pending_authorizer_ids)",
-            confirm.get("invisible"),
-        )
-        self.assertEqual(
-            combined.get("invisible"),
-            "state != 'draft' or move_type not in ('in_invoice', 'in_refund') or is_blocked "
-            "or authorization_state in ('authorized', 'rejected') "
-            "or uid not in pending_authorizer_ids",
-        )
-        index = names.index("action_authorize_and_confirm_bill")
-        self.assertEqual(
-            names[index:index + 4],
-            [
-                "action_authorize_and_confirm_bill",
-                "action_authorize_bill",
-                "action_reject_bill",
-                "action_unauthorize_bill",
-            ],
-        )
-
-    # -- Authorization request activities ------------------------------
-
-    def _requests(self, bill):
-        return bill._get_authorization_requests()
-
-    def test_authorize_removes_requests_without_chatter_noise(self):
-        """Authorizing removes every "authorization requested" activity
-        without posting one "activity done" message per authorizer, and
-        leaves unrelated To-Dos alone.
-        """
-        bill = self._create_bill(self.classification_two)
-        self._post_blocked(bill, self.user_creator)
-        self.assertEqual(self._requests(bill).user_id, self.user_authorizer | self.user_authorizer_2)
-        unrelated = bill.activity_schedule(
-            "mail.mail_activity_data_todo", summary="Call the vendor", user_id=self.user_creator.id
-        )
-        messages_before = bill.message_ids
-
-        bill.with_user(self.user_authorizer).action_authorize_bill()
-
-        self.assertFalse(self._requests(bill))
-        self.assertTrue(unrelated.exists())
-        new_messages = bill.message_ids - messages_before
-        self.assertEqual(len(new_messages), 1, new_messages.mapped("body"))
-        self.assertIn("authorized by", new_messages.body)
-        self.assertFalse(new_messages.mail_activity_type_id)
-
-    def test_reject_removes_requests_and_keeps_creator_notice(self):
-        bill = self._create_bill(self.classification_two)
-        self._post_blocked(bill, self.user_creator)
-        bill.with_user(self.user_authorizer_2)._reject_bill("Duplicated")
-        self.assertFalse(self._requests(bill))
-        notice = self._authorization_activities(bill)
-        self.assertEqual(notice.user_id, self.user_creator)
-
-    def test_direct_confirm_by_authorizer_removes_requests(self):
-        bill = self._create_bill(self.classification_two)
-        self._post_blocked(bill, self.user_creator)
-        bill.with_user(self.user_authorizer_2).action_post()
-        self.assertEqual(bill.state, "posted")
-        self.assertFalse(self._requests(bill))
-
-    def test_repeated_confirm_attempt_does_not_duplicate_requests(self):
-        bill = self._create_bill(self.classification_two)
-        self._post_blocked(bill, self.user_creator)
-        self._post_blocked(bill, self.user_other)
-        self.assertEqual(len(self._requests(bill)), 2)
-        requested = [b for b in bill.message_ids.mapped("body") if "Authorization requested from" in (b or "")]
-        self.assertEqual(len(requested), 1)
-
-        # A newly added authorizer is asked on the next attempt, only them.
-        self.policy_two.authorized_user_ids = [Command.link(self.user_manager.id)]
-        self._post_blocked(bill, self.user_creator)
-        self.assertEqual(
-            self._requests(bill).user_id,
-            self.user_authorizer | self.user_authorizer_2 | self.user_manager,
-        )
-        self.assertEqual(len(self._requests(bill)), 3)
-
-    def test_requests_removed_when_no_longer_required(self):
-        """E.g. an edit, a policy change, or a bypass (pay now journal in
-        account_vendor_bill_authorization_pro) makes the bill stop matching:
-        the pending requests go away with it.
-        """
-        bill = self._create_bill(self.classification_sensitive)
-        self._post_blocked(bill, self.user_creator)
-        self.assertTrue(self._requests(bill))
-        bill.with_user(self.user_creator).classification_id = False
-        self.assertEqual(bill.authorization_state, "not_required")
-        self.assertFalse(self._requests(bill))
-
-    def test_requests_removed_when_policy_stops_matching_and_bill_is_posted(self):
-        bill = self._create_bill(self.classification_sensitive)
-        self._post_blocked(bill, self.user_creator)
-        self.policy_sensitive.active = False
-        bill.with_user(self.user_creator).action_post()
-        self.assertEqual(bill.state, "posted")
-        self.assertFalse(self._requests(bill))
-
-    def test_requests_removed_when_bill_is_cancelled(self):
-        bill = self._create_bill(self.classification_sensitive)
-        self._post_blocked(bill, self.user_creator)
-        bill.button_cancel()
-        self.assertEqual(bill.state, "cancel")
-        self.assertFalse(self._requests(bill))
-
-    def test_requests_in_another_language_are_recognized(self):
-        """The summary is stored in the requester's language; requests made
-        by a Spanish-speaking user must still be found and removed.
-        """
-        lang = self.env["res.lang"]._activate_lang("es_AR")
-        bill = self._create_bill(self.classification_sensitive)
-        self._post_blocked(bill.with_context(lang=lang.code), self.user_creator)
-        self.assertEqual(len(self._requests(bill)), 1)
-        bill.with_user(self.user_authorizer).action_authorize_bill()
-        self.assertFalse(self._requests(bill))
-
-    def test_cleanup_stale_authorization_requests(self):
-        """Migration helper: removes requests left behind by earlier
-        versions on bills no longer pending, and duplicates on pending
-        bills, keeping one request per authorizer.
-        """
-        summary = "Vendor bill authorization requested"
-
-        def schedule(bill, user):
-            return bill.activity_schedule(
-                "mail.mail_activity_data_todo", summary=summary, user_id=user.id
-            )
-
-        posted = self._create_bill(self.classification_sensitive)
-        posted.with_user(self.user_authorizer).action_authorize_and_confirm_bill()
-        stale = schedule(posted, self.user_authorizer)
-
-        pending = self._create_bill(self.classification_two)
-        first = schedule(pending, self.user_authorizer)
-        duplicate = schedule(pending, self.user_authorizer)
-        other = schedule(pending, self.user_authorizer_2)
-        unrelated = pending.activity_schedule(
-            "mail.mail_activity_data_todo", summary="Call the vendor", user_id=self.user_authorizer.id
-        )
-
-        removed = self.env["account.move"]._cleanup_stale_authorization_requests()
-
-        self.assertEqual(removed, 2)
-        self.assertFalse(stale.exists())
-        self.assertFalse(duplicate.exists())
-        self.assertTrue(first.exists())
-        self.assertTrue(other.exists())
-        self.assertTrue(unrelated.exists())
+        self.assertNotIn("pending_authorizer_ids", confirm.get("invisible"))
 
     # -- Multi-company -------------------------------------------------
 
@@ -788,9 +634,6 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
         )
 
     def test_company_policy_only_applies_to_its_own_company(self):
-        """A policy restricted to one company never matches another
-        company's bills, even with an identical condition.
-        """
         company_data_2 = self.setup_other_company()
         company_2 = company_data_2["company"]
         classification = self.env["account.move.classification"].create({"name": "Company 2 only"})
@@ -803,14 +646,12 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
             }
         )
 
-        bill_company_1 = self._create_bill(classification)
-        self.assertEqual(bill_company_1.company_id, self.env.company)
+        bill_company_1 = self._create_posted_bill(classification)
         self.assertFalse(bill_company_1.matched_policy_ids)
         self.assertEqual(bill_company_1.authorization_state, "not_required")
-        bill_company_1.with_user(self.user_creator).action_post()
-        self.assertEqual(bill_company_1.state, "posted")
 
         bill_company_2 = self._create_company_2_bill(company_data_2, classification)
+        bill_company_2.with_company(company_2).action_post()
         self.assertEqual(bill_company_2.matched_policy_ids, policy_company_2)
         self.assertEqual(bill_company_2.authorization_state, "to_authorize")
 
@@ -843,7 +684,4 @@ class TestAccountVendorBillAuthorization(AccountTestInvoicingCommon):
     def test_new_policy_defaults(self):
         policy = self.env["account.vendor.bill.authorization.policy"].create({"name": "Defaults"})
         self.assertEqual(policy.company_id, self.env.company)
-        self.assertEqual(
-            safe_eval(policy.domain),
-            [("move_type", "in", ["in_invoice", "in_refund"]), ("state", "=", "draft")],
-        )
+        self.assertEqual(safe_eval(policy.domain), [("move_type", "in", ["in_invoice", "in_refund"])])

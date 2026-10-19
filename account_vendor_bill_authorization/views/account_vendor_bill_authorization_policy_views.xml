@@ -80,8 +80,8 @@
             <p>
                 Authorization policies define, through a domain condition on
                 the vendor bill or vendor credit/debit note, which users must
-                authorize it before it can be confirmed, or whether it must
-                always be blocked.
+                authorize it once it is confirmed, before it can be paid, or
+                whether it must never be confirmed.
             </p>
         </field>
     </record>

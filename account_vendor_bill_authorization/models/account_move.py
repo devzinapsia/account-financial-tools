@@ -1,6 +1,6 @@
 from markupsafe import Markup
 
-from odoo import _, api, fields, models, modules
+from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
 
 ACTIVITY_TYPE_XMLID = "mail.mail_activity_data_todo"
@@ -150,60 +150,16 @@ class AccountMove(models.Model):
             "invoice_payment_term_id",
         }
 
-    def _sync_authorization_state_with_match(self):
-        """Keep authorization_state accurate for draft vendor bills that
-        haven't had an explicit authorization decision made on them yet: it
-        must read "To authorize" as soon as the bill matches a policy, not
-        stay on the default "Not required" until someone happens to attempt
-        action_post() and gets blocked.
-
-        Deliberately skips "authorized"/"rejected": those are decisions a
-        person made, not a derived fact, and must never be silently
-        overwritten by a recompute of matched_policy_ids (see write()'s own
-        handling of a no-longer-valid decision instead).
+    def _is_awaiting_authorization(self):
+        """True if this vendor bill can't be paid (nor reconciled) yet: it
+        was confirmed while matching a policy and is still awaiting
+        authorization, or it was rejected.
         """
-        for move in self:
-            if move.move_type not in VENDOR_BILL_TYPES:
-                # E.g. a draft whose type was switched away from a vendor
-                # bill: this module never applies to it anymore.
-                if move.authorization_state != "not_required":
-                    super(AccountMove, move).write(
-                        {"authorization_state": "not_required", "authorized_by_id": False}
-                    )
-                continue
-            if move.state != "draft":
-                continue
-            if move.authorization_state not in ("not_required", "to_authorize"):
-                continue
-            new_state = "to_authorize" if move.matched_policy_ids else "not_required"
-            if move.authorization_state != new_state:
-                super(AccountMove, move).write({"authorization_state": new_state})
-                if new_state == "not_required":
-                    # E.g. an edit, a policy change, or a bypass (see
-                    # account_vendor_bill_authorization_pro) made it stop
-                    # matching: nobody needs to act on it anymore.
-                    move._clear_authorization_requests()
-
-    def _force_authorization_compute(self):
-        # Force matched_policy_ids/pending_authorizer_ids/is_blocked to be
-        # computed and flushed right away, instead of leaving them lazily
-        # "to compute" until something happens to read them (e.g. opening
-        # the bill's form). Search domains on these fields (the "To
-        # authorize" / "To authorize by me" filters) are not guaranteed to
-        # trigger that lazy computation themselves. Loop instead of reading
-        # the fields on `self` directly: field access only works on a single
-        # record at a time, but the first access still recomputes the whole
-        # pending batch.
-        for move in self:
-            move.pending_authorizer_ids
-            move.is_blocked
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        moves = super().create(vals_list)
-        moves._force_authorization_compute()
-        moves._sync_authorization_state_with_match()
-        return moves
+        self.ensure_one()
+        return self.move_type in VENDOR_BILL_TYPES and self.authorization_state in (
+            "to_authorize",
+            "rejected",
+        )
 
     def write(self, vals):
         if self.env.context.get(POSTING_CONTEXT_KEY):
@@ -215,88 +171,97 @@ class AccountMove(models.Model):
         # the vendor, journal, currency, dates or classification), that
         # earlier decision no longer says anything about the bill as it
         # exists now -- someone could otherwise get a small amount
-        # authorized, then bump it up before confirming without ever being
-        # re-checked, since action_post() trusts an "authorized" bill.
-        # Capture who needs to be reset *before* the write changes anything.
+        # authorized, then change it before paying without ever being
+        # re-checked. Capture who needs to be reset *before* the write
+        # changes anything.
         to_reset_on_edit = self.browse()
         if self._get_authorization_sensitive_fields().intersection(vals):
             to_reset_on_edit = self.filtered(
                 lambda m: m.move_type in VENDOR_BILL_TYPES
-                and m.state == "draft"
+                and m.state in ("draft", "posted")
                 and m.authorization_state in ("authorized", "rejected")
             )
-        # A bill authorized, confirmed and then reset to draft must be
-        # authorized again before it can be confirmed again: it can be
-        # freely edited once back in draft.
+        # A confirmed bill going back to draft loses whatever authorization
+        # state it had: it is evaluated again, from scratch, when it is
+        # confirmed again.
         to_reset_on_draft = self.browse()
         if vals.get("state") == "draft":
             to_reset_on_draft = self.filtered(
-                lambda m: m.move_type in VENDOR_BILL_TYPES
-                and m.state != "draft"
-                and m.authorization_state == "authorized"
+                lambda m: m.move_type in VENDOR_BILL_TYPES and m.state != "draft"
             )
+        to_reset_on_edit -= to_reset_on_draft
         previous = {
             move.id: (move.authorization_state, move.authorized_by_id)
             for move in to_reset_on_edit | to_reset_on_draft
         }
 
         result = super().write(vals)
-        if "state" in vals:
-            # The policy conditions are usually scoped to draft bills (see
-            # the policy's default domain), so a bill going back to draft
-            # must be re-evaluated against the live configuration.
-            self._refresh_authorization_state()
-        else:
-            self._force_authorization_compute()
 
-        to_reset = to_reset_on_edit | to_reset_on_draft
-        if to_reset:
-            # Bypass this same override: the correction write below only
-            # touches authorization fields, none of which is
-            # authorization-sensitive.
-            super(AccountMove, to_reset).write(
-                {"authorization_state": "to_authorize", "authorized_by_id": False}
-            )
-            for move in to_reset:
-                previous_state, previous_authorizer = previous[move.id]
-                if move in to_reset_on_draft:
-                    body = _(
+        for move in to_reset_on_draft:
+            previous_state, previous_authorizer = previous[move.id]
+            move._clear_authorization_requests()
+            if previous_state != "not_required":
+                super(AccountMove, move).write(
+                    {"authorization_state": "not_required", "authorized_by_id": False}
+                )
+            if previous_state == "authorized":
+                move.message_post(
+                    body=_(
                         "Authorization reset: this vendor bill was reset to "
-                        "draft after %s authorized it, so it must be "
-                        "authorized again before it can be confirmed.",
+                        "draft after %s authorized it, so it will need to be "
+                        "authorized again once it is confirmed.",
                         previous_authorizer.display_name or _("an authorizer"),
                     )
-                elif previous_state == "rejected":
-                    body = _(
-                        "Rejection reset: this vendor bill's data changed "
-                        "after it was rejected, so it is pending "
-                        "authorization again."
-                    )
-                else:
-                    body = _(
-                        "Authorization reset: this vendor bill's data changed "
-                        "after %s authorized it, so it must be authorized "
-                        "again before it can be confirmed.",
-                        previous_authorizer.display_name or _("an authorizer"),
-                    )
+                )
+
+        for move in to_reset_on_edit:
+            previous_state, previous_authorizer = previous[move.id]
+            if previous_state == "rejected":
+                body = _(
+                    "Rejection reset: this vendor bill's data changed after it "
+                    "was rejected, so it is pending authorization again."
+                )
+            else:
+                body = _(
+                    "Authorization reset: this vendor bill's data changed "
+                    "after %s authorized it, so it must be authorized again "
+                    "before it can be paid.",
+                    previous_authorizer.display_name or _("an authorizer"),
+                )
+            if move.state == "posted":
+                # Confirmed: pending again, and the authorizers are asked
+                # again.
+                super(AccountMove, move).write(
+                    {"authorization_state": "to_authorize", "authorized_by_id": False}
+                )
+                move.message_post(body=body)
+                move._refresh_authorization_state()
+                move._apply_authorization_requirement()
+            else:
+                # Draft (left over from versions that authorized before
+                # confirming): evaluated again when it is confirmed.
+                super(AccountMove, move).write(
+                    {"authorization_state": "not_required", "authorized_by_id": False}
+                )
                 move.message_post(body=body)
 
-        if vals.get("state") and vals["state"] != "draft":
-            # E.g. cancelled: a bill that is no longer a draft can't be
-            # authorized anymore. Posting is handled in _post().
+        if vals.get("state") and vals["state"] not in ("draft", "posted"):
+            # E.g. cancelled: nobody needs to act on its requests anymore.
+            # Posting is handled in _post().
             self._clear_authorization_requests()
-        self._sync_authorization_state_with_match()
         return result
 
     def _refresh_authorization_state(self):
         """Force a real recompute of the matching fields against the current
         policy configuration, instead of trusting a possibly stale stored
         value. Editing a policy's conditions (e.g. adding a vendor) does
-        not, by itself, invalidate the stored compute on existing draft
-        bills, since there is no stored relation to depend on before the
-        match is evaluated. Calling this before every authorization-
-        sensitive decision keeps those decisions always based on the live
-        configuration.
+        not, by itself, invalidate the stored compute on existing bills,
+        since there is no stored relation to depend on before the match is
+        evaluated. Calling this before every authorization-sensitive
+        decision keeps those decisions always based on the live
+        configuration. It never changes authorization_state by itself:
+        whether a bill requires authorization is decided when it is
+        confirmed (see _post()).
         """
         moves = self.exists()
         if not moves:
@@ -305,7 +270,6 @@ class AccountMove(models.Model):
         for fname in fnames:
             self.env.add_to_compute(self._fields[fname], moves)
         moves._recompute_recordset(fnames)
-        moves._sync_authorization_state_with_match()
 
     def _get_blocked_error_message(self):
         blocking_policies = self.matched_policy_ids.filtered("always_block")
@@ -323,10 +287,10 @@ class AccountMove(models.Model):
 
     @api.model
     def _get_authorization_request_summaries(self):
-        """The summary of the activities _create_authorization_activities()
-        schedules, in every installed language: the summary is stored
-        already translated into the requester's language, and it is what
-        tells these activities apart from any other To-Do on the bill.
+        """The summary of the activities _request_authorization() schedules,
+        in every installed language: the summary is stored already
+        translated into the requester's language, and it is what tells these
+        activities apart from any other To-Do on the bill.
         """
         # The untranslated source is always included: it is what gets stored
         # for any requester whose language has no translation, and en_US is
@@ -362,20 +326,19 @@ class AccountMove(models.Model):
     def _clear_authorization_requests(self):
         """Remove the pending "authorization requested" activities once
         nobody needs to act on them anymore (authorized, rejected, no
-        longer required, posted, cancelled). They are deleted rather than
-        marked as done on purpose: marking an activity as done posts one
-        chatter message per activity (one per authorizer), while the
+        longer required, reset to draft, cancelled). They are deleted rather
+        than marked as done on purpose: marking an activity as done posts
+        one chatter message per activity (one per authorizer), while the
         decision itself is already logged by this module's own message.
         """
         self._get_authorization_requests().unlink()
 
     @api.model
     def _cleanup_stale_authorization_requests(self):
-        """Remove "authorization requested" activities left behind by
-        earlier versions, which only closed them on an explicit decision:
-        those on bills no longer pending authorization, plus duplicates
-        (one per repeated confirm attempt) on bills still pending. Returns
-        the number of activities removed.
+        """Remove "authorization requested" activities that nobody needs to
+        act on: those on bills not pending authorization (confirmed and
+        "To authorize"), plus duplicates on bills still pending. Used by
+        the migrations. Returns the number of activities removed.
         """
         todo = self.env.ref(ACTIVITY_TYPE_XMLID)
         activities = (
@@ -393,7 +356,7 @@ class AccountMove(models.Model):
         moves = self.sudo().browse(set(activities.mapped("res_id"))).exists()
         pending = moves.filtered(
             lambda m: m.move_type in VENDOR_BILL_TYPES
-            and m.state == "draft"
+            and m.state == "posted"
             and m.authorization_state == "to_authorize"
         )
         to_remove = self.env["mail.activity"].sudo()
@@ -406,24 +369,13 @@ class AccountMove(models.Model):
         to_remove.unlink()
         return len(to_remove)
 
-    def _create_authorization_activities(self):
+    def _request_authorization(self):
+        """Ask every pending authorizer of these confirmed bills for their
+        authorization, through an activity. Authorizers who already have an
+        open request are not asked again (and the chatter only logs when
+        someone new was asked).
+        """
         for move in self:
-            if move.is_blocked:
-                # Nobody can ever approve it: asking anyone would only
-                # suggest that waiting for an approval will help.
-                move._clear_authorization_requests()
-                move.message_post(
-                    body=_(
-                        "This vendor bill is permanently blocked by the "
-                        "following policy/policies: %s.",
-                        ", ".join(move.matched_policy_ids.filtered("always_block").mapped("name")),
-                    )
-                )
-                continue
-
-            # A repeated confirm attempt must not ask the same authorizers
-            # again: only those without an open request get one (and the
-            # chatter only logs when someone new was asked).
             already_asked = move._get_authorization_requests().user_id
             new_authorizers = move.pending_authorizer_ids - already_asked
             for user in new_authorizers:
@@ -431,9 +383,9 @@ class AccountMove(models.Model):
                     ACTIVITY_TYPE_XMLID,
                     summary=_("Vendor bill authorization requested"),
                     note=_(
-                        "%(requester)s requested your authorization to confirm "
-                        "vendor bill %(bill)s (%(amount)s %(currency)s) from "
-                        "%(partner)s.",
+                        "%(requester)s confirmed vendor bill %(bill)s "
+                        "(%(amount)s %(currency)s) from %(partner)s: it "
+                        "requires your authorization before it can be paid.",
                         requester=self.env.user.display_name,
                         bill=move.display_name,
                         amount=move.amount_total,
@@ -453,34 +405,29 @@ class AccountMove(models.Model):
                 move.message_post(
                     body=_(
                         "This vendor bill matches an authorization policy with "
-                        "no authorized users configured. It cannot be approved "
-                        "until a user is added to that policy."
+                        "no authorized users configured. It cannot be "
+                        "authorized (nor paid) until a user is added to that "
+                        "policy."
                     )
                 )
 
-    def action_post(self):
-        self._refresh_authorization_state()
-
-        to_confirm = self.browse()
-        blocked_moves = self.browse()
+    def _apply_authorization_requirement(self):
+        """Decide, for confirmed vendor bills, whether they require
+        authorization before they can be paid, from the policies they match
+        (already refreshed by the caller). An authorization already given
+        (left over from versions that authorized before confirming) stands.
+        """
         for move in self:
-            if move.move_type not in VENDOR_BILL_TYPES or move.state != "draft":
-                to_confirm += move
+            if move.move_type not in VENDOR_BILL_TYPES or move.state != "posted":
                 continue
-
-            if move.is_blocked:
-                # "Always block" wins over everything, including an earlier
-                # authorization (e.g. the policy was changed afterwards).
-                if move.authorization_state != "to_authorize":
-                    move.write({"authorization_state": "to_authorize", "authorized_by_id": False})
-                blocked_moves += move
+            if not move.matched_policy_ids:
+                if move.authorization_state != "not_required":
+                    super(AccountMove, move).write(
+                        {"authorization_state": "not_required", "authorized_by_id": False}
+                    )
+                move._clear_authorization_requests()
                 continue
-
             if move.authorization_state == "authorized":
-                # Already explicitly authorized earlier via
-                # action_authorize_bill() (the "Authorize" button), without
-                # confirming at that time. That decision stands -- anyone
-                # can now confirm, no need to be an authorizer themselves.
                 move.message_post(
                     body=_(
                         "Vendor bill confirmed by %(user)s (authorized earlier "
@@ -489,78 +436,20 @@ class AccountMove(models.Model):
                         authorized_by=move.authorized_by_id.display_name,
                     )
                 )
-                to_confirm += move
                 continue
-
-            if not move.matched_policy_ids:
-                to_confirm += move
-            elif self.env.user in move.pending_authorizer_ids:
-                move.write({"authorization_state": "authorized", "authorized_by_id": self.env.user.id})
-                move._clear_authorization_requests()
-                move.message_post(
-                    body=_(
-                        "Vendor bill authorized and confirmed directly by %s "
-                        "(already an authorized user for a matching policy).",
-                        self.env.user.display_name,
-                    )
+            if move.authorization_state != "to_authorize":
+                super(AccountMove, move).write(
+                    {"authorization_state": "to_authorize", "authorized_by_id": False}
                 )
-                to_confirm += move
-            else:
-                if move.authorization_state != "to_authorize":
-                    move.write({"authorization_state": "to_authorize"})
-                blocked_moves += move
-        blocked_moves._create_authorization_activities()
-
-        result = False
-        if to_confirm:
-            result = super(AccountMove, to_confirm).action_post()
-
-        if blocked_moves and not to_confirm:
-            permanently_blocked = blocked_moves.filtered("is_blocked")
-            to_authorize = blocked_moves - permanently_blocked
-
-            messages = []
-            if permanently_blocked:
-                messages.append(permanently_blocked._get_blocked_error_message())
-            if to_authorize:
-                if len(to_authorize) == 1:
-                    messages.append(
-                        _(
-                            "This vendor bill requires authorization before it "
-                            "can be confirmed. An activity has been assigned "
-                            "to the authorized user(s)."
-                        )
-                    )
-                else:
-                    messages.append(
-                        _(
-                            "These vendor bills require authorization before "
-                            "they can be confirmed: %s. An activity has been "
-                            "assigned to the authorized user(s) of each.",
-                            ", ".join(to_authorize.mapped("display_name")),
-                        )
-                    )
-            # A UserError raised here would otherwise roll back every write
-            # this method just made (authorization_state, the activities,
-            # the chatter messages) -- Odoo's RPC dispatcher rolls back the
-            # whole request's transaction whenever an exception escapes
-            # uncaught. Commit now so the block is actually recorded despite
-            # the confirm attempt failing. Skipped under the test runner,
-            # where the cursor is a savepoint on a shared per-test
-            # transaction that must not be committed.
-            if not modules.module.current_test:
-                self.env.cr.commit()
-            raise UserError("\n\n".join(messages))
-        return result
+            move._request_authorization()
 
     def _check_vendor_bill_authorization_before_post(self):
-        """Safety net for every posting path that doesn't go through
-        action_post() (the "Post entries" list action, i.e. the
-        validate.account.move wizard; the auto-post cron; third-party
-        background posting...): a vendor bill that is blocked, or that
-        matches a policy without having been authorized, is never posted.
-        Unlike action_post(), this does not create activities nor commit:
-        it only refuses.
+        """Run before confirming, whatever the path (the Confirm button, the
+        "Post entries" list action, the auto-post cron, third-party
+        background posting...): a vendor bill matching a policy with
+        "Always block" can never be confirmed. Any other matching policy
+        does not prevent confirming: it is evaluated once the bill is
+        confirmed, and then prevents paying it until it is authorized.
         """
         moves = self.filtered(lambda m: m.move_type in VENDOR_BILL_TYPES and m.state == "draft")
         if not moves:
@@ -569,62 +458,63 @@ class AccountMove(models.Model):
         blocked = moves.filtered("is_blocked")
         if blocked:
             raise UserError(blocked._get_blocked_error_message())
-        unauthorized = moves.filtered(
-            lambda m: m.matched_policy_ids and m.authorization_state != "authorized"
-        )
-        if unauthorized:
-            raise UserError(
-                _(
-                    "The following vendor bills require authorization before "
-                    "they can be confirmed: %s.",
-                    ", ".join(unauthorized.mapped("display_name")),
-                )
-            )
 
     def _post(self, soft=True):
         if self.env.context.get("move_reverse_cancel"):
             # Full refund / "modify" reversal of an already posted vendor
             # bill: core creates and posts the credit note in one go to
             # cancel the original; it is not a new document to be approved.
-            reversals = self.filtered(
-                lambda m: m.move_type in VENDOR_BILL_TYPES
-                and m.state == "draft"
-                and m.authorization_state != "not_required"
-            )
-            if reversals:
-                super(AccountMove, reversals).write({"authorization_state": "not_required"})
-        else:
-            self._check_vendor_bill_authorization_before_post()
+            return super(AccountMove, self.with_context(**{POSTING_CONTEXT_KEY: True}))._post(soft=soft)
+        self._check_vendor_bill_authorization_before_post()
+        to_evaluate = self.filtered(lambda m: m.move_type in VENDOR_BILL_TYPES and m.state == "draft")
         posted = super(AccountMove, self.with_context(**{POSTING_CONTEXT_KEY: True}))._post(soft=soft)
-        # Whatever path posted them (including a bypass that made the
-        # authorization unnecessary), nobody needs to act on their
-        # authorization requests anymore.
-        self.filtered(
-            lambda m: m.move_type in VENDOR_BILL_TYPES and m.state == "posted"
-        )._clear_authorization_requests()
+        to_evaluate.filtered(lambda m: m.state == "posted")._apply_authorization_requirement()
         return posted
+
+    # -- Payment ---------------------------------------------------------
+
+    def _get_payment_blocked_error_message(self):
+        return _(
+            "The following vendor bills can't be paid until they are "
+            "authorized (they are pending authorization or were rejected): "
+            "%s.",
+            ", ".join(self.mapped("display_name")),
+        )
+
+    def _check_vendor_bill_authorization_before_payment(self):
+        """Refuse to pay (or reconcile) vendor bills awaiting authorization
+        or rejected.
+        """
+        awaiting = self.filtered(lambda m: m._is_awaiting_authorization())
+        if awaiting:
+            raise UserError(awaiting._get_payment_blocked_error_message())
+
+    def action_register_payment(self):
+        self._check_vendor_bill_authorization_before_payment()
+        return super().action_register_payment()
+
+    def action_force_register_payment(self):
+        self._check_vendor_bill_authorization_before_payment()
+        return super().action_force_register_payment()
+
+    # -- Authorization actions -------------------------------------------
 
     def _check_bill_pending_authorization(self, access_error_message):
         self._refresh_authorization_state()
         for move in self:
             if (
                 move.move_type not in VENDOR_BILL_TYPES
-                or move.state != "draft"
-                or move.authorization_state in ("authorized", "rejected")
+                or move.state != "posted"
+                or move.authorization_state != "to_authorize"
             ):
                 raise UserError(_("This vendor bill is not pending authorization."))
-            if move.is_blocked:
-                raise UserError(move._get_blocked_error_message())
             if self.env.user not in move.pending_authorizer_ids:
                 raise AccessError(access_error_message)
 
     def action_authorize_bill(self):
-        """Authorize a vendor bill without confirming it. This can be done
-        proactively on a draft bill that matches a policy, without anyone
-        having to attempt (and be blocked from) confirming it first.
-        Confirming is a deliberately separate step (the regular "Confirm"
-        button): once authorization_state is 'authorized', action_post()
-        lets anyone confirm it, not just an authorized user.
+        """Authorize a confirmed vendor bill, so that it can be paid. Paying
+        is a deliberately separate step: once authorized, anyone with the
+        regular permission to pay bills can pay it.
         """
         self._check_bill_pending_authorization(_("You are not allowed to authorize this vendor bill."))
         for move in self:
@@ -632,24 +522,14 @@ class AccountMove(models.Model):
             move._clear_authorization_requests()
             move.message_post(
                 body=_(
-                    "Vendor bill authorized by %s. Awaiting confirmation.",
+                    "Vendor bill authorized by %s. It can now be paid.",
                     self.env.user.display_name,
                 )
             )
         return True
 
-    def action_authorize_and_confirm_bill(self):
-        """Authorize and confirm in a single click. Same checks as
-        action_authorize_bill(); the actual authorization is then recorded
-        by action_post() itself, through its "the user confirming is an
-        authorizer" branch, so the chatter shows a single "authorized and
-        confirmed" event instead of two.
-        """
-        self._check_bill_pending_authorization(_("You are not allowed to authorize this vendor bill."))
-        return self.action_post()
-
     def action_unauthorize_bill(self):
-        """Revert an authorized-but-not-yet-confirmed vendor bill back to
+        """Revert an authorized vendor bill that has no payment yet back to
         "to_authorize", undoing a mistaken Authorize click. Any user who is
         currently a pending authorizer of the bill can do it, not only the
         one who authorized it. The bill can be authorized again afterwards,
@@ -659,10 +539,18 @@ class AccountMove(models.Model):
         for move in self:
             if (
                 move.move_type not in VENDOR_BILL_TYPES
-                or move.state != "draft"
+                or move.state != "posted"
                 or move.authorization_state != "authorized"
             ):
                 raise UserError(_("This vendor bill is not currently authorized."))
+            if move.payment_state != "not_paid":
+                raise UserError(
+                    _(
+                        "The authorization of vendor bill %s can't be revoked: "
+                        "it already has payments.",
+                        move.display_name,
+                    )
+                )
             if self.env.user not in move.pending_authorizer_ids:
                 raise AccessError(_("You are not allowed to unauthorize this vendor bill."))
 
@@ -705,6 +593,9 @@ class AccountMove(models.Model):
     def _reject_bill(self, reason):
         """Record the rejection; called by the reject wizard once the
         reason has been entered. Permission is re-checked here, server-side.
+        A rejected bill can't be paid: to fix it, reset it to draft, edit it
+        and confirm it again (authorization is then requested again), or
+        cancel it with a credit note.
         """
         self.ensure_one()
         self._check_bill_pending_authorization(_("You are not allowed to reject this vendor bill."))

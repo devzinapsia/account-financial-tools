@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 00:00+0000\n"
-"PO-Revision-Date: 2026-10-01 00:00+0000\n"
+"POT-Creation-Date: 2026-10-18 00:00+0000\n"
+"PO-Revision-Date: 2026-10-18 00:00+0000\n"
 "Last-Translator: Zinapsia\n"
 "Language-Team: \n"
 "Language: es_AR\n"
@@ -30,11 +30,12 @@ msgstr ""
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
-"%(requester)s requested your authorization to confirm vendor bill %(bill)s "
-"(%(amount)s %(currency)s) from %(partner)s."
+"%(requester)s confirmed vendor bill %(bill)s (%(amount)s %(currency)s) from "
+"%(partner)s: it requires your authorization before it can be paid."
 msgstr ""
-"%(requester)s solicitó tu autorización para confirmar la factura de "
-"proveedor %(bill)s (%(amount)s %(currency)s) de %(partner)s."
+"%(requester)s confirmó la factura de proveedor %(bill)s (%(amount)s "
+"%(currency)s) de %(partner)s: requiere tu autorización antes de poder "
+"pagarse."
 
 #. module: account_vendor_bill_authorization
 #. odoo-python
@@ -72,13 +73,13 @@ msgstr "Autorización"
 msgid ""
 "Authorization policies define, through a domain condition on\n"
 "                the vendor bill or vendor credit/debit note, which users must\n"
-"                authorize it before it can be confirmed, or whether it must\n"
-"                always be blocked."
+"                authorize it once it is confirmed, before it can be paid, or\n"
+"                whether it must never be confirmed."
 msgstr ""
 "Las políticas de autorización definen, mediante una condición de dominio sobre\n"
 "                la factura o nota de crédito/débito de proveedor, qué usuarios deben\n"
-"                autorizarla antes de que pueda confirmarse, o si debe\n"
-"                bloquearse siempre."
+"                autorizarla una vez confirmada, antes de que pueda pagarse, o\n"
+"                si nunca debe poder confirmarse."
 
 #. module: account_vendor_bill_authorization
 #. odoo-python
@@ -91,22 +92,22 @@ msgstr "Autorización solicitada a: %s"
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
 "Authorization reset: this vendor bill was reset to draft after %s authorized"
-" it, so it must be authorized again before it can be confirmed."
+" it, so it will need to be authorized again once it is confirmed."
 msgstr ""
 "Autorización reiniciada: esta factura de proveedor volvió a borrador después"
-" de que %s la autorizara, por lo que debe autorizarse nuevamente antes de "
-"poder confirmarse."
+" de que %s la autorizara, por lo que deberá autorizarse nuevamente una vez "
+"que se confirme."
 
 #. module: account_vendor_bill_authorization
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
 "Authorization reset: this vendor bill's data changed after %s authorized it,"
-" so it must be authorized again before it can be confirmed."
+" so it must be authorized again before it can be paid."
 msgstr ""
 "Autorización reiniciada: los datos de esta factura de proveedor cambiaron "
 "después de que %s la autorizara, por lo que debe autorizarse nuevamente "
-"antes de poder confirmarse."
+"antes de poder pagarse."
 
 #. module: account_vendor_bill_authorization
 #. odoo-python
@@ -126,11 +127,6 @@ msgid "Authorize"
 msgstr "Autorizar"
 
 #. module: account_vendor_bill_authorization
-#: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_move_form_authorization
-msgid "Authorize + Confirm"
-msgstr "Autorizar + Confirmar"
-
-#. module: account_vendor_bill_authorization
 #: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__authorized
 msgid "Authorized"
 msgstr "Autorizada"
@@ -143,8 +139,8 @@ msgstr "Autorizada por"
 
 #. module: account_vendor_bill_authorization
 #: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.view_account_bill_filter_authorization
-msgid "Authorized, not confirmed by me yet"
-msgstr "Autorizadas no confirmadas por mí"
+msgid "Authorized, pending payment"
+msgstr "Autorizadas, pendientes de pago"
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__authorized_user_ids
@@ -179,27 +175,26 @@ msgstr "Condiciones"
 #: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__domain
 msgid ""
 "Conditions a vendor bill or vendor credit/debit note must meet (logical AND)"
-" to match this policy, evaluated against account.move fields -- e.g. the "
-"classification (classification_id), the vendor, the journal, or the total "
-"amount, e.g. to build amount tiers with several policies. An empty domain "
-"matches any vendor bill or vendor credit/debit note (catch-all policy). The "
-"Type and Status conditions match what this module only ever actually "
-"evaluates against (draft vendor bills and vendor credit/debit notes), so "
-"they keep the record count shown while editing this domain accurate -- "
-"remove them if you really want to build a domain that reads as broader than "
-"that."
+" to match this policy, evaluated against account.move fields when the bill "
+"is confirmed -- e.g. the classification (classification_id), the vendor, the"
+" journal, or the total amount, e.g. to build amount tiers with several "
+"policies. An empty domain matches any vendor bill or vendor credit/debit "
+"note (catch-all policy). The Type condition matches what this module only "
+"ever actually evaluates against, so it keeps the record count shown while "
+"editing this domain accurate. Don't add a condition on the Status: policies "
+"are evaluated while the bill is being confirmed."
 msgstr ""
 "Condiciones que una factura o nota de crédito/débito de proveedor debe "
 "cumplir (Y lógico) para coincidir con esta política, evaluadas sobre los "
-"campos de account.move -- por ejemplo la clasificación (classification_id), "
-"el proveedor, el diario o el importe total, por ejemplo para armar escalas "
-"de importe con varias políticas. Un dominio vacío coincide con cualquier "
-"factura o nota de crédito/débito de proveedor (política general). Las "
-"condiciones de Tipo y Estado coinciden con lo único que este módulo evalúa "
-"en la práctica (facturas y notas de crédito/débito de proveedor en "
-"borrador), así que mantienen exacto el conteo de registros que se muestra "
-"mientras editás este dominio -- quitalas solo si realmente querés armar un "
-"dominio que se lea más amplio que eso."
+"campos de account.move al confirmar la factura -- por ejemplo la "
+"clasificación (classification_id), el proveedor, el diario o el importe "
+"total, por ejemplo para armar escalas de importe con varias políticas. Un "
+"dominio vacío coincide con cualquier factura o nota de crédito/débito de "
+"proveedor (política general). La condición de Tipo coincide con lo único que"
+" este módulo evalúa en la práctica, así que mantiene exacto el conteo de "
+"registros que se muestra mientras editás este dominio. No agregues una "
+"condición sobre el Estado: las políticas se evalúan mientras la factura se "
+"está confirmando."
 
 #. module: account_vendor_bill_authorization
 #: model_terms:ir.ui.view,arch_db:account_vendor_bill_authorization.account_vendor_bill_authorization_reject_wizard_view_form
@@ -225,6 +220,8 @@ msgstr "Creado el"
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_payment_register__display_name
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__display_name
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__display_name
 msgid "Display Name"
@@ -242,6 +239,8 @@ msgstr "Explicá por qué se rechaza esta factura de proveedor..."
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move__id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_move_line__id
+#: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_payment_register__id
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__id
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_reject_wizard__id
 msgid "ID"
@@ -250,22 +249,27 @@ msgstr "ID"
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__always_block
 msgid ""
-"If checked, a vendor bill matching this policy can never be confirmed nor "
-"approved by anyone, regardless of the Authorizers field (which is ignored in"
-" that case) and regardless of any other matching policy. Use this to "
-"explicitly and permanently deny a category of vendor bills, e.g. bills "
-"without a classification."
+"If checked, a vendor bill matching this policy can never be confirmed by "
+"anyone, regardless of the Authorizers field (which is ignored in that case) "
+"and regardless of any other matching policy. Use this to explicitly and "
+"permanently deny a category of vendor bills, e.g. bills without a "
+"classification."
 msgstr ""
 "Si está marcado, una factura de proveedor que coincida con esta política "
-"nunca podrá ser confirmada ni aprobada por nadie, sin importar el campo "
-"Autorizantes (que en ese caso se ignora) ni cualquier otra política que "
-"también coincida. Usalo para denegar de forma explícita y permanente una "
-"categoría de facturas de proveedor, por ejemplo facturas sin clasificación."
+"nunca podrá ser confirmada por nadie, sin importar el campo Autorizantes "
+"(que en ese caso se ignora) ni cualquier otra política que también coincida."
+" Usalo para denegar de forma explícita y permanente una categoría de "
+"facturas de proveedor, por ejemplo facturas sin clasificación."
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model,name:account_vendor_bill_authorization.model_account_move
 msgid "Journal Entry"
 msgstr "Asiento contable"
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model,name:account_vendor_bill_authorization.model_account_move_line
+msgid "Journal Item"
+msgstr "Apunte contable"
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__write_uid
@@ -299,6 +303,11 @@ msgstr "Nombre"
 #: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__not_required
 msgid "Not required"
 msgstr "No requerida"
+
+#. module: account_vendor_bill_authorization
+#: model:ir.model,name:account_vendor_bill_authorization.model_account_payment_register
+msgid "Pay"
+msgstr "Pagar"
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,field_description:account_vendor_bill_authorization.field_account_bank_statement_line__pending_authorizer_ids
@@ -363,22 +372,21 @@ msgstr "Secuencia"
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
-"The following vendor bills require authorization before they can be "
-"confirmed: %s."
+"The authorization of vendor bill %s can't be revoked: it already has "
+"payments."
 msgstr ""
-"Las siguientes facturas de proveedor requieren autorización antes de poder "
-"confirmarse: %s."
+"No se puede revocar la autorización de la factura de proveedor %s: ya tiene "
+"pagos."
 
 #. module: account_vendor_bill_authorization
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
-"These vendor bills require authorization before they can be confirmed: %s. "
-"An activity has been assigned to the authorized user(s) of each."
+"The following vendor bills can't be paid until they are authorized (they are"
+" pending authorization or were rejected): %s."
 msgstr ""
-"Estas facturas de proveedor requieren autorización antes de poder "
-"confirmarse: %s. Se asignó una actividad a los usuarios autorizados de cada "
-"una."
+"Las siguientes facturas de proveedor no pueden pagarse hasta que se "
+"autoricen (están pendientes de autorización o fueron rechazadas): %s."
 
 #. module: account_vendor_bill_authorization
 #. odoo-python
@@ -418,32 +426,13 @@ msgstr "Esta factura de proveedor no está pendiente de autorización."
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
 msgid ""
-"This vendor bill is permanently blocked by the following policy/policies: "
-"%s."
-msgstr ""
-"Esta factura de proveedor está bloqueada de forma permanente por la(s) "
-"siguiente(s) política(s): %s."
-
-#. module: account_vendor_bill_authorization
-#. odoo-python
-#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid ""
 "This vendor bill matches an authorization policy with no authorized users "
-"configured. It cannot be approved until a user is added to that policy."
+"configured. It cannot be authorized (nor paid) until a user is added to that"
+" policy."
 msgstr ""
 "Esta factura de proveedor coincide con una política de autorización sin "
-"usuarios autorizados configurados. No podrá aprobarse hasta que se agregue "
-"un usuario a esa política."
-
-#. module: account_vendor_bill_authorization
-#. odoo-python
-#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid ""
-"This vendor bill requires authorization before it can be confirmed. An "
-"activity has been assigned to the authorized user(s)."
-msgstr ""
-"Esta factura de proveedor requiere autorización antes de poder confirmarse. "
-"Se asignó una actividad a los usuarios autorizados."
+"usuarios autorizados configurados. No podrá autorizarse (ni pagarse) hasta "
+"que se agregue un usuario a esa política."
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields.selection,name:account_vendor_bill_authorization.selection__account_move__authorization_state__to_authorize
@@ -475,19 +464,18 @@ msgstr "Desautorizar"
 #. module: account_vendor_bill_authorization
 #: model:ir.model.fields,help:account_vendor_bill_authorization.field_account_vendor_bill_authorization_policy__authorized_user_ids
 msgid ""
-"Users allowed to approve a vendor bill matching this policy. Ignored if "
-"'Always block' is checked. If left empty (and 'Always block' is not "
-"checked), any vendor bill matching this policy can never be approved either "
-"-- this has the same practical effect as 'Always block', but leaving the box"
-" unchecked here usually means it was left empty by mistake rather than on "
-"purpose."
+"Users allowed to authorize the payment of a confirmed vendor bill matching "
+"this policy. Ignored if 'Always block' is checked. If left empty (and "
+"'Always block' is not checked), any vendor bill matching this policy can "
+"never be authorized, nor paid, either -- leaving it empty usually means it "
+"was left empty by mistake rather than on purpose."
 msgstr ""
-"Usuarios habilitados para aprobar una factura de proveedor que coincida con "
-"esta política. Se ignora si 'Bloquear siempre' está marcado. Si se deja "
-"vacío (y 'Bloquear siempre' no está marcado), ninguna factura de proveedor "
-"que coincida con esta política podrá aprobarse tampoco -- tiene el mismo "
-"efecto práctico que 'Bloquear siempre', pero dejar la casilla sin marcar "
-"suele indicar que quedó vacío por error y no a propósito."
+"Usuarios habilitados para autorizar el pago de una factura de proveedor "
+"confirmada que coincida con esta política. Se ignora si 'Bloquear siempre' "
+"está marcado. Si se deja vacío (y 'Bloquear siempre' no está marcado), "
+"ninguna factura de proveedor que coincida con esta política podrá "
+"autorizarse ni pagarse -- dejarlo vacío suele indicar que quedó vacío por "
+"error y no a propósito."
 
 #. module: account_vendor_bill_authorization
 #: model:ir.model,name:account_vendor_bill_authorization.model_account_vendor_bill_authorization_policy
@@ -532,18 +520,8 @@ msgstr "Autorización de factura de proveedor revocada"
 #. module: account_vendor_bill_authorization
 #. odoo-python
 #: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid ""
-"Vendor bill authorized and confirmed directly by %s (already an authorized "
-"user for a matching policy)."
-msgstr ""
-"Factura de proveedor autorizada y confirmada directamente por %s (ya es un "
-"usuario autorizado para una política coincidente)."
-
-#. module: account_vendor_bill_authorization
-#. odoo-python
-#: code:addons/account_vendor_bill_authorization/models/account_move.py:0
-msgid "Vendor bill authorized by %s. Awaiting confirmation."
-msgstr "Factura de proveedor autorizada por %s. Pendiente de confirmación."
+msgid "Vendor bill authorized by %s. It can now be paid."
+msgstr "Factura de proveedor autorizada por %s. Ya puede pagarse."
 
 #. module: account_vendor_bill_authorization
 #. odoo-python

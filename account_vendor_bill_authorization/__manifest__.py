@@ -1,9 +1,9 @@
 {
     "name": "Autorización de facturas de proveedor",
-    "version": "19.0.1.0.2",
-    "summary": "Requiere la autorización de usuarios configurados antes de confirmar "
-    "facturas y notas de crédito/débito de proveedor que cumplan las políticas "
-    "definidas.",
+    "version": "19.0.2.0.0",
+    "summary": "Las facturas y notas de crédito/débito de proveedor confirmadas que "
+    "cumplan las políticas definidas requieren la autorización de usuarios "
+    "configurados antes de poder pagarse.",
     "author": "Zinapsia",
     "website": "https://www.zinapsia.com",
     "license": "AGPL-3",
