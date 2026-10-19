@@ -14,7 +14,7 @@ class TestL10nArTaxPerceptionWarningSalesOnly(TransactionCase):
             div
             for div in etree.fromstring(arch).iter("div")
             if "alert-warning" in (div.get("class") or "").split()
-            and div.find("field[@name='fiscal_position_id']") is not None
+            and div.find(".//field[@name='fiscal_position_id']") is not None
         ]
         self.assertEqual(len(banners), 1, "The l10n_ar_tax perception banner must be found exactly once")
         return banners[0]

@@ -1,6 +1,6 @@
 {
     "name": "Aviso de percepciones solo en ventas",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "summary": "Muestra el aviso de posición fiscal con percepciones solo en "
     "comprobantes de venta, no en facturas de proveedor.",
     "author": "Zinapsia",

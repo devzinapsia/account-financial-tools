@@ -9,7 +9,7 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="l10n_ar_tax.view_move_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//div[hasclass('alert-warning')][field[@name='fiscal_position_id']]" position="attributes">
+            <xpath expr="//div[hasclass('alert-warning')][.//field[@name='fiscal_position_id']]" position="attributes">
                 <attribute name="invisible">invoice_date or not perceptions_fiscal_positon or move_type not in ('out_invoice', 'out_refund', 'out_receipt')</attribute>
             </xpath>
         </field>
