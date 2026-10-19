@@ -31,12 +31,13 @@ When the company configures **journals that bypass authorization** and the
   records which journal bypassed the authorization.
 
 A bill without a pay now journal follows the normal authorization flow,
-unchanged.
+unchanged: it is confirmed, and can't be paid until it is authorized.
 
 The whole module is inactive while the *Allow pay now on vendor invoices?*
 setting is unchecked, or while no journal that bypasses authorization is
 configured.
 
 This module was built for a specific client's setup. It depends on
-``account_payment_authorization``, as well as on ``account_payment_pro``
-and ``account_journal_security`` (ingadhoc).
+``account_payment_authorization`` and
+``account_vendor_bill_authorization_payment_pro``, as well as on
+``account_payment_pro`` and ``account_journal_security`` (ingadhoc).

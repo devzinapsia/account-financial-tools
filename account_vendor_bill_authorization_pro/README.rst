@@ -35,15 +35,16 @@ When the company configures **journals that bypass authorization** and the
   records which journal bypassed the authorization.
 
 A bill without a pay now journal follows the normal authorization flow,
-unchanged.
+unchanged: it is confirmed, and can't be paid until it is authorized.
 
 The whole module is inactive while the *Allow pay now on vendor invoices?*
 setting is unchecked, or while no journal that bypasses authorization is
 configured.
 
 This module was built for a specific client's setup. It depends on
-``account_payment_authorization``, as well as on ``account_payment_pro``
-and ``account_journal_security`` (ingadhoc).
+``account_payment_authorization`` and
+``account_vendor_bill_authorization_payment_pro``, as well as on
+``account_payment_pro`` and ``account_journal_security`` (ingadhoc).
 
 **Table of contents**
 
@@ -94,8 +95,8 @@ Usage
    as usual.
 #. In **Pay now journal**, pick the petty cash journal the bill was paid
    with. Only the journals that bypass authorization are offered. The
-   **Authorization** status changes to *Not required*, unless an *Always
-   block* policy matches the bill.
+   bill no longer matches any authorization policy, unless an *Always
+   block* policy matches it.
 #. Click **Confirm**. The bill is confirmed, a payment from that journal is
    created, posted and reconciled with it, and the chatter records that
    the authorization was bypassed and with which journal.
@@ -105,12 +106,14 @@ Notes:
 * Users who are not allowed to use the bypass see the *Pay now journal*
   as read-only, and can't confirm a bill that has one (they get an error).
   They can still load bills without a pay now journal, which go through
-  the normal authorization flow.
-* Choosing the pay now journal on a bill that was already authorized or
-  rejected discards that decision: the bill no longer requires
-  authorization.
+  the normal authorization flow: once confirmed, they can't be paid until
+  they are authorized.
 * Clearing the pay now journal puts the bill back into the normal
   authorization flow.
+* A bill that requires authorization can't be paid on confirmation with
+  a pay now journal that does not bypass authorization (see
+  *Autorización de facturas de proveedor - Payment Pro*,
+  ``account_vendor_bill_authorization_payment_pro``).
 
 Bug Tracker
 ===========

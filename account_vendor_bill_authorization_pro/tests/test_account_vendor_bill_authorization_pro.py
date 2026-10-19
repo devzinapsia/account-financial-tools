@@ -114,9 +114,11 @@ class TestAccountVendorBillAuthorizationPro(AccountTestInvoicingCommon):
         self.env.ref("base.group_user")._remove_group(self.pay_now_group)
         self.assertFalse(self.env["account.move"]._is_pay_now_vendor_enabled())
         bill = self._create_bill(self.classification_normal, self.petty_cash_journal)
-        self.assertEqual(bill.authorization_state, "to_authorize")
         self.assertEqual(bill.matched_policy_ids, self.policy_normal)
-        self._post_expecting_error(bill, self.user_bypass)
+        # Requires authorization, so it can't be paid on confirmation
+        # (account_vendor_bill_authorization_payment_pro).
+        error = self._post_expecting_error(bill, self.user_bypass)
+        self.assertIn("can't be paid on confirmation", str(error))
         self.assertEqual(bill.state, "draft")
         self.assertFalse(self._bypass_messages(bill))
 
@@ -141,9 +143,12 @@ class TestAccountVendorBillAuthorizationPro(AccountTestInvoicingCommon):
 
     def test_without_pay_now_journal_normal_flow(self):
         bill = self._create_bill(self.classification_normal)
+        bill.with_user(self.user_bypass).action_post()
+        self.assertEqual(bill.state, "posted")
         self.assertEqual(bill.authorization_state, "to_authorize")
-        self._post_expecting_error(bill, self.user_bypass)
-        self.assertEqual(bill.state, "draft")
+        self.assertEqual(bill.payment_state, "not_paid")
+        with self.assertRaises(UserError):
+            bill.with_user(self.user_bypass).action_register_payment()
 
     def test_journal_not_in_bypass_list_refused(self):
         with self.assertRaises(UserError):
@@ -156,8 +161,9 @@ class TestAccountVendorBillAuthorizationPro(AccountTestInvoicingCommon):
         self.company.bypass_journal_ids = False
         bill = self._create_bill(self.classification_normal, self.bank_journal, user=self.user_other)
         self.assertTrue(bill.with_user(self.user_other).can_set_pay_now_journal)
-        self.assertEqual(bill.authorization_state, "to_authorize")
-        self._post_expecting_error(bill, self.user_other)
+        self.assertEqual(bill.matched_policy_ids, self.policy_normal)
+        error = self._post_expecting_error(bill, self.user_other)
+        self.assertIn("can't be paid on confirmation", str(error))
         self.assertEqual(bill.state, "draft")
 
     def test_user_not_allowed_cannot_use_bypass(self):
@@ -175,11 +181,13 @@ class TestAccountVendorBillAuthorizationPro(AccountTestInvoicingCommon):
         self.assertEqual(bill.state, "draft")
 
     def test_bypass_resets_earlier_authorization_decision(self):
+        # A draft authorized under the old flow (authorization before
+        # confirming): setting a bypass journal changes what matches.
         bill = self._create_bill(self.classification_normal)
-        bill.with_user(self.user_authorizer).action_authorize_bill()
-        self.assertEqual(bill.authorization_state, "authorized")
+        bill.write({"authorization_state": "authorized", "authorized_by_id": self.user_authorizer.id})
         bill.with_user(self.user_bypass).pay_now_journal_id = self.petty_cash_journal
         self.assertEqual(bill.authorization_state, "not_required")
+        self.assertFalse(bill.matched_policy_ids)
 
     def test_bypass_logs_chatter_message(self):
         bill = self._create_bill(self.classification_normal, self.petty_cash_journal)
