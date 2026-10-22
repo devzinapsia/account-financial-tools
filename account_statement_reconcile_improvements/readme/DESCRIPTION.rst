@@ -18,6 +18,13 @@ Import improvements
   is stored on the statement (``import_file_hash``, unique per journal);
   trying to import the same file again for the same journal is rejected
   with the name/date/user of the statement that already has it.
+- **Bug fix: large files (over Odoo's row-batch limit) failed on their
+  own second batch.** Odoo's own import wizard splits a file past ~2000
+  rows into several background calls on the same wizard, one per
+  row-range - every one of those calls hashes the same full original
+  file, not just its own slice. Only the first batch now claims the
+  file-hash guard above; a later batch of the very same import no longer
+  collides with the statement its own first batch just created.
 - **Overlapping-period duplicate lines are skipped automatically.** Before
   creating statement lines, each row is checked against existing lines for
   the same journal (any statement, any reconciliation state). A row whose
@@ -78,6 +85,17 @@ Reconciliation improvements
   (pre-filled with the line's contact and date) for a purchase the user
   has no file for yet. Unlike "Upload Bills", this never requires
   attaching a document first.
+- **New setting: "Only auto-reconcile through outstanding accounts".**
+  Odoo's own automatic bank reconciliation can match a statement line
+  directly against an open invoice/bill's receivable/payable account,
+  skipping the outstanding payment/receipt ("cuenta puente") account
+  entirely - wrong for a bookkeeping flow where bank lines are only ever
+  meant to settle through a receipt/payment order. Enabling it stops
+  automatic reconciliation (both the scheduled cron and the one
+  triggered right after the CUIT match on import) from ever matching a
+  statement line straight to a receivable/payable account; matching
+  through an outstanding account, or falling back to a reconcile model,
+  is unaffected. Disabled by default. See "Decisiones de diseño".
 
 Decisiones de diseño
 =====================
@@ -140,6 +158,13 @@ acá para que queden trazables:
   quick-create), que fuerza un refetch real y también vuelve a disparar
   el hook ``onRootLoaded`` que recalcula los totales/contadores del
   diario.
+- **Filtro por diario precargado en "Buscar: Apuntes Contables para
+  Conciliar"**: el diálogo nativo busca candidatos en todos los diarios
+  (a propósito, para detectar pagos registrados en el banco equivocado),
+  lo que en un banco con mucho volumen muestra todo el tiempo resultados
+  de otros bancos. Se precarga el filtro "Diario" con el banco que se
+  está conciliando - igual que ya hace con el contacto - pero sigue
+  siendo un filtro común, removible desde la barra de búsqueda.
 - **"Create Bill" sin adjunto**: la propia opción "Upload Bills" de
   ``account_accountant`` (``create_document_from_attachment``) siempre
   exige al menos un adjunto - no tiene una variante sin archivo. Por eso
@@ -154,6 +179,27 @@ acá para que queden trazables:
   "a revisar" (campo nativo ``checked``/"Reviewed" de v19, heredado por
   ``account.bank.statement.line`` desde ``account.move``) en vez de
   confirmadas. Activado por defecto.
+- **"Only auto-reconcile through outstanding accounts"**: Odoo concilia
+  automáticamente una línea de extracto apenas tiene contacto asignado
+  (``account_accountant``'s ``_try_auto_reconcile_statement_lines()`` -
+  el mismo mecanismo que hace inútil, por redundante, cualquier checkbox
+  propio para "conciliar por contacto+fecha+importe al importar"; ver el
+  historial de este módulo). Ese matcheo nativo, al no encontrar un
+  comprobante en la cuenta puente (pagos/cobros pendientes), cae a
+  buscar directamente en cualquier cuenta conciliable - incluidas las de
+  deudores/proveedores de las facturas - lo cual rompe un circuito
+  contable donde el extracto bancario solo debería conciliar contra un
+  recibo/orden de pago (que sí usan la cuenta puente), nunca directo
+  contra la factura. La opción filtra las cuentas de tipo
+  ``asset_receivable``/``liability_payable`` de los dos únicos puntos
+  nativos que buscan fuera de las cuentas puente
+  (``_handle_reconciliation_matching_amount``/``_match_accounts_query``
+  con ``match_journal``/``outstanding_account`` en ``False``) - nunca
+  del paso que sí busca en las cuentas puente, para no romper la
+  conciliación normal vía recibo/OP. Por compañía (no por diario,
+  siguiendo cómo Odoo ya guarda las cuentas de pagos/cobros pendientes a
+  nivel de método de pago, no de diario); desactivada por defecto para
+  no cambiar el comportamiento de ninguna instalación existente.
 - **Borrado de extracto**: antes de borrar un extracto con líneas
   conciliadas se muestra una advertencia explícita a nivel del extracto
   (no línea por línea); si se confirma, todas sus líneas se desconcilian

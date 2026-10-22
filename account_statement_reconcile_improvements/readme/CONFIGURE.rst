@@ -3,6 +3,12 @@ Go to **Accounting ‣ Configuration ‣ Settings** and, under the
 statement lines reconciled automatically - either on import or by a
 reconciliation model - flagged to check; enabled by default).
 
+In the same area, enable **Only auto-reconcile through outstanding
+accounts** if bank statement lines in this company should only ever
+settle through a receipt/payment order (never matched straight to an
+invoice/bill by Odoo's own automatic reconciliation). Disabled by
+default.
+
 No other configuration is required: the per-journal import mapping is
 learned automatically the first time you import a file for that journal,
 and the CUIT recognition works on whichever column you map to the new

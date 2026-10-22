@@ -96,6 +96,53 @@ msgstr ""
 "al importar o por un modelo de conciliación."
 
 #. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_res_company__bank_statement_auto_reconcile_outstanding_only
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_res_config_settings__bank_statement_auto_reconcile_outstanding_only
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
+msgid "Only auto-reconcile through outstanding accounts"
+msgstr "Conciliar automáticamente solo a través de cuentas puente"
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,help:account_statement_reconcile_improvements.field_res_company__bank_statement_auto_reconcile_outstanding_only
+#: model:ir.model.fields,help:account_statement_reconcile_improvements.field_res_config_settings__bank_statement_auto_reconcile_outstanding_only
+msgid ""
+"Odoo's own automatic bank reconciliation (triggered by having a contact on "
+"the line - set by the CUIT match on import, or manually) can match a "
+"statement line directly against an open invoice/bill's receivable/payable "
+"account, skipping the outstanding payment/receipt (\"cuenta puente\") "
+"account entirely when no such entry exists yet or doesn't match. For a "
+"bookkeeping flow where bank lines are only ever meant to settle through a "
+"receipt/payment order on an outstanding account, enable this to stop "
+"automatic reconciliation from ever matching a statement line straight to a "
+"receivable/payable account - it still fully reconciles through outstanding "
+"accounts, and still falls back to reconcile models either way. Disabled by "
+"default to keep every existing installation's behavior unchanged."
+msgstr ""
+"La conciliación bancaria automática nativa de Odoo (disparada al asignar "
+"un contacto a la línea - por el match de CUIT al importar, o manualmente) "
+"puede conciliar una línea de extracto directo contra la cuenta de deudores/"
+"proveedores de una factura abierta, salteando por completo la cuenta "
+"puente de pagos/cobros pendientes cuando todavía no existe un comprobante "
+"ahí o no matchea. Para un circuito contable donde las líneas de banco "
+"solo deben saldarse a través de un recibo/orden de pago en una cuenta "
+"puente, activá esto para que la conciliación automática nunca concilie "
+"una línea directo contra una cuenta de deudores/proveedores - sigue "
+"conciliando normalmente a través de cuentas puente, y sigue cayendo en "
+"los modelos de conciliación de todas formas. Desactivado por defecto para "
+"no cambiar el comportamiento de ninguna instalación existente."
+
+#. module: account_statement_reconcile_improvements
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
+msgid ""
+"Stop automatic bank reconciliation from ever matching a statement line "
+"directly against an invoice/bill - only through an outstanding payment/"
+"receipt account"
+msgstr ""
+"Evitar que la conciliación bancaria automática concilie una línea directo "
+"contra una factura - solo a través de una cuenta de pagos/cobros "
+"pendientes"
+
+#. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/wizard/base_import_import.py:0
 msgid "Contact (CUIT in free-text legend)"

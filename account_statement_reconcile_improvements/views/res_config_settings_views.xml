@@ -11,6 +11,11 @@
                     help="Leave statement lines reconciled automatically - either on import or by a reconciliation model - flagged to check">
                     <field name="bank_statement_auto_reconcile_to_check"/>
                 </setting>
+                <setting id="bank_statement_auto_reconcile_outstanding_only_setting"
+                    string="Only auto-reconcile through outstanding accounts"
+                    help="Stop automatic bank reconciliation from ever matching a statement line directly against an invoice/bill - only through an outstanding payment/receipt account">
+                    <field name="bank_statement_auto_reconcile_outstanding_only"/>
+                </setting>
             </xpath>
         </field>
     </record>

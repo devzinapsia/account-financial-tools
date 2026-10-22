@@ -90,6 +90,56 @@ class AccountBankStatementLine(models.Model):
                 reconciled_count += 1
         return reconciled_count
 
+    def _handle_reconciliation_matching_amount(self, st_move_ids, account_ids, remaining_st_line_ids, match_journal=False):
+        # EXTENDS account_accountant
+        if not match_journal:
+            account_ids = self._exclude_receivable_payable_for_outstanding_only_companies(account_ids)
+        return super()._handle_reconciliation_matching_amount(st_move_ids, account_ids, remaining_st_line_ids, match_journal=match_journal)
+
+    def _match_accounts_query(self, st_move_ids, account_ids, remaining_st_line_ids, outstanding_account=False):
+        # EXTENDS account_accountant
+        if not outstanding_account:
+            account_ids = self._exclude_receivable_payable_for_outstanding_only_companies(account_ids)
+        return super()._match_accounts_query(st_move_ids, account_ids, remaining_st_line_ids, outstanding_account=outstanding_account)
+
+    def _exclude_receivable_payable_for_outstanding_only_companies(self, account_ids):
+        """3.13 - for companies with "Only auto-reconcile through outstanding
+        accounts" enabled, drop their own receivable/payable accounts from
+        the candidate set native auto-reconciliation is about to search
+        (`_handle_reconciliation_matching_amount`/`_match_accounts_query`,
+        called from account_accountant's `_try_auto_reconcile_statement_lines`
+        - see models/res_company.py for the full rationale).
+
+        Only called for the two call sites that search OUTSIDE outstanding
+        accounts (`match_journal`/`outstanding_account` both False) - the
+        outstanding-account pass itself (match_journal=True /
+        outstanding_account=True) is never touched, since letting a line
+        settle through a receipt/payment order is exactly the point.
+
+        Safe for a multi-company batch without checking which company each
+        line belongs to: the native SQL this feeds into already joins on
+        `aml.company_id = st_line.company_id`, so dropping company A's own
+        receivable/payable account ids from this shared list can only ever
+        affect matching for company A's own lines. The `<=` (subset) check
+        below, rather than a plain overlap, matters for v19's
+        shared-chart-of-accounts support (`account.account.company_ids` is a
+        Many2many): an account shared between a restricted and an
+        unrestricted company must stay usable for the unrestricted one, so
+        it's only excluded when every company it belongs to opted in.
+        """
+        restricted_companies = self.env['res.company'].sudo().search([
+            ('bank_statement_auto_reconcile_outstanding_only', '=', True),
+        ])
+        if not restricted_companies:
+            return account_ids
+        excluded_ids = set(self.env['account.account'].browse(account_ids).filtered(
+            lambda account: account.company_ids <= restricted_companies
+            and account.account_type in ('asset_receivable', 'liability_payable')
+        ).ids)
+        if not excluded_ids:
+            return account_ids
+        return [account_id for account_id in account_ids if account_id not in excluded_ids]
+
     def action_create_vendor_bill(self):
         """3.11 - "Create bill" entry in the bank reconciliation screen's
         own "..." dropdown, right below "Upload Bills": for a purchase the

@@ -9,3 +9,4 @@ from . import test_duplicate_line_detection
 from . import test_get_fields_tree
 from . import test_header_detection
 from . import test_mapping_profile_persistence
+from . import test_outstanding_only_auto_reconcile

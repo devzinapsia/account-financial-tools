@@ -274,7 +274,19 @@ class Base_ImportImport(models.TransientModel):
         if not options.get('bank_stmt_import'):
             return data
 
-        if self.file:
+        # Odoo's own JS splits a large file into several execute_import()
+        # calls on this same wizard, one per row-range ('skip' growing each
+        # time) - every one of those calls still hashes the exact same
+        # self.file (the whole original upload, not a per-batch slice), so
+        # only the FIRST batch (skip 0, or no batching at all) may claim the
+        # hash: each batch creates its own account.bank.statement, and
+        # letting every batch past the first set the same hash would collide
+        # with the one the first batch's statement already holds, rejecting
+        # the rest of the very same import as a duplicate of itself (see
+        # models/account_bank_statement.py's create()). The first statement
+        # alone is enough to keep blocking a genuine full-file re-import
+        # later, since that re-import's own first batch starts at skip 0 too.
+        if self.file and not options.get('skip'):
             statement_vals = options.setdefault('statement_vals', {})
             statement_vals['import_file_hash'] = hashlib.sha256(self.file).hexdigest()
 

@@ -8,3 +8,7 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.bank_statement_auto_reconcile_to_check',
         readonly=False,
     )
+    bank_statement_auto_reconcile_outstanding_only = fields.Boolean(
+        related='company_id.bank_statement_auto_reconcile_outstanding_only',
+        readonly=False,
+    )
