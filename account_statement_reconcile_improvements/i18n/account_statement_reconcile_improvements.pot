@@ -94,11 +94,13 @@ msgid ""
 "account, skipping the outstanding payment/receipt (\"cuenta puente\") "
 "account entirely when no such entry exists yet or doesn't match. For a "
 "bookkeeping flow where bank lines are only ever meant to settle through a "
-"receipt/payment order on an outstanding account, enable this to stop "
+"receipt/payment order on an outstanding account, keep this enabled to stop "
 "automatic reconciliation from ever matching a statement line straight to a "
 "receivable/payable account - it still fully reconciles through outstanding "
-"accounts, and still falls back to reconcile models either way. Disabled by "
-"default to keep every existing installation's behavior unchanged."
+"accounts, and still falls back to reconcile models either way. Enabled by "
+"default, since most of our clients' bookkeeping works this way; disable it "
+"for a specific company that settles bank lines directly against invoices/"
+"bills instead."
 msgstr ""
 
 #. module: account_statement_reconcile_improvements
@@ -107,6 +109,40 @@ msgid ""
 "Stop automatic bank reconciliation from ever matching a statement line "
 "directly against an invoice/bill - only through an outstanding payment/"
 "receipt account"
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_res_company__bank_statement_reconcile_dialog_default_journal
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_res_config_settings__bank_statement_reconcile_dialog_default_journal
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
+msgid "Pre-filter the journal in the reconciliation search dialog"
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,help:account_statement_reconcile_improvements.field_res_company__bank_statement_reconcile_dialog_default_journal
+#: model:ir.model.fields,help:account_statement_reconcile_improvements.field_res_config_settings__bank_statement_reconcile_dialog_default_journal
+msgid ""
+"The bank reconciliation screen's own \"Search: Journal Items to Match\" "
+"dialog searches every journal by design (useful to catch a payment "
+"registered against the wrong bank journal). For a company with many bank "
+"journals, that means seeing other banks' candidates mixed in every time. "
+"Enabled by default, this pre-selects the journal being reconciled as a "
+"search default - still a regular, removable filter, not a restriction. "
+"Disable it for a company with few enough journals that the extra "
+"candidates are never in the way."
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
+msgid ""
+"Pre-select the journal being reconciled in the \"Search: Journal Items to "
+"Match\" dialog - a regular, removable search filter, useful for a company "
+"with many bank journals"
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_account_bank_statement_line__reconcile_dialog_default_journal
+msgid "Reconcile Dialog Default Journal"
 msgstr ""
 
 #. module: account_statement_reconcile_improvements

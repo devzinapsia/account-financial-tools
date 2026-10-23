@@ -10,3 +10,4 @@ from . import test_get_fields_tree
 from . import test_header_detection
 from . import test_mapping_profile_persistence
 from . import test_outstanding_only_auto_reconcile
+from . import test_reconcile_dialog_default_journal

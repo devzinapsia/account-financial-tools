@@ -1,8 +1,17 @@
-from odoo import api, models
+from odoo import api, fields, models
 
 
 class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
+
+    # Exposed on this model (not just on res.company) so the bank
+    # reconciliation widget's own kanban view can fetch it for free
+    # alongside the rest of the statement line's data - see
+    # static/src/js/reconcile_dialog_default_journal.js, which reads it
+    # straight from the already-loaded record instead of an extra RPC.
+    reconcile_dialog_default_journal = fields.Boolean(
+        related='company_id.bank_statement_reconcile_dialog_default_journal',
+    )
 
     def _flag_as_to_check_if_configured(self, force=False):
         """Mark these (already reconciled) lines as "to check" instead of

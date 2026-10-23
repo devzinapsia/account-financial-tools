@@ -32,6 +32,7 @@ class TestOutstandingOnlyAutoReconcile(AccountTestInvoicingCommon):
         return statement.line_ids
 
     def test_native_auto_reconcile_matches_invoice_directly_when_disabled(self):
+        self.env.company.bank_statement_auto_reconcile_outstanding_only = False
         invoice = self._create_invoice_one_line(partner_id=self.partner_a.id, price_unit=100.0, post=True)
         line = self._create_unreconciled_line(self.partner_a, 100.0, date=invoice.invoice_date)
 
@@ -39,8 +40,8 @@ class TestOutstandingOnlyAutoReconcile(AccountTestInvoicingCommon):
 
         self.assertTrue(
             line.is_reconciled,
-            "By default (setting off) native auto-reconcile may still match straight to the invoice - "
-            "this documents the pre-existing behavior the setting below opts out of",
+            "With the setting off, native auto-reconcile may still match straight to the invoice - "
+            "this documents the pre-existing (and still available, opt-out) behavior",
         )
 
     def test_outstanding_only_setting_blocks_direct_invoice_match(self):
@@ -87,6 +88,7 @@ class TestOutstandingOnlyAutoReconcile(AccountTestInvoicingCommon):
         """
         self.env.company.bank_statement_auto_reconcile_outstanding_only = True
         other_company_data = self.setup_other_company()
+        other_company_data['company'].bank_statement_auto_reconcile_outstanding_only = False
         other_journal = other_company_data['default_journal_bank']
         other_partner = self.env['res.partner'].create({'name': 'Other Company Partner'})
 

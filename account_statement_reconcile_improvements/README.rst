@@ -94,12 +94,13 @@ Reconciliation improvements
   directly against an open invoice/bill's receivable/payable account,
   skipping the outstanding payment/receipt ("cuenta puente") account
   entirely - wrong for a bookkeeping flow where bank lines are only ever
-  meant to settle through a receipt/payment order. Enabling it stops
-  automatic reconciliation (both the scheduled cron and the one
+  meant to settle through a receipt/payment order. Enabled by default,
+  it stops automatic reconciliation (both the scheduled cron and the one
   triggered right after the CUIT match on import) from ever matching a
   statement line straight to a receivable/payable account; matching
   through an outstanding account, or falling back to a reconcile model,
-  is unaffected. Disabled by default. See "Decisiones de diseño".
+  is unaffected. Disable it for a company that settles bank lines
+  directly against invoices/bills instead. See "Decisiones de diseño".
 
 Decisiones de diseño
 =====================
@@ -165,10 +166,14 @@ acá para que queden trazables:
 - **Filtro por diario precargado en "Buscar: Apuntes Contables para
   Conciliar"**: el diálogo nativo busca candidatos en todos los diarios
   (a propósito, para detectar pagos registrados en el banco equivocado),
-  lo que en un banco con mucho volumen muestra todo el tiempo resultados
-  de otros bancos. Se precarga el filtro "Diario" con el banco que se
-  está conciliando - igual que ya hace con el contacto - pero sigue
-  siendo un filtro común, removible desde la barra de búsqueda.
+  lo que en un cliente con muchos bancos (p. ej. 25) muestra todo el
+  tiempo resultados de otros bancos. Se precarga el filtro "Diario" con
+  el banco que se está conciliando - igual que ya hace con el contacto -
+  pero sigue siendo un filtro común, removible desde la barra de
+  búsqueda. Configurable por compañía ("Pre-filter the journal in the
+  reconciliation search dialog", activado por defecto); para un cliente
+  con pocos bancos, donde los resultados de otros diarios nunca
+  molestan, se puede desactivar.
 - **"Create Bill" sin adjunto**: la propia opción "Upload Bills" de
   ``account_accountant`` (``create_document_from_attachment``) siempre
   exige al menos un adjunto - no tiene una variante sin archivo. Por eso
@@ -200,10 +205,20 @@ acá para que queden trazables:
   (``_handle_reconciliation_matching_amount``/``_match_accounts_query``
   con ``match_journal``/``outstanding_account`` en ``False``) - nunca
   del paso que sí busca en las cuentas puente, para no romper la
-  conciliación normal vía recibo/OP. Por compañía (no por diario,
-  siguiendo cómo Odoo ya guarda las cuentas de pagos/cobros pendientes a
-  nivel de método de pago, no de diario); desactivada por defecto para
-  no cambiar el comportamiento de ninguna instalación existente.
+  conciliación normal vía recibo/OP. Por compañía, no por diario/método
+  de pago: separarlo por diario exigiría duplicar una porción mucho más
+  grande de la orquestación nativa de ``_try_auto_reconcile_statement_lines``
+  (``_match_accounts_query`` no devuelve resultado, deja la consulta SQL
+  en el cursor para que quien lo llama haga ``fetchall()`` - llamarlo dos
+  veces por separado rompe ese contrato), bastante más fragilidad para un
+  caso acotado: un REC/OP ya cargado siempre le gana a la factura (la
+  conciliación nativa agota primero todo el paso de cuentas puente, para
+  *todas* las líneas del lote, antes de siquiera intentar el paso de
+  facturas), así que el bug solo aparece cuando todavía no hay ningún
+  recibo/OP cargado - no hay conflicto real entre ambos que justifique esa
+  complejidad adicional. Activada por defecto: la mayoría de los clientes
+  de Zinapsia trabajan con cuenta puente; se desactiva puntualmente en la
+  compañía que concilie extractos directo contra factura.
 - **Borrado de extracto**: antes de borrar un extracto con líneas
   conciliadas se muestra una advertencia explícita a nivel del extracto
   (no línea por línea); si se confirma, todas sus líneas se desconcilian
@@ -262,11 +277,18 @@ Go to **Accounting ‣ Configuration ‣ Settings** and, under the
 statement lines reconciled automatically - either on import or by a
 reconciliation model - flagged to check; enabled by default).
 
-In the same area, enable **Only auto-reconcile through outstanding
-accounts** if bank statement lines in this company should only ever
-settle through a receipt/payment order (never matched straight to an
-invoice/bill by Odoo's own automatic reconciliation). Disabled by
-default.
+In the same area, disable **Only auto-reconcile through outstanding
+accounts** if bank statement lines in this company do *not* always
+settle through a receipt/payment order - leave it enabled (the default)
+for a company whose bookkeeping always goes through one, so Odoo's own
+automatic reconciliation never matches a statement line straight to an
+invoice/bill instead.
+
+Also in the same area, disable **Pre-filter the journal in the
+reconciliation search dialog** for a company with few enough bank
+journals that seeing every candidate from every bank in "Search: Journal
+Items to Match" is never in the way. Enabled by default - useful for a
+company with many bank journals.
 
 No other configuration is required: the per-journal import mapping is
 learned automatically the first time you import a file for that journal,

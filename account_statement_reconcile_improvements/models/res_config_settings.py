@@ -12,3 +12,7 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.bank_statement_auto_reconcile_outstanding_only',
         readonly=False,
     )
+    bank_statement_reconcile_dialog_default_journal = fields.Boolean(
+        related='company_id.bank_statement_reconcile_dialog_default_journal',
+        readonly=False,
+    )

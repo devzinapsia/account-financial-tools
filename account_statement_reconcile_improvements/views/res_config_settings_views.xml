@@ -16,6 +16,11 @@
                     help="Stop automatic bank reconciliation from ever matching a statement line directly against an invoice/bill - only through an outstanding payment/receipt account">
                     <field name="bank_statement_auto_reconcile_outstanding_only"/>
                 </setting>
+                <setting id="bank_statement_reconcile_dialog_default_journal_setting"
+                    string="Pre-filter the journal in the reconciliation search dialog"
+                    help="Pre-select the journal being reconciled in the &quot;Search: Journal Items to Match&quot; dialog - a regular, removable search filter, useful for a company with many bank journals">
+                    <field name="bank_statement_reconcile_dialog_default_journal"/>
+                </setting>
             </xpath>
         </field>
     </record>

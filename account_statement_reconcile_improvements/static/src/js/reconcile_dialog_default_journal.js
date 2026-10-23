@@ -21,6 +21,14 @@ import { _t } from "@web/core/l10n/translation";
 // so this overrides the whole method - kept otherwise identical to the
 // native implementation (see button_list.js). Re-sync this if Odoo changes
 // that method upstream.
+//
+// Company setting (bank_statement_reconcile_dialog_default_journal,
+// default True): a company with few bank journals may prefer seeing every
+// candidate without the extra click to clear this filter. Exposed as a
+// related field straight on account.bank.statement.line (see
+// models/account_bank_statement_line.py) and added to this same kanban
+// view (views/account_bank_statement_line_views.xml) so it's already part
+// of statementLineData - no extra RPC needed to read it here.
 patch(BankRecButtonList.prototype, {
     reconcileOnReconcileLine() {
         const context = {
@@ -32,7 +40,7 @@ patch(BankRecButtonList.prototype, {
             ...(this.statementLineData.partner_id
                 ? { search_default_partner_id: this.statementLineData.partner_id.id }
                 : {}),
-            ...(this.statementLineData.journal_id
+            ...(this.statementLineData.journal_id && this.statementLineData.reconcile_dialog_default_journal
                 ? { search_default_journal_id: this.statementLineData.journal_id.id }
                 : {}),
         };

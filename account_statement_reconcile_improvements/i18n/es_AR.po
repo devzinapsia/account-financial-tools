@@ -112,11 +112,13 @@ msgid ""
 "account, skipping the outstanding payment/receipt (\"cuenta puente\") "
 "account entirely when no such entry exists yet or doesn't match. For a "
 "bookkeeping flow where bank lines are only ever meant to settle through a "
-"receipt/payment order on an outstanding account, enable this to stop "
+"receipt/payment order on an outstanding account, keep this enabled to stop "
 "automatic reconciliation from ever matching a statement line straight to a "
 "receivable/payable account - it still fully reconciles through outstanding "
-"accounts, and still falls back to reconcile models either way. Disabled by "
-"default to keep every existing installation's behavior unchanged."
+"accounts, and still falls back to reconcile models either way. Enabled by "
+"default, since most of our clients' bookkeeping works this way; disable it "
+"for a specific company that settles bank lines directly against invoices/"
+"bills instead."
 msgstr ""
 "La conciliación bancaria automática nativa de Odoo (disparada al asignar "
 "un contacto a la línea - por el match de CUIT al importar, o manualmente) "
@@ -125,11 +127,12 @@ msgstr ""
 "puente de pagos/cobros pendientes cuando todavía no existe un comprobante "
 "ahí o no matchea. Para un circuito contable donde las líneas de banco "
 "solo deben saldarse a través de un recibo/orden de pago en una cuenta "
-"puente, activá esto para que la conciliación automática nunca concilie "
-"una línea directo contra una cuenta de deudores/proveedores - sigue "
-"conciliando normalmente a través de cuentas puente, y sigue cayendo en "
-"los modelos de conciliación de todas formas. Desactivado por defecto para "
-"no cambiar el comportamiento de ninguna instalación existente."
+"puente, dejá esto activado para que la conciliación automática nunca "
+"concilie una línea directo contra una cuenta de deudores/proveedores - "
+"sigue conciliando normalmente a través de cuentas puente, y sigue cayendo "
+"en los modelos de conciliación de todas formas. Activado por defecto, ya "
+"que la mayoría de nuestros clientes trabaja así; desactivalo puntualmente "
+"en la compañía que concilie extractos directo contra factura."
 
 #. module: account_statement_reconcile_improvements
 #: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
@@ -141,6 +144,52 @@ msgstr ""
 "Evitar que la conciliación bancaria automática concilie una línea directo "
 "contra una factura - solo a través de una cuenta de pagos/cobros "
 "pendientes"
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_res_company__bank_statement_reconcile_dialog_default_journal
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_res_config_settings__bank_statement_reconcile_dialog_default_journal
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
+msgid "Pre-filter the journal in the reconciliation search dialog"
+msgstr "Precargar el diario en el diálogo de búsqueda de conciliación"
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,help:account_statement_reconcile_improvements.field_res_company__bank_statement_reconcile_dialog_default_journal
+#: model:ir.model.fields,help:account_statement_reconcile_improvements.field_res_config_settings__bank_statement_reconcile_dialog_default_journal
+msgid ""
+"The bank reconciliation screen's own \"Search: Journal Items to Match\" "
+"dialog searches every journal by design (useful to catch a payment "
+"registered against the wrong bank journal). For a company with many bank "
+"journals, that means seeing other banks' candidates mixed in every time. "
+"Enabled by default, this pre-selects the journal being reconciled as a "
+"search default - still a regular, removable filter, not a restriction. "
+"Disable it for a company with few enough journals that the extra "
+"candidates are never in the way."
+msgstr ""
+"La propia pantalla de conciliación bancaria tiene un diálogo \"Buscar: "
+"Apuntes Contables para Conciliar\" que busca en todos los diarios a "
+"propósito (útil para detectar un pago registrado en el banco "
+"equivocado). Para una empresa con muchos bancos, eso significa ver "
+"mezclados todo el tiempo candidatos de otros bancos. Activado por "
+"defecto, precarga el diario que se está conciliando como filtro de "
+"búsqueda por defecto - sigue siendo un filtro común, removible, no una "
+"restricción. Desactivalo para una empresa con pocos diarios, donde los "
+"candidatos de más nunca molestan."
+
+#. module: account_statement_reconcile_improvements
+#: model_terms:ir.ui.view,arch_db:account_statement_reconcile_improvements.res_config_settings_view_form
+msgid ""
+"Pre-select the journal being reconciled in the \"Search: Journal Items to "
+"Match\" dialog - a regular, removable search filter, useful for a company "
+"with many bank journals"
+msgstr ""
+"Precargar el diario que se está conciliando en el diálogo \"Buscar: "
+"Apuntes Contables para Conciliar\" - un filtro de búsqueda común, "
+"removible, útil para una empresa con muchos bancos"
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_account_bank_statement_line__reconcile_dialog_default_journal
+msgid "Reconcile Dialog Default Journal"
+msgstr "Diario por defecto en diálogo de conciliación"
 
 #. module: account_statement_reconcile_improvements
 #. odoo-python
