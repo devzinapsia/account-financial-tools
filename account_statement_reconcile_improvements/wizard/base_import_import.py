@@ -4,10 +4,49 @@ import unicodedata
 from markupsafe import Markup
 
 from odoo import fields, models
-from odoo.addons.base_import.models.base_import import FIELDS_RECURSION_LIMIT
+from odoo.addons.base_import.models.base_import import (
+    DATE_FORMATS,
+    FIELDS_RECURSION_LIMIT,
+    TIME_PATTERNS,
+    _SEPARATORS,
+    check_patterns,
+    to_re,
+)
 from odoo.tools.misc import format_date
 
 from ..tools.ar_id_extraction import extract_cuit
+
+# base_import's own date-format auto-detection (_try_match_date_time) tries
+# every combination of day/month/year order and separator against the
+# preview rows, in a fixed order where every month-first pattern
+# ('%m-%d-%Y', US-style) comes before its day-first equivalent
+# ('%d-%m-%Y') - see base_import.models.base_import._PATTERN_BASELINE. When
+# a column's preview sample happens to be genuinely ambiguous (every day
+# value in it is 12 or below - not unlikely on a short statement, or one
+# that only spans less than half a month), BOTH patterns match every row
+# and the first one in that fixed order silently wins: the whole file gets
+# imported with day and month swapped, with no error at all, since a
+# wrong-but-valid date is still a valid date. Confirmed against a real
+# BBVA export where every row fell in this exact window (all dates from
+# the 2nd/3rd of the month) - 02-09-2026 (2 September) was silently
+# imported as 9 February. Every bank statement this module exists for is
+# Argentine, i.e. always day-first - reordering the same candidate list so
+# every day-first pattern is tried before its month-first equivalent fixes
+# this for the genuinely ambiguous case, without changing anything for a
+# column that isn't ambiguous (a day value above 12 anywhere in the
+# preview already rules out the month-first pattern on its own, same as
+# before).
+_AR_DAY_FIRST_DATE_PATTERNS = [
+    sep.join(fmt)
+    for sep in _SEPARATORS
+    for fmt in DATE_FORMATS
+    if fmt[0] == '%d'
+] + [
+    sep.join(fmt)
+    for sep in _SEPARATORS
+    for fmt in DATE_FORMATS
+    if fmt[0] != '%d'
+]
 
 # Virtual field offered in the mapping UI (alongside the native 'balance',
 # 'debit', 'credit' synthetic fields added by account_bank_statement_import_csv)
@@ -186,6 +225,42 @@ class Base_ImportImport(models.TransientModel):
             if has_date_kw and has_other_kw:
                 return index
         return 0
+
+    # -------------------------------------------------------------------
+    # Bug fix: day/month swapped when auto-detecting an ambiguous date
+    # column (see _AR_DAY_FIRST_DATE_PATTERNS above for the full story)
+    # -------------------------------------------------------------------
+    def _try_match_date_time(self, preview_values, options):
+        # EXTENDS base_import
+        if not options.get('bank_stmt_import') or options.get('date_format'):
+            return super()._try_match_date_time(preview_values, options)
+
+        date_patterns = []
+        user_date_format = self.env['res.lang']._get_data(code=self.env.user.lang).date_format
+        if user_date_format:
+            try:
+                to_re(user_date_format)
+                date_patterns.append(user_date_format)
+            except KeyError:
+                pass
+        date_patterns.extend(_AR_DAY_FIRST_DATE_PATTERNS)
+        match = check_patterns(date_patterns, preview_values)
+        if match:
+            options['date_format'] = match
+            return ['date', 'datetime']
+
+        datetime_patterns = [options['datetime_format']] if options.get('datetime_format') else []
+        datetime_patterns.extend(
+            "%s %s" % (d, t)
+            for d in date_patterns
+            for t in TIME_PATTERNS
+        )
+        match = check_patterns(datetime_patterns, preview_values)
+        if match:
+            options['datetime_format'] = match
+            return ['datetime']
+
+        return []
 
     # -------------------------------------------------------------------
     # 3.1 - per-journal mapping persistence

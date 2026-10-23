@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates id="template" xml:space="preserve">
+    <!--
+        base_import's own ImportDataProgress only shows anything at all
+        once the SECOND batch starts (t-if="props.importProgress.step > 1").
+        A file that needs just two batches (the default batch size is 2000
+        rows, so any file between 2001 and 4000 rows) spends the entire
+        first batch - which, on a real bank statement with several
+        thousand lines, can run for a few minutes - showing nothing behind
+        the blocking overlay at all, looking frozen. Dropping that guard
+        shows the batch counter and progress bar (still at 0%, same as
+        before) from the very first batch instead, so there's at least a
+        visible sign that an import this size is expected to take a while
+        and how many batches are left - not a rewrite of the batch/percent
+        math itself, which is native base_import's own.
+    -->
+    <t t-inherit="ImportDataProgress" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_import_data_progress')]" position="attributes">
+            <attribute name="t-if">true</attribute>
+        </xpath>
+    </t>
+</templates>

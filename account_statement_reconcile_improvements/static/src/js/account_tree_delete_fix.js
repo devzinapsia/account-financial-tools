@@ -1,4 +1,5 @@
 import { patch } from "@web/core/utils/patch";
+import { _t } from "@web/core/l10n/translation";
 import { AccountMoveListController } from "@account/views/account_move_list/account_move_list_controller";
 
 // Bug fix (native Odoo, not ours): AccountMoveListController.onDeleteSelectedRecords()
@@ -37,7 +38,31 @@ import { AccountMoveListController } from "@account/views/account_move_list/acco
 patch(AccountMoveListController.prototype, {
     async onDeleteSelectedRecords() {
         if (this.model.root.resModel !== "account.move") {
-            this.deleteRecordsWithConfirmation(this.deleteConfirmationDialogProps);
+            const dialogProps = {};
+            if (this.model.root.resModel === "account.bank.statement") {
+                // Deleting a statement runs unlink() server-side, which can
+                // take a while for a large/multi-company one (unreconciling
+                // every line one by one - see account_bank_statement.py's
+                // own unlink()). The confirmation dialog closes the instant
+                // "Delete" is clicked, and nothing else on screen changes
+                // until the RPC comes back, which feels frozen rather than
+                // "working on it". ui.block()/unblock() is the same generic
+                // blocking overlay Odoo itself uses elsewhere for a
+                // long-running action - no delay, so it shows the instant
+                // the deletion actually starts (after confirming), not
+                // after a guess at how long it'll take.
+                dialogProps.confirm = async () => {
+                    this.env.services.ui.block({
+                        message: _t("Deleting bank statement(s)..."),
+                    });
+                    try {
+                        await this.model.root.deleteRecords();
+                    } finally {
+                        this.env.services.ui.unblock();
+                    }
+                };
+            }
+            this.deleteRecordsWithConfirmation(dialogProps);
             return;
         }
         return super.onDeleteSelectedRecords();

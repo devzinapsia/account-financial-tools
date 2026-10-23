@@ -78,6 +78,30 @@ Import improvements
   (e.g. BBVA's account/period summary before the real column headers, or
   banks that interleave blank separator rows through the data) - no manual
   file editing needed before importing.
+- **Bug fix: a large import's progress bar showed nothing at all during
+  its first batch.** Odoo's own import screen only displays its batch
+  counter/progress bar once the *second* batch starts; a file that needs
+  just one or two batches (anywhere up to 4000 rows at the default
+  2000-row batch size) could spend several minutes - the time it takes to
+  process a real bank statement with thousands of lines - showing nothing
+  behind the loading overlay, looking frozen. The counter and progress
+  bar (still starting at 0%) now show from the very first batch.
+- **Bug fix: an ambiguous date column could get its day and month
+  swapped, with no error at all.** Odoo's own date-format auto-detection
+  tries every month-first pattern (``%m-%d-%Y``, US-style) before its
+  day-first equivalent (``%d-%m-%Y``) - when a column's sample values are
+  genuinely ambiguous (every day value happens to be 12 or below, not
+  unlikely on a short statement or one spanning less than half a month),
+  both match and the month-first guess silently wins. Confirmed against a
+  real BBVA export where every single row fell in that window: 2 de
+  septiembre was imported as 9 de febrero, for the whole file, with no
+  warning anywhere. Every bank statement this module exists for is
+  Argentine (always day-first) - the same candidate list is now tried
+  day-first, well before its month-first equivalent, specifically for
+  this import (a plain data import elsewhere in Odoo - contacts,
+  products, anything unrelated to bank statements - is unaffected). A
+  genuinely unambiguous column (any day value above 12 anywhere in the
+  sample) was never affected either way.
 
 Reconciliation improvements
 ============================
@@ -305,6 +329,14 @@ acá para que queden trazables:
   módulo ni de Odoo nativo en su uso previsto, sino de esa reutilización
   puntual del ``js_class``; se corrige acá para que esa pantalla
   funcione sea cual sea el ``js_class`` que termine usando.
+- **Borrado de extracto(s) sin feedback visual**: el diálogo de
+  confirmación se cierra apenas se hace click en "Delete", y nada más en
+  pantalla cambia hasta que la respuesta del servidor vuelve - en un
+  extracto grande (desconciliar miles de líneas una por una, ver bug fix
+  de arriba) eso puede tardar, y durante ese rato parece que no está
+  pasando nada. Se agregó el mismo overlay de bloqueo genérico que usa
+  Odoo para otras acciones largas, visible desde el instante en que se
+  confirma el borrado (no después de una demora/estimación).
 - **Duplicado de línea sin grilla interactiva**: la fila 3.4 del pedido
   original pedía una grilla de previsualización con un checkbox
   "Importar" por fila. Implementar eso requiere reconstruir el componente
