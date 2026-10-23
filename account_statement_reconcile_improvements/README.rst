@@ -290,6 +290,25 @@ acá para que queden trazables:
   ``sudo()`` para esto específicamente - no expone datos nuevos al
   usuario, solo evita ese ruido incidental en una operación sobre sus
   propios registros.
+- **Bug fix: borrar extractos desde la lista "Estados de cuenta
+  bancarios" podía fallar directamente, sin llegar siquiera al servidor**
+  - en un cliente cuya vista de esa lista fue personalizada (p. ej. por
+  Studio) para reusar el ``js_class="account_tree"`` nativo (pensado
+  para listas de ``account.move`` - facturas, asientos - no para
+  ``account.bank.statement``). Ese controlador nativo, antes de pedir
+  confirmación, siempre llama a
+  ``account.move.check_move_sequence_chain()`` con los ids de lo
+  seleccionado EN LA VISTA ACTUAL, sin verificar que el modelo
+  realmente sea ``account.move`` - al reusarlo para extractos, termina
+  chequeando esos mismos números de id como si fueran asientos
+  contables. Como ambas tablas comparten la misma secuencia global de
+  ids de Postgres, esos números pueden coincidir por pura casualidad
+  con un asiento real de otra empresa (error de acceso) o con ninguno
+  (``Registro faltante``), sin ninguna relación con el extracto que se
+  quiere borrar - confirmado contra un caso real. No es un bug de este
+  módulo ni de Odoo nativo en su uso previsto, sino de esa reutilización
+  puntual del ``js_class``; se corrige acá para que esa pantalla
+  funcione sea cual sea el ``js_class`` que termine usando.
 - **Duplicado de línea sin grilla interactiva**: la fila 3.4 del pedido
   original pedía una grilla de previsualización con un checkbox
   "Importar" por fila. Implementar eso requiere reconstruir el componente
