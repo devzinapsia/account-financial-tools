@@ -43,3 +43,25 @@ class TestBankStatementPartnerCuitMatching(AccountTestInvoicingCommon):
         company = self.env['res.partner'].create({'name': 'Acme SA', 'vat': '20-12345678-6'})
         found = self.env['res.partner']._find_unique_partner_by_cuit('20123456786')
         self.assertEqual(found, company)
+
+    def test_own_company_cuit_is_never_matched(self):
+        """A client's own CUIT routinely shows up in a bank statement's
+        free-text legend (most commonly on a transfer between the
+        client's own bank accounts) - matching it would assign the
+        company's own res.partner as the line's contact, which is never a
+        correct result and breaks every feature that filters by contact
+        afterwards (see models/res_partner.py's own docstring).
+        """
+        self.env.company.partner_id.vat = '20123456786'
+        found = self.env['res.partner']._find_unique_partner_by_cuit('20123456786')
+        self.assertFalse(found, "The active company's own CUIT must never resolve to a contact")
+
+    def test_another_companys_own_cuit_is_also_never_matched(self):
+        """The exclusion isn't scoped to just the currently active
+        company - a group's own inter-company transfers can carry any of
+        its other companies' CUITs just as easily.
+        """
+        other_company = self.env['res.company'].create({'name': 'Other Co'})
+        other_company.partner_id.vat = '20123456786'
+        found = self.env['res.partner']._find_unique_partner_by_cuit('20123456786')
+        self.assertFalse(found, "No company's own CUIT, active or not, must ever resolve to a contact")

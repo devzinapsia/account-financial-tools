@@ -52,6 +52,20 @@ Import improvements
   description/legend column; if exactly one valid Argentine CUIT is found
   in the text (checksum-validated), the corresponding partner is assigned
   automatically.
+- **Bug fix: a transfer between the company's own bank accounts could get
+  the company itself assigned as the line's contact.** The bank's own
+  export often names the account holder (the company itself) rather than
+  a real counterpart on this kind of movement - if that CUIT happened to
+  match, the line ended up with its own company as "contact", which is
+  never a meaningful result and broke every feature that filters by
+  contact afterwards (the counterpart journal item for a transfer
+  typically has no partner at all). No company's own CUIT, in any
+  company of the database, is matched anymore.
+- **Performance: large-file CUIT matching and duplicate-row detection no
+  longer scale with the number of rows.** Both used to run one full
+  database query per row (a full scan of every contact with a CUIT, for
+  the former); a 2000-row batch meant 2000 repeats of the same query.
+  Both now run once per batch instead.
 - **CUIT recognition when the legend column is also the line's own label.**
   Some banks (e.g. BBVA) have no separate legend/description column at
   all - the one column that IS the transaction's own label ("Concepto")
@@ -137,6 +151,19 @@ acá para que queden trazables:
   contacto que heredaron el CUIT de la empresa madre). Si después de ese
   filtro sigue habiendo más de una empresa con el mismo CUIT, se toma la
   de ``create_date`` más antiguo (``id`` como desempate).
+- **CUIT propio excluido de la resolución de contacto**: el ``res.partner``
+  de ``res.company.partner_id`` - de cualquier empresa de la base, no solo
+  la activa, ya que una transferencia entre empresas del mismo grupo puede
+  traer el CUIT de cualquiera de ellas - nunca se asigna como contacto de
+  una línea, aunque su CUIT aparezca en el texto libre. Caso típico: una
+  transferencia entre cuentas bancarias propias, donde el extracto nombra
+  al titular de la cuenta (la propia empresa) en vez de una contraparte
+  real. Asignar la propia empresa como contacto nunca tiene sentido
+  (nunca se le va a emitir un recibo/OP a uno mismo) y además rompe el
+  filtrado por contacto en otras partes del módulo, porque la línea
+  contrapartida de una transferencia normalmente no tiene contacto
+  asignado - filtrar por el contacto incorrecto oculta el match correcto
+  en vez de acotarlo.
 - **DNI**: el reconocimiento es best-effort (no tiene dígito verificador,
   a diferencia del CUIT). La extracción está disponible como utilidad
   (``tools/ar_id_extraction.py``, cubierta por tests con casos reales de
@@ -182,6 +209,14 @@ acá para que queden trazables:
   reconciliation search dialog", activado por defecto); para un cliente
   con pocos bancos, donde los resultados de otros diarios nunca
   molestan, se puede desactivar.
+  **Bug fix: el filtro quedaba completamente inerte en un cliente con
+  `ingadhoc/odoo-argentina-ee`'s ``account_accountant_ux`` instalado** -
+  ese módulo también reemplaza el mismo método del botón "Conciliar"
+  (sin llamar a la implementación nativa), y como la primera versión de
+  este fix hacía lo mismo, cualquiera de los dos que cargara último
+  pisaba por completo al otro. Corregido enganchando el mecanismo común
+  que ambas implementaciones usan para abrir el diálogo, en vez de
+  reemplazar el método entero - ver "Decisiones de diseño".
 - **"Create Bill" sin adjunto**: la propia opción "Upload Bills" de
   ``account_accountant`` (``create_document_from_attachment``) siempre
   exige al menos un adjunto - no tiene una variante sin archivo. Por eso

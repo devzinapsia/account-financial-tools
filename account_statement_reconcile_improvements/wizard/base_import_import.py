@@ -296,12 +296,26 @@ class Base_ImportImport(models.TransientModel):
             if not options.get('skip'):
                 statement_vals['import_file_hash'] = file_hash
 
-        data = self._resolve_ar_partner_identification(data, import_fields)
-        data = self._resolve_ar_label_and_partner_identification(data, import_fields)
+        data = self._resolve_ar_partner_identification(data, import_fields, options)
+        data = self._resolve_ar_label_and_partner_identification(data, import_fields, options)
         data = self._filter_out_duplicate_lines(data, import_fields, options)
         return data
 
-    def _resolve_ar_partner_identification(self, data, import_fields):
+    def _get_cuit_partner_map(self, options):
+        """Memoized on `options` (mutated in place, same object the whole
+        way through this wizard's own call chain - see the comment on
+        _filter_out_duplicate_lines's own 'options' usage below for why
+        `options`, not `self`, carries state here) so that a file mapping
+        BOTH CUIT fields at once (not a supported combination, but nothing
+        stops the mapping screen from doing it) still only pays for one
+        full partner scan, not two - built by whichever of the two
+        CUIT-resolution methods below runs first.
+        """
+        if '_cuit_partner_map' not in options:
+            options['_cuit_partner_map'] = self.env['res.partner']._build_cuit_to_partner_map()
+        return options['_cuit_partner_map']
+
+    def _resolve_ar_partner_identification(self, data, import_fields, options):
         if _AR_IDENTIFICATION_FIELD not in import_fields:
             return data
         legend_index = import_fields.index(_AR_IDENTIFICATION_FIELD)
@@ -314,15 +328,16 @@ class Base_ImportImport(models.TransientModel):
                 row.pop(legend_index)
             return data
 
-        partner_model = self.env['res.partner']
+        empty_partner = self.env['res.partner'].browse()
+        cuit_partner_map = self._get_cuit_partner_map(options)
         import_fields[legend_index] = 'partner_id/.id'
         for row in data:
             cuit = extract_cuit(row[legend_index])
-            partner = partner_model._find_unique_partner_by_cuit(cuit) if cuit else partner_model.browse()
+            partner = cuit_partner_map.get(cuit, empty_partner) if cuit else empty_partner
             row[legend_index] = partner.id or False
         return data
 
-    def _resolve_ar_label_and_partner_identification(self, data, import_fields):
+    def _resolve_ar_label_and_partner_identification(self, data, import_fields, options):
         """Same CUIT resolution as _resolve_ar_partner_identification, but
         for banks (e.g. BBVA) that don't have a separate legend column at
         all - the one column that IS the transaction's own label
@@ -350,11 +365,12 @@ class Base_ImportImport(models.TransientModel):
         if 'partner_id' in import_fields or 'partner_id/.id' in import_fields:
             return data
 
-        partner_model = self.env['res.partner']
+        empty_partner = self.env['res.partner'].browse()
+        cuit_partner_map = self._get_cuit_partner_map(options)
         import_fields.append('partner_id/.id')
         for row in data:
             cuit = extract_cuit(row[legend_index])
-            partner = partner_model._find_unique_partner_by_cuit(cuit) if cuit else partner_model.browse()
+            partner = cuit_partner_map.get(cuit, empty_partner) if cuit else empty_partner
             row.append(partner.id or False)
         return data
 
@@ -381,6 +397,13 @@ class Base_ImportImport(models.TransientModel):
         every batch past the first. Those rows were never "pre-existing" -
         they're the same file's own data, split only by Odoo's import
         mechanics, not a second, separate import of an overlapping period.
+
+        Fetches every candidate existing line in a single query (grouped by
+        date in Python afterwards), instead of one ``search()`` per row -
+        for a large file, that used to mean one query per row of the
+        import (thousands, for a large statement), all against the exact
+        same journal and differing only by date/partner. One query scoped
+        to every date actually present in this batch does the same job.
         """
         if options.get('bank_stmt_force_duplicate_lines'):
             return data
@@ -416,29 +439,57 @@ class Base_ImportImport(models.TransientModel):
         StatementLine = self.env['account.bank.statement.line']
         Partner = self.env['res.partner']
         precision = journal.currency_id.decimal_places
-        kept_rows = []
-        duplicate_details = []
+
+        # First pass: parse every row's date/amount up front (same
+        # try/except behavior as before - a row with an unparseable value
+        # just never matches, it never blocks the import) and collect the
+        # set of distinct dates actually present, to scope the one query
+        # below instead of fetching the journal's entire history. Keyed by
+        # a real date object (date_key), not the raw string straight out
+        # of the row (date_value, kept only for the duplicate_details
+        # report below) - line.date from the ORM is already a date object,
+        # and comparing that against a string key would never match.
+        parsed = []
+        dates_present = set()
         for row in data:
             try:
                 date_value = row[date_index]
+                date_key = fields.Date.to_date(date_value)
                 amount_value = round(float(row[amount_index] or 0.0), precision)
-                domain = [
-                    ('journal_id', '=', journal.id),
-                    ('date', '=', date_value),
-                ]
-                if own_batch_group_hash:
-                    domain.append(('statement_id.import_batch_group_hash', '!=', own_batch_group_hash))
-                if partner_index is not None and row[partner_index]:
-                    domain.append(('partner_id', '=', row[partner_index]))
-                existing = StatementLine.search(domain)
-                matches = existing.filtered(lambda line, amount_value=amount_value, precision=precision: (
-                    round(line.amount, precision) == amount_value
-                ))
             except (TypeError, ValueError):
+                parsed.append(None)
+                continue
+            parsed.append((date_value, date_key, amount_value))
+            dates_present.add(date_key)
+
+        existing_by_date = {}
+        if dates_present:
+            domain = [
+                ('journal_id', '=', journal.id),
+                ('date', 'in', list(dates_present)),
+            ]
+            if own_batch_group_hash:
+                domain.append(('statement_id.import_batch_group_hash', '!=', own_batch_group_hash))
+            for line in StatementLine.search(domain):
+                existing_by_date.setdefault(line.date, StatementLine.browse())
+                existing_by_date[line.date] |= line
+
+        kept_rows = []
+        duplicate_details = []
+        for row, parsed_values in zip(data, parsed):
+            if parsed_values is None:
                 # Never silently drop a row because our own dedup check
                 # choked on an unexpected value shape - worst case it just
                 # doesn't get flagged as a probable duplicate.
                 matches = StatementLine
+            else:
+                date_value, date_key, amount_value = parsed_values
+                existing = existing_by_date.get(date_key, StatementLine)
+                if partner_index is not None and row[partner_index]:
+                    existing = existing.filtered(lambda line, partner_id=row[partner_index]: line.partner_id.id == partner_id)
+                matches = existing.filtered(lambda line, amount_value=amount_value, precision=precision: (
+                    round(line.amount, precision) == amount_value
+                ))
             if matches:
                 partner_name = False
                 if partner_index is not None and row[partner_index]:

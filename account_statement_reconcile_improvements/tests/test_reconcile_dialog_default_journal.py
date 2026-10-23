@@ -10,9 +10,13 @@ class TestReconcileDialogDefaultJournal(AccountTestInvoicingCommon):
     reconciliation widget's own kanban view can fetch it for free alongside
     the rest of the statement line's data, with no extra RPC - see
     static/src/js/reconcile_dialog_default_journal.js, which reads it off
-    the already-loaded record. This only tests that the related field wiring
-    itself works; the actual JS behavior isn't something a Python test can
-    cover.
+    the already-loaded record (that file also explains why the filter is
+    injected by wrapping addDialog() rather than overriding
+    reconcileOnReconcileLine() - a real conflict with a third-party module
+    that does the latter, with no super() call, silently discarded this
+    fix entirely in production). This only tests that the related field
+    wiring itself works; the actual JS behavior isn't something a Python
+    test can cover.
     """
 
     @classmethod
