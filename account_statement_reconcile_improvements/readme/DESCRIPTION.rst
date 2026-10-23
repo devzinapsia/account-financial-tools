@@ -329,14 +329,17 @@ acá para que queden trazables:
   módulo ni de Odoo nativo en su uso previsto, sino de esa reutilización
   puntual del ``js_class``; se corrige acá para que esa pantalla
   funcione sea cual sea el ``js_class`` que termine usando.
-- **Borrado de extracto(s) sin feedback visual**: el diálogo de
-  confirmación se cierra apenas se hace click en "Delete", y nada más en
-  pantalla cambia hasta que la respuesta del servidor vuelve - en un
-  extracto grande (desconciliar miles de líneas una por una, ver bug fix
-  de arriba) eso puede tardar, y durante ese rato parece que no está
-  pasando nada. Se agregó el mismo overlay de bloqueo genérico que usa
-  Odoo para otras acciones largas, visible desde el instante en que se
-  confirma el borrado (no después de una demora/estimación).
+- **Borrado de extracto(s) sin feedback visual**: ni el diálogo de
+  confirmación de la lista ni el botón "Delete anyway" del asistente de
+  arriba (para un extracto con líneas conciliadas - el caso real que
+  realmente tarda, desconciliando miles de líneas una por una) mostraban
+  nada mientras la respuesta del servidor volvía - el único feedback
+  nativo de Odoo para ese botón es dejar los botones del diálogo
+  deshabilitados, sin spinner ni mensaje, fácil de no notar en un borrado
+  que puede tardar. Se agregó el mismo overlay de bloqueo genérico que
+  usa Odoo para otras acciones largas, en ambos puntos, visible desde el
+  instante en que se confirma el borrado (no después de una
+  demora/estimación).
 - **Duplicado de línea sin grilla interactiva**: la fila 3.4 del pedido
   original pedía una grilla de previsualización con un checkbox
   "Importar" por fila. Implementar eso requiere reconstruir el componente
