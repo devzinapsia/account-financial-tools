@@ -276,6 +276,20 @@ acá para que queden trazables:
   conciliadas se muestra una advertencia explícita a nivel del extracto
   (no línea por línea); si se confirma, todas sus líneas se desconcilian
   sin más preguntas.
+- **Bug fix: borrar un extracto grande (miles de líneas conciliadas) podía
+  fallar con un error de acceso ajeno al propio extracto**, en una base
+  con varias empresas. ``is_reconciled`` es un campo computado que, para
+  miles de líneas, hace que el ORM precargue (*prefetch*) de paso un lote
+  amplio e incidental de otros ``account.move`` - en una base con varias
+  empresas, ese lote puede incluir por pura coincidencia un registro de
+  una empresa que el usuario no tiene activa en ese momento, lo que frena
+  toda la lectura con un error de acceso totalmente ajeno al extracto que
+  se quiere borrar (confirmado contra un caso real: el registro que
+  aparecía en el error no tenía ninguna relación con el extracto). El
+  chequeo de líneas conciliadas y la desconciliación ahora se hacen con
+  ``sudo()`` para esto específicamente - no expone datos nuevos al
+  usuario, solo evita ese ruido incidental en una operación sobre sus
+  propios registros.
 - **Duplicado de línea sin grilla interactiva**: la fila 3.4 del pedido
   original pedía una grilla de previsualización con un checkbox
   "Importar" por fila. Implementar eso requiere reconstruir el componente

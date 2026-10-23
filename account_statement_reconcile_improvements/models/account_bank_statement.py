@@ -90,7 +90,21 @@ class AccountBankStatement(models.Model):
 
     def unlink(self):
         if not self.env.context.get('statement_unlink_confirmed'):
-            reconciled_lines = self.line_ids.filtered('is_reconciled')
+            # sudo(): is_reconciled is a computed field that, for a large
+            # statement (thousands of reconciled lines), can have Odoo's
+            # own ORM prefetch a wide, incidental batch of unrelated
+            # account.move records alongside the ones actually needed -
+            # in a database with several companies, that batch can easily
+            # include a record from a company the current user doesn't
+            # have active, which fails the whole read with an access
+            # error completely unrelated to this statement (confirmed
+            # against a real case: the record named in the error wasn't
+            # linked to the statement being deleted at all - already
+            # nonexistent, or reconciled entirely within its own,
+            # unrelated company). sudo() here only avoids that incidental
+            # noise; it doesn't let the user unreconcile/delete anything
+            # they couldn't already reach via this same statement.
+            reconciled_lines = self.sudo().line_ids.filtered('is_reconciled')
             if reconciled_lines:
                 action = self.env.ref(
                     'account_statement_reconcile_improvements'
@@ -126,8 +140,9 @@ class AccountBankStatement(models.Model):
         # clears statement_id on them).
         all_lines = self.line_ids
         for statement in self:
-            reconciled_lines = statement.line_ids.filtered('is_reconciled')
-            reconciled_lines.line_ids.remove_move_reconcile()
+            # Same sudo() rationale as above.
+            reconciled_lines = statement.sudo().line_ids.filtered('is_reconciled')
+            reconciled_lines.line_ids.sudo().remove_move_reconcile()
         result = super().unlink()
         all_lines.unlink()
         return result
