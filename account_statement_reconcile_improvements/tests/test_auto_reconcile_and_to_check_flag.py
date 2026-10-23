@@ -14,6 +14,15 @@ class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
     def setUpClass(cls):
         super().setUpClass()
         cls.bank_journal = cls.company_data['default_journal_bank']
+        # Every test in this class exercises the button's own
+        # date+amount-matching logic by having it settle directly against
+        # an invoice's receivable account - the scenario 3.13's "Only
+        # auto-reconcile through outstanding accounts" setting (default
+        # True) is specifically meant to block. Disabled here so the bulk
+        # of this file keeps testing that original logic unchanged; the
+        # setting's effect on this same button is covered on its own
+        # below.
+        cls.env.company.bank_statement_auto_reconcile_outstanding_only = False
 
     def _create_open_invoice(self, amount=100.0, date='2026-01-01'):
         invoice = self.env['account.move'].create({
@@ -183,4 +192,52 @@ class TestAutoReconcileAndToCheckFlag(AccountTestInvoicingCommon):
 
         self.assertEqual(first_run_count, 1)
         self.assertEqual(second_run_count, 0)
+        self.assertTrue(line.is_reconciled)
+
+    def test_button_respects_outstanding_only_setting_and_skips_direct_invoice_match(self):
+        """3.13's "Only auto-reconcile through outstanding accounts" setting
+        applies to this button too (see
+        action_auto_reconcile_unassigned_by_amount_and_date), not just
+        account_accountant's own native auto-reconcile flow - this is a
+        separate entry point (triggered from the reconciliation screen's
+        cog menu / the journal dashboard button, not an import) that could
+        otherwise still settle a line directly against a Factura, bypassing
+        the outstanding/bridge account the setting exists to enforce.
+        """
+        self.env.company.bank_statement_auto_reconcile_outstanding_only = True
+        self._create_open_invoice(amount=100.0, date='2026-01-01')
+        line = self._create_unreconciled_line(amount=100.0, date='2026-01-01')
+
+        reconciled_count = self.env['account.bank.statement.line'].action_auto_reconcile_unassigned_by_amount_and_date(line.ids)
+
+        self.assertEqual(reconciled_count, 0)
+        self.assertFalse(line.is_reconciled)
+
+    def test_button_matches_an_outstanding_account_entry_even_with_outstanding_only_setting_on(self):
+        """The setting only excludes receivable/payable accounts from this
+        button's candidate search - a match against a genuine outstanding/
+        bridge account entry (e.g. a REC/OP settled through an "Outstanding
+        Receipts" account) must still work with the setting on.
+        """
+        self.env.company.bank_statement_auto_reconcile_outstanding_only = True
+        outstanding_account = self.env['account.account'].create({
+            'name': 'Test Outstanding Receipts',
+            'code': 'TESTOUT1',
+            'account_type': 'asset_current',
+            'reconcile': True,
+        })
+        move = self.env['account.move'].create({
+            'move_type': 'entry',
+            'date': '2026-01-01',
+            'line_ids': [
+                (0, 0, {'account_id': outstanding_account.id, 'debit': 100.0, 'credit': 0.0}),
+                (0, 0, {'account_id': self.company_data['default_account_revenue'].id, 'debit': 0.0, 'credit': 100.0}),
+            ],
+        })
+        move.action_post()
+        line = self._create_unreconciled_line(amount=100.0, date='2026-01-01')
+
+        reconciled_count = self.env['account.bank.statement.line'].action_auto_reconcile_unassigned_by_amount_and_date(line.ids)
+
+        self.assertEqual(reconciled_count, 1)
         self.assertTrue(line.is_reconciled)

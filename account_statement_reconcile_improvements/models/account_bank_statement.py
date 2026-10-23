@@ -27,6 +27,26 @@ class AccountBankStatement(models.Model):
         "This bank statement file was already imported for this journal.",
     )
 
+    # Same SHA-256 as import_file_hash, but set on EVERY batch of a given
+    # import (not just the first) and never subject to a uniqueness
+    # constraint - import_file_hash can't be reused for this, since its own
+    # uniqueness guard would reject batch 2+ outright (the exact bug fixed
+    # by only setting it on the first batch - see wizard/base_import_import.py).
+    # Used purely to recognize "this line came from an earlier batch of the
+    # SAME ongoing multi-batch import" in the probable-duplicate check below,
+    # so a later batch doesn't treat an earlier batch's own freshly-imported
+    # lines as pre-existing data to compare itself against.
+    import_batch_group_hash = fields.Char(
+        string="Import Batch Group Hash",
+        index=True,
+        copy=False,
+        help="SHA-256 of the source file used to import this statement - "
+             "unlike import_file_hash, set on every batch of a large import "
+             "split by Odoo's own row-count limit, to recognize sibling "
+             "batches of the same import. Empty for statements not created "
+             "by a file import.",
+    )
+
     def _t(self, source, **kwargs):
         """Translate using the current user's own saved language
         preference (res.users.lang), not whatever 'lang' happens to be in

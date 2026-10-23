@@ -67,7 +67,7 @@ class AccountBankStatementLine(models.Model):
         reconciled_count = 0
         for line in lines:
             precision = line.currency_id.decimal_places
-            candidates = self.env['account.move.line'].search([
+            domain = [
                 ('parent_state', 'in', ('draft', 'posted')),
                 ('company_id', 'child_of', line.company_id.id),
                 ('account_id.reconcile', '=', True),
@@ -75,10 +75,26 @@ class AccountBankStatementLine(models.Model):
                 ('reconciled', '=', False),
                 ('date', '=', line.date),
                 ('statement_line_id', '!=', line.id),
-                '|',
-                ('account_id.account_type', 'not in', ('asset_receivable', 'liability_payable')),
-                ('payment_id', '=', False),
-            ])
+            ]
+            # 3.13's "Only auto-reconcile through outstanding accounts"
+            # setting applies here too: this action is a separate entry
+            # point from account_accountant's own
+            # _try_auto_reconcile_statement_lines (which this module
+            # already restricts in _handle_reconciliation_matching_amount/
+            # _match_accounts_query above) - without this, a company with
+            # that setting enabled could still have this "Reconcile by
+            # date and amount" cog-menu action settle a line directly
+            # against a Factura, bypassing the outstanding/bridge account
+            # the same way bug 3 did for the native flow.
+            if line.company_id.bank_statement_auto_reconcile_outstanding_only:
+                domain.append(('account_id.account_type', 'not in', ('asset_receivable', 'liability_payable')))
+            else:
+                domain += [
+                    '|',
+                    ('account_id.account_type', 'not in', ('asset_receivable', 'liability_payable')),
+                    ('payment_id', '=', False),
+                ]
+            candidates = self.env['account.move.line'].search(domain)
             # amount_currency is False (not 0.0) on a statement line with no
             # foreign_currency_id set - the common case - so comparing it
             # directly against amount_residual_currency would never match a

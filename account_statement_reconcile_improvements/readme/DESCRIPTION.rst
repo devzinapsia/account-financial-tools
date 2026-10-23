@@ -25,6 +25,17 @@ Import improvements
   file, not just its own slice. Only the first batch now claims the
   file-hash guard above; a later batch of the very same import no longer
   collides with the statement its own first batch just created.
+- **Bug fix: a large file's own later batches could flag hundreds of
+  their own rows as false duplicates.** Each batch commits its own rows
+  before the next one runs, so by the time batch 2 starts, batch 1's
+  rows already count as "existing lines" for the probable-duplicate
+  check below - any row that merely happens to share date+amount with
+  one of batch 1's own rows (common on a real statement full of
+  recurring round amounts - bank fees, standard transfers) got wrongly
+  skipped, in bulk, on every batch past the first. Rows from an earlier
+  batch of the very same import are now excluded from that comparison;
+  a genuinely separate, later re-import of an overlapping period is
+  still caught.
 - **Overlapping-period duplicate lines are skipped automatically.** Before
   creating statement lines, each row is checked against existing lines for
   the same journal (any statement, any reconciliation state). A row whose
@@ -91,12 +102,13 @@ Reconciliation improvements
   skipping the outstanding payment/receipt ("cuenta puente") account
   entirely - wrong for a bookkeeping flow where bank lines are only ever
   meant to settle through a receipt/payment order. Enabled by default,
-  it stops automatic reconciliation (both the scheduled cron and the one
-  triggered right after the CUIT match on import) from ever matching a
-  statement line straight to a receivable/payable account; matching
-  through an outstanding account, or falling back to a reconcile model,
-  is unaffected. Disable it for a company that settles bank lines
-  directly against invoices/bills instead. See "Decisiones de diseño".
+  it stops automatic reconciliation (the scheduled cron, the one triggered
+  right after the CUIT match on import, and the "Reconcile by date and
+  amount" button/cog-menu entry above) from ever matching a statement line
+  straight to a receivable/payable account; matching through an
+  outstanding account, or falling back to a reconcile model, is
+  unaffected. Disable it for a company that settles bank lines directly
+  against invoices/bills instead. See "Decisiones de diseño".
 
 Decisiones de diseño
 =====================
@@ -201,7 +213,13 @@ acá para que queden trazables:
   (``_handle_reconciliation_matching_amount``/``_match_accounts_query``
   con ``match_journal``/``outstanding_account`` en ``False``) - nunca
   del paso que sí busca en las cuentas puente, para no romper la
-  conciliación normal vía recibo/OP. Por compañía, no por diario/método
+  conciliación normal vía recibo/OP. El botón propio "Reconcile by date
+  and amount" (``action_auto_reconcile_unassigned_by_amount_and_date``)
+  es un punto de entrada aparte - no pasa por esos dos métodos nativos,
+  arma su propia búsqueda directa de ``account.move.line`` - así que
+  respeta la misma opción por separado, excluyendo las mismas cuentas de
+  su propio dominio de búsqueda cuando la compañía la tiene activada.
+  Por compañía, no por diario/método
   de pago: separarlo por diario exigiría duplicar una porción mucho más
   grande de la orquestación nativa de ``_try_auto_reconcile_statement_lines``
   (``_match_accounts_query`` no devuelve resultado, deja la consulta SQL

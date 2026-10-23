@@ -286,9 +286,15 @@ class Base_ImportImport(models.TransientModel):
         # models/account_bank_statement.py's create()). The first statement
         # alone is enough to keep blocking a genuine full-file re-import
         # later, since that re-import's own first batch starts at skip 0 too.
-        if self.file and not options.get('skip'):
+        if self.file:
             statement_vals = options.setdefault('statement_vals', {})
-            statement_vals['import_file_hash'] = hashlib.sha256(self.file).hexdigest()
+            file_hash = hashlib.sha256(self.file).hexdigest()
+            # import_batch_group_hash: set on every batch (see its own
+            # docstring in models/account_bank_statement.py for why this
+            # can't reuse import_file_hash itself).
+            statement_vals['import_batch_group_hash'] = file_hash
+            if not options.get('skip'):
+                statement_vals['import_file_hash'] = file_hash
 
         data = self._resolve_ar_partner_identification(data, import_fields)
         data = self._resolve_ar_label_and_partner_identification(data, import_fields)
@@ -362,12 +368,26 @@ class Base_ImportImport(models.TransientModel):
         duplicates are excluded automatically and reported as a warning.
         Pass options['bank_stmt_force_duplicate_lines'] = True to disable
         this check entirely for one import.
+
+        Deliberately excludes lines from an earlier BATCH of this very same
+        import (see import_batch_group_hash) from the "existing" side of the
+        comparison: Odoo's own JS splits a file past its row-count limit
+        into several execute_import() calls on this wizard, each creating
+        its own statement, so by the time batch 2 runs, batch 1's rows are
+        already committed - without this exclusion, any row that merely
+        happens to share date+amount with one of batch 1's own rows (common
+        on a real statement full of recurring round amounts - bank fees,
+        standard transfers) gets flagged as a false duplicate, in bulk, on
+        every batch past the first. Those rows were never "pre-existing" -
+        they're the same file's own data, split only by Odoo's import
+        mechanics, not a second, separate import of an overlapping period.
         """
         if options.get('bank_stmt_force_duplicate_lines'):
             return data
         journal = self._get_bank_stmt_import_journal()
         if not journal or 'date' not in import_fields or 'amount' not in import_fields:
             return data
+        own_batch_group_hash = options.get('statement_vals', {}).get('import_batch_group_hash')
 
         date_index = import_fields.index('date')
         amount_index = import_fields.index('amount')
@@ -406,6 +426,8 @@ class Base_ImportImport(models.TransientModel):
                     ('journal_id', '=', journal.id),
                     ('date', '=', date_value),
                 ]
+                if own_batch_group_hash:
+                    domain.append(('statement_id.import_batch_group_hash', '!=', own_batch_group_hash))
                 if partner_index is not None and row[partner_index]:
                     domain.append(('partner_id', '=', row[partner_index]))
                 existing = StatementLine.search(domain)

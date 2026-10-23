@@ -28,6 +28,20 @@ msgid "This bank statement file was already imported for this journal."
 msgstr ""
 
 #. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,field_description:account_statement_reconcile_improvements.field_account_bank_statement__import_batch_group_hash
+msgid "Import Batch Group Hash"
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
+#: model:ir.model.fields,help:account_statement_reconcile_improvements.field_account_bank_statement__import_batch_group_hash
+msgid ""
+"SHA-256 of the source file used to import this statement - unlike "
+"import_file_hash, set on every batch of a large import split by Odoo's own "
+"row-count limit, to recognize sibling batches of the same import. Empty for "
+"statements not created by a file import."
+msgstr ""
+
+#. module: account_statement_reconcile_improvements
 #. odoo-python
 #: code:addons/account_statement_reconcile_improvements/models/account_bank_statement.py:0
 msgid ""
