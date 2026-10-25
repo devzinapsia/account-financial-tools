@@ -1,0 +1,383 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mail_transaction_cc
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-25 22:12+0000\n"
+"PO-Revision-Date: 2026-10-25 22:12+0000\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Last-Translator: Zinapsia\n"
+"Language: es_AR\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mail_transaction_cc
+#: model:ir.model,name:mail_transaction_cc.model_account_move_send
+msgid "Account Move Send"
+msgstr "Envío de asientos contables"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: mail_transaction_cc
+#: model_terms:ir.actions.act_window,help:mail_transaction_cc.mail_transaction_cc_rule_action
+msgid ""
+"Add internal addresses in visible copy (Cc) or hidden copy (Bcc)\n"
+"                to the emails of invoices, receipts, payment orders and purchases."
+msgstr ""
+"Agregue direcciones internas en copia visible (Cc) u oculta (Cco)\n"
+"                a los correos de facturas, recibos, órdenes de pago y compras."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__include_responsible
+msgid "Add the email of the transaction's responsible user in Cc."
+msgstr "Agrega en Cc el correo del usuario responsable de la transacción."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__domain
+msgid "Additional condition"
+msgstr "Condición adicional"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields.selection,name:mail_transaction_cc.selection__mail_transaction_cc_rule__scope__all
+msgid "All communication"
+msgstr "Toda la comunicación"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__scope
+msgid ""
+"All communication: document sending, messages sent to the customer or vendor from the chatter, and forwarding of incoming emails.\n"
+"Document sending only: sending wizards, background sending and automatic reminders of the document."
+msgstr ""
+"Toda la comunicación: envío del documento, mensajes enviados al cliente o proveedor desde el chatter y reenvío de los correos entrantes.\n"
+"Solo envío del documento: asistentes de envío, envío en segundo plano y recordatorios automáticos del documento."
+
+#. module: mail_transaction_cc
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_search
+msgid "Archived"
+msgstr "Archivado"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__available
+msgid "Available"
+msgstr "Disponible"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__base_domain
+msgid "Base domain"
+msgstr "Dominio base"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_mail__email_bcc
+msgid "Bcc"
+msgstr "Cco"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__bcc_emails
+msgid "Bcc emails"
+msgstr "Correos en Cco"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__bcc_group_ids
+msgid "Bcc groups"
+msgstr "Grupos en Cco"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__bcc_user_ids
+msgid "Bcc users"
+msgstr "Usuarios en Cco"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_mail__email_bcc
+msgid "Blind carbon copy message recipients"
+msgstr "Destinatarios en copia oculta del mensaje"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__cc_emails
+msgid "Cc emails"
+msgstr "Correos en Cc"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__cc_group_ids
+msgid "Cc groups"
+msgstr "Grupos en Cc"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__cc_user_ids
+msgid "Cc users"
+msgstr "Usuarios en Cc"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__code
+msgid "Code"
+msgstr "Código"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__company_id
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_search
+msgid "Company"
+msgstr "Empresa"
+
+#. module: mail_transaction_cc
+#: model_terms:ir.actions.act_window,help:mail_transaction_cc.mail_transaction_cc_rule_action
+msgid "Create an email copy rule"
+msgstr "Cree una regla de correos en copia"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__create_uid
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__create_date
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: mail_transaction_cc
+#: model:mail.transaction.cc.type,name:mail_transaction_cc.type_customer_invoice
+msgid "Customer invoice"
+msgstr "Factura de cliente"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send__display_name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_payment__display_name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_compose_message__display_name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_mail__display_name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_thread__display_name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__display_name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields.selection,name:mail_transaction_cc.selection__mail_transaction_cc_rule__scope__document
+msgid "Document sending only"
+msgstr "Solo envío del documento"
+
+#. module: mail_transaction_cc
+#: model:ir.model,name:mail_transaction_cc.model_mail_thread
+msgid "Email Thread"
+msgstr "Hilo de correos"
+
+#. module: mail_transaction_cc
+#: model:ir.model,name:mail_transaction_cc.model_mail_compose_message
+msgid "Email composition wizard"
+msgstr "Asistente de redacción de correos"
+
+#. module: mail_transaction_cc
+#: model:ir.ui.menu,name:mail_transaction_cc.menu_mail_transaction_cc_rule
+msgid "Email copies"
+msgstr "Correos en copia"
+
+#. module: mail_transaction_cc
+#: model:ir.model,name:mail_transaction_cc.model_mail_transaction_cc_rule
+msgid "Email copy rule"
+msgstr "Regla de correos en copia"
+
+#. module: mail_transaction_cc
+#: model:ir.actions.act_window,name:mail_transaction_cc.mail_transaction_cc_rule_action
+msgid "Email copy rules"
+msgstr "Reglas de correos en copia"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_type__base_domain
+msgid "Fixed filter that defines which records belong to this type."
+msgstr "Filtro fijo que define qué registros pertenecen a este tipo."
+
+#. module: mail_transaction_cc
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form
+msgid "Hidden copy (Bcc)"
+msgstr "Copia oculta (Cco)"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send__id
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_payment__id
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_compose_message__id
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_mail__id
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_thread__id
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__id
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__id
+msgid "ID"
+msgstr "ID"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__include_responsible
+msgid "Include the responsible"
+msgstr "Incluir al responsable"
+
+#. module: mail_transaction_cc
+#. odoo-python
+#: code:addons/mail_transaction_cc/models/mail_transaction_cc_rule.py:0
+msgid "Invalid email address in rule %(name)s: %(emails)s"
+msgstr "Dirección de correo inválida en la regla %(name)s: %(emails)s"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__write_uid
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__write_date
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__bcc_group_ids
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__cc_group_ids
+msgid "Members are resolved when the email is sent."
+msgstr "Los miembros se obtienen al momento de enviar el correo."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__model_name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__model_name
+msgid "Model"
+msgstr "Modelo"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__domain
+msgid ""
+"Optional filter on the transaction. Leave empty to apply the rule to every "
+"record of the transaction type."
+msgstr "Filtro opcional sobre la transacción. Déjelo vacío para aplicar la regla a todos los registros del tipo de transacción."
+
+#. module: mail_transaction_cc
+#: model:ir.model,name:mail_transaction_cc.model_mail_mail
+msgid "Outgoing Mails"
+msgstr "Correos salientes"
+
+#. module: mail_transaction_cc
+#: model:mail.transaction.cc.type,name:mail_transaction_cc.type_payment_order
+msgid "Payment order"
+msgstr "Orden de pago"
+
+#. module: mail_transaction_cc
+#: model:ir.model,name:mail_transaction_cc.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: mail_transaction_cc
+#: model:mail.transaction.cc.type,name:mail_transaction_cc.type_purchase
+msgid "Purchase"
+msgstr "Compra"
+
+#. module: mail_transaction_cc
+#: model:mail.transaction.cc.type,name:mail_transaction_cc.type_receipt
+msgid "Receipt"
+msgstr "Recibo"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__responsible_label
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__responsible_field
+msgid "Responsible field"
+msgstr "Campo responsable"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__scope
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_search
+msgid "Scope"
+msgstr "Alcance"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__sequence
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_type__sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__bcc_emails
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__cc_emails
+msgid "Several addresses can be separated by commas or semicolons."
+msgstr "Se pueden ingresar varias direcciones separadas por coma o punto y coma."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_type__responsible_field
+msgid ""
+"Technical name of the Many2one field to res.users used as the record's "
+"responsible."
+msgstr "Nombre técnico del campo Many2one a res.users usado como responsable del registro."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_mail__transaction_cc
+msgid ""
+"Technical: the Cc / Bcc of this email come from an email copy rule and "
+"travel in the same email received by the main recipient."
+msgstr "Técnico: el Cc / Cco de este correo proviene de una regla de correos en copia y viaja en el mismo correo que recibe el destinatario principal."
+
+#. module: mail_transaction_cc
+#: model:ir.model.constraint,message:mail_transaction_cc.constraint_mail_transaction_cc_type_code_uniq
+msgid "The code must be unique."
+msgstr "El código debe ser único."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_type__available
+msgid "The model of this type is installed."
+msgstr "El modelo de este tipo está instalado."
+
+#. module: mail_transaction_cc
+#. odoo-python
+#: code:addons/mail_transaction_cc/models/mail_transaction_cc_rule.py:0
+msgid ""
+"The rule %(name)s must have at least one recipient: an email, a user, a "
+"group or the responsible."
+msgstr "La regla %(name)s debe tener al menos un destinatario: un correo, un usuario, un grupo o el responsable."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__company_id
+msgid ""
+"The rule applies to documents of this company, regardless of the company the"
+" sending user is working in."
+msgstr "La regla aplica a los documentos de esta empresa, sin importar en qué empresa esté trabajando el usuario que envía."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_mail__transaction_cc
+msgid "Transaction copies"
+msgstr "Copias de transacción"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__type_id
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_search
+msgid "Transaction type"
+msgstr "Tipo de transacción"
+
+#. module: mail_transaction_cc
+#: model:ir.model,name:mail_transaction_cc.model_mail_transaction_cc_type
+msgid "Transaction type for email copies"
+msgstr "Tipo de transacción para correos en copia"
+
+#. module: mail_transaction_cc
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form
+msgid "Visible copy (Cc)"
+msgstr "Copia visible (Cc)"
+
+#. module: mail_transaction_cc
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form
+msgid "e.g. Invoices to administration"
+msgstr "p. ej. Facturas a administración"
+
+#. module: mail_transaction_cc
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form
+msgid "e.g. admin@company.com; collections@company.com"
+msgstr "p. ej. admin@empresa.com; cobranzas@empresa.com"
+
+#. module: mail_transaction_cc
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form
+msgid "e.g. audit@company.com"
+msgstr "p. ej. auditoria@empresa.com"

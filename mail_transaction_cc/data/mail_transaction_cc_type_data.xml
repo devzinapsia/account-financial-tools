@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Transaction types are module-defined (not editable by users), so they
+         stay updatable: fixes to their filters ship with module upgrades. -->
+    <record id="type_customer_invoice" model="mail.transaction.cc.type">
+        <field name="name">Customer invoice</field>
+        <field name="code">customer_invoice</field>
+        <field name="sequence">10</field>
+        <field name="model_name">account.move</field>
+        <field name="base_domain">[('move_type', 'in', ('out_invoice', 'out_refund'))]</field>
+        <field name="responsible_field">invoice_user_id</field>
+    </record>
+
+    <record id="type_receipt" model="mail.transaction.cc.type">
+        <field name="name">Receipt</field>
+        <field name="code">receipt</field>
+        <field name="sequence">20</field>
+        <field name="model_name">account.payment</field>
+        <field name="base_domain">[('partner_type', '=', 'customer')]</field>
+        <field name="responsible_field">create_uid</field>
+    </record>
+
+    <record id="type_payment_order" model="mail.transaction.cc.type">
+        <field name="name">Payment order</field>
+        <field name="code">payment_order</field>
+        <field name="sequence">30</field>
+        <field name="model_name">account.payment</field>
+        <field name="base_domain">[('partner_type', '=', 'supplier')]</field>
+        <field name="responsible_field">create_uid</field>
+    </record>
+
+    <!-- Declared even when Purchase is not installed: it becomes available as
+         soon as purchase.order exists in the registry. -->
+    <record id="type_purchase" model="mail.transaction.cc.type">
+        <field name="name">Purchase</field>
+        <field name="code">purchase</field>
+        <field name="sequence">40</field>
+        <field name="model_name">purchase.order</field>
+        <field name="base_domain">[]</field>
+        <field name="responsible_field">user_id</field>
+    </record>
+</odoo>

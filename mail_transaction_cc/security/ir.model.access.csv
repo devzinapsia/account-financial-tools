@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mail_transaction_cc_type_user,mail.transaction.cc.type (user),model_mail_transaction_cc_type,base.group_user,1,0,0,0
+access_mail_transaction_cc_rule_invoice,mail.transaction.cc.rule (billing),model_mail_transaction_cc_rule,account.group_account_invoice,1,0,0,0
+access_mail_transaction_cc_rule_manager,mail.transaction.cc.rule (manager),model_mail_transaction_cc_rule,account.group_account_manager,1,1,1,1
+access_mail_transaction_cc_rule_system,mail.transaction.cc.rule (system),model_mail_transaction_cc_rule,base.group_system,1,1,1,1

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_transaction_cc_rule_view_list" model="ir.ui.view">
+        <field name="name">mail.transaction.cc.rule.list</field>
+        <field name="model">mail.transaction.cc.rule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="scope"/>
+                <field name="cc_emails" optional="hide"/>
+                <field name="bcc_emails" optional="hide"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mail_transaction_cc_rule_view_form" model="ir.ui.view">
+        <field name="name">mail.transaction.cc.rule.form</field>
+        <field name="model">mail.transaction.cc.rule</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Invoices to administration"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="type_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="scope" widget="radio"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                            <field name="model_name" invisible="1"/>
+                        </group>
+                    </group>
+                    <group invisible="not model_name">
+                        <field name="domain" widget="domain" options="{'model': 'model_name', 'in_dialog': True}"/>
+                    </group>
+                    <group>
+                        <group string="Visible copy (Cc)">
+                            <field name="cc_emails" placeholder="e.g. admin@company.com; collections@company.com"/>
+                            <field name="cc_user_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="cc_group_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="include_responsible"/>
+                            <field name="responsible_label" invisible="not include_responsible or not responsible_label"/>
+                        </group>
+                        <group string="Hidden copy (Bcc)">
+                            <field name="bcc_emails" placeholder="e.g. audit@company.com"/>
+                            <field name="bcc_user_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="bcc_group_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mail_transaction_cc_rule_view_search" model="ir.ui.view">
+        <field name="name">mail.transaction.cc.rule.search</field>
+        <field name="model">mail.transaction.cc.rule</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="type_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="scope"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Transaction type" name="group_by_type" context="{'group_by': 'type_id'}"/>
+                    <filter string="Company" name="group_by_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    <filter string="Scope" name="group_by_scope" context="{'group_by': 'scope'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="mail_transaction_cc_rule_action" model="ir.actions.act_window">
+        <field name="name">Email copy rules</field>
+        <field name="res_model">mail.transaction.cc.rule</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="mail_transaction_cc_rule_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create an email copy rule
+            </p>
+            <p>
+                Add internal addresses in visible copy (Cc) or hidden copy (Bcc)
+                to the emails of invoices, receipts, payment orders and purchases.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_mail_transaction_cc_rule"
+        name="Email copies"
+        parent="account.account_account_menu"
+        action="mail_transaction_cc_rule_action"
+        groups="account.group_account_manager"
+        sequence="100"
+    />
+</odoo>
