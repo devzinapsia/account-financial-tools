@@ -29,12 +29,22 @@
         <field name="responsible_field">create_uid</field>
     </record>
 
-    <!-- Declared even when Purchase is not installed: it becomes available as
-         soon as purchase.order exists in the registry. -->
+    <!-- Sales and Purchase types are declared even when those applications
+         are not installed: they become available as soon as their model
+         exists in the registry. -->
+    <record id="type_sale" model="mail.transaction.cc.type">
+        <field name="name">Quotation / sales order</field>
+        <field name="code">sale</field>
+        <field name="sequence">40</field>
+        <field name="model_name">sale.order</field>
+        <field name="base_domain">[]</field>
+        <field name="responsible_field">user_id</field>
+    </record>
+
     <record id="type_purchase" model="mail.transaction.cc.type">
         <field name="name">Purchase</field>
         <field name="code">purchase</field>
-        <field name="sequence">40</field>
+        <field name="sequence">50</field>
         <field name="model_name">purchase.order</field>
         <field name="base_domain">[]</field>
         <field name="responsible_field">user_id</field>

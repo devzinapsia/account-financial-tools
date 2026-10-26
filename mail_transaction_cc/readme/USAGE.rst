@@ -1,8 +1,22 @@
-Nothing to do by hand: once a rule exists, the copies are added
-automatically.
+Once a rule exists, the copies are added automatically.
+
+**In the sending wizards.** The invoice sending wizard and the email
+composer of receipts, payment orders, quotations / sales orders and
+purchases show two fields under "To":
+
+* **Cc** and **Bcc**, filled in with the addresses of the matching rules
+  (without the ones already in "To");
+* both are editable for that sending only: addresses can be added,
+  removed, or the field emptied so no copy is sent, even when no rule
+  applies. Several addresses are separated by commas. The next sending
+  starts again from the rules.
+
+Emails sent without a wizard (background sending, automatic
+confirmations and reminders, chatter messages) use the rules directly.
 
 **Outgoing emails.** When a document is sent (invoice sending wizard,
-receipt / purchase order email, background sending, reminders), or,
+receipt / quotation / purchase order email, background sending,
+automatic confirmation emails and reminders), or,
 with the *All communication* scope, when a message is sent to the
 customer or vendor from the chatter:
 

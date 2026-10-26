@@ -59,9 +59,10 @@ class TestMailTransactionCc(AccountTestInvoicingCommon, MockEmail):
         })
 
     def _smtp_emails_to(self, email):
+        """Emails actually delivered to ``email`` with ``email`` in "To"."""
         return [
             sent for sent in self.emails
-            if email in (sent["msg_to"] or "")
+            if email in sent["smtp_to_list"] and email in (sent["msg_to"] or "")
         ]
 
     def _post_to_customer(self, record, partner, **kwargs):
@@ -236,6 +237,85 @@ class TestMailTransactionCc(AccountTestInvoicingCommon, MockEmail):
             message.notification_ids.mapped("mail_email_address"),
         )
 
+    def _invoice_send_wizard(self, move):
+        return self.env["account.move.send.wizard"].with_context(
+            active_model="account.move", active_ids=move.ids,
+        ).create({"sending_methods": ["email"]})
+
+    def test_invoice_send_wizard_edited_copies(self):
+        """The wizard shows the rule's copies and the user can change them for
+        this sending only."""
+        self._create_rule(
+            cc_emails="admin@test.example.com; customer@test.example.com",
+            bcc_emails="audit@test.example.com",
+        )
+        wizard = self._invoice_send_wizard(self.invoice)
+        self.assertTrue(wizard.transaction_cc_available)
+        # the customer already in "To" is not proposed in Cc
+        self.assertEqual(wizard.transaction_cc, "admin@test.example.com")
+        self.assertEqual(wizard.transaction_bcc, "audit@test.example.com")
+        wizard.write({"transaction_cc": "other@test.example.com; admin@test.example.com", "transaction_bcc": False})
+        with self.mock_mail_gateway():
+            wizard.action_send_and_print()
+        sent = self._smtp_emails_to("customer@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertIn("other@test.example.com", sent[0]["msg_cc"])
+        self.assertIn("admin@test.example.com", sent[0]["msg_cc"])
+        self.assertNotIn("audit@test.example.com", sent[0]["smtp_to_list"])
+        # the next sending uses the rules again
+        self.assertEqual(self._invoice_send_wizard(self.invoice).transaction_bcc, "audit@test.example.com")
+
+    def test_invoice_send_wizard_cleared_copies(self):
+        self._create_rule(cc_emails="admin@test.example.com")
+        wizard = self._invoice_send_wizard(self.invoice)
+        wizard.transaction_cc = False
+        with self.mock_mail_gateway():
+            wizard.action_send_and_print()
+        sent = self._smtp_emails_to("customer@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertFalse(sent[0]["msg_cc"])
+        self.assertNotIn("admin@test.example.com", sent[0]["smtp_to_list"])
+
+    def test_invoice_send_wizard_invalid_email(self):
+        wizard = self._invoice_send_wizard(self.invoice)
+        wizard.transaction_cc = "not-an-email"
+        with self.assertRaises(ValidationError):
+            wizard.action_send_and_print()
+
+    def test_wizard_hidden_outside_transactions(self):
+        bill = self.init_invoice("in_invoice", partner=self.vendor, amounts=[100], post=True)
+        composer = self.env["mail.compose.message"].with_context(
+            default_composition_mode="comment",
+            default_model="account.move",
+            default_res_ids=bill.ids,
+        ).create({})
+        self.assertFalse(composer.transaction_cc_available)
+
+    def test_composer_manual_copies_without_rule(self):
+        receipt = self.env["account.payment"].create({
+            "payment_type": "inbound",
+            "partner_type": "customer",
+            "partner_id": self.customer.id,
+            "amount": 10,
+        })
+        receipt.action_post()
+        composer = self.env["mail.compose.message"].with_context(
+            default_composition_mode="comment",
+            default_model="account.payment",
+            default_res_ids=receipt.ids,
+            default_template_id=self.env.ref("account.mail_template_data_payment_receipt").id,
+        ).create({})
+        self.assertTrue(composer.transaction_cc_available)
+        self.assertFalse(composer.transaction_cc)
+        composer.write({"transaction_cc": "manual@test.example.com", "transaction_bcc": "hidden@test.example.com"})
+        with self.mock_mail_gateway():
+            composer._action_send_mail()
+        sent = self._smtp_emails_to("customer@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertIn("manual@test.example.com", sent[0]["msg_cc"])
+        self.assertIn("hidden@test.example.com", sent[0]["smtp_to_list"])
+        self.assertNotIn("hidden@test.example.com", sent[0]["message"])
+
     def test_chatter_message_scope(self):
         self._create_rule(cc_emails="all@test.example.com", scope="all")
         self._create_rule(name="Doc", cc_emails="doc@test.example.com", scope="document")
@@ -321,6 +401,49 @@ class TestMailTransactionCc(AccountTestInvoicingCommon, MockEmail):
             self.assertIn("treasury@test.example.com", sent[0]["msg_cc"])
             self.assertIn("audit@test.example.com", sent[0]["smtp_to_list"])
             self.assertNotIn("audit@test.example.com", sent[0]["message"])
+
+    def test_sale_when_installed(self):
+        """Sales is not a dependency: only tested when it is installed."""
+        if "sale.order" not in self.env:
+            self.skipTest("Sales is not installed")
+        self.env.user.sudo().group_ids = [Command.link(self.env.ref("sales_team.group_sale_manager").id)]
+        self.Rule.create({
+            "name": "Sales",
+            "company_id": self.company.id,
+            "type_id": self.env.ref("mail_transaction_cc.type_sale").id,
+            "cc_emails": "sales@test.example.com",
+            "include_responsible": True,
+            "scope": "document",
+        })
+        order = self.env["sale.order"].create({
+            "partner_id": self.customer.id,
+            "user_id": self.salesman.id,
+            "order_line": [Command.create({"product_id": self.product_a.id, "product_uom_qty": 1})],
+        })
+        # quotation sending (composer with template, as action_quotation_send)
+        composer = self.env["mail.compose.message"].with_context(
+            default_composition_mode="comment",
+            default_model="sale.order",
+            default_res_ids=order.ids,
+            default_template_id=order._find_mail_template().id,
+        ).create({})
+        with self.mock_mail_gateway():
+            composer._action_send_mail()
+        sent = self._smtp_emails_to("customer@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertIn("sales@test.example.com", sent[0]["msg_cc"])
+        # the quotation template already puts the salesperson in "To": not
+        # repeated in Cc
+        self.assertIn("salesman@test.example.com", composer.partner_ids.mapped("email"))
+        self.assertNotIn("salesman@test.example.com", sent[0]["msg_cc"])
+        # automatic order confirmation email (template posted as notification)
+        with self.mock_mail_gateway():
+            order._send_order_notification_mail(
+                self.env.ref("sale.mail_template_sale_confirmation"), allow_deferred_sending=False,
+            )
+        sent = self._smtp_emails_to("customer@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertIn("sales@test.example.com", sent[0]["msg_cc"])
 
     def test_purchase_when_installed(self):
         """Purchase is not a dependency: only tested when it is installed."""

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_move_send_wizard_form" model="ir.ui.view">
+        <field name="name">account.move.send.wizard.form.transaction.cc</field>
+        <field name="model">account.move.send.wizard</field>
+        <field name="inherit_id" ref="account.account_move_send_wizard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[field[@name='mail_partner_ids']]" position="after">
+                <field name="transaction_cc_available" invisible="1"/>
+                <field name="transaction_cc" invisible="not transaction_cc_available" placeholder="No visible copy"/>
+                <field name="transaction_bcc" invisible="not transaction_cc_available" placeholder="No hidden copy"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="email_compose_message_wizard_form" model="ir.ui.view">
+        <field name="name">mail.compose.message.form.transaction.cc</field>
+        <field name="model">mail.compose.message</field>
+        <field name="inherit_id" ref="mail.email_compose_message_wizard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[field[@name='partner_ids']]" position="after">
+                <field name="transaction_cc_available" invisible="1"/>
+                <field name="transaction_cc" invisible="not transaction_cc_available or subtype_is_log" placeholder="No visible copy"/>
+                <field name="transaction_bcc" invisible="not transaction_cc_available or subtype_is_log" placeholder="No hidden copy"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

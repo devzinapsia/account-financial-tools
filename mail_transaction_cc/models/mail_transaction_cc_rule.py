@@ -203,6 +203,21 @@ class MailTransactionCcRule(models.Model):
         return rules.filtered(lambda rule: rule._matches(record))
 
     @api.model
+    def _get_transaction_types(self, record):
+        """Return the transaction types ``record`` belongs to."""
+        if len(record) != 1 or not record.id:
+            return self.env["mail.transaction.cc.type"]
+        cc_types = self.env["mail.transaction.cc.type"].sudo().search([("model_name", "=", record._name)])
+        return cc_types.filtered(lambda cc_type: cc_type._filter_records(record.sudo()))
+
+    @api.model
+    def _get_override(self, record):
+        """Cc / Bcc typed by the user in a sending wizard for ``record``, which
+        replace the rules for that sending. None when there is no override."""
+        overrides = self.env.context.get("mail_transaction_cc_override") or {}
+        return overrides.get("%s,%s" % (record._name, record.id))
+
+    @api.model
     def _resolve_recipients(self, record, document=False, exclude_emails=()):
         """Resolve the Cc / Bcc addresses for ``record``.
 
@@ -214,26 +229,35 @@ class MailTransactionCcRule(models.Model):
         :return: dict with ``cc`` and ``bcc`` lists of formatted addresses,
           or an empty dict when nothing applies.
         """
-        scopes = ("all", "document") if document else ("all",)
-        rules = self._get_matching_rules(record, scopes)
-        if not rules:
-            return {}
-        record = record.sudo()
         cc, bcc = {}, {}
-        # archived users must be read to be logged as skipped
-        for rule in rules.with_context(active_test=False):
-            cc_addresses = list(_split_emails(rule.cc_emails))
-            cc_addresses += rule._get_user_addresses(rule.cc_user_ids, rule.cc_group_ids)
-            if rule.include_responsible:
-                responsible = rule.type_id._get_responsible_user(record)
-                cc_addresses += rule._get_user_addresses(responsible, self.env["res.groups"])
-            bcc_addresses = list(_split_emails(rule.bcc_emails))
-            bcc_addresses += rule._get_user_addresses(rule.bcc_user_ids, rule.bcc_group_ids)
-            for target, addresses in ((cc, cc_addresses), (bcc, bcc_addresses)):
-                for name, email in addresses:
+        override = self._get_override(record) if len(record) == 1 else None
+        if override is not None:
+            # values edited in the sending wizard replace the rules
+            for target, text in ((cc, override.get("cc")), (bcc, override.get("bcc"))):
+                for name, email in _split_emails(text):
                     normalized = email_normalize(email)
                     if normalized:
                         target.setdefault(normalized, name)
+        else:
+            scopes = ("all", "document") if document else ("all",)
+            rules = self._get_matching_rules(record, scopes)
+            if not rules:
+                return {}
+            record = record.sudo()
+            # archived users must be read to be logged as skipped
+            for rule in rules.with_context(active_test=False):
+                cc_addresses = list(_split_emails(rule.cc_emails))
+                cc_addresses += rule._get_user_addresses(rule.cc_user_ids, rule.cc_group_ids)
+                if rule.include_responsible:
+                    responsible = rule.type_id._get_responsible_user(record)
+                    cc_addresses += rule._get_user_addresses(responsible, self.env["res.groups"])
+                bcc_addresses = list(_split_emails(rule.bcc_emails))
+                bcc_addresses += rule._get_user_addresses(rule.bcc_user_ids, rule.bcc_group_ids)
+                for target, addresses in ((cc, cc_addresses), (bcc, bcc_addresses)):
+                    for name, email in addresses:
+                        normalized = email_normalize(email)
+                        if normalized:
+                            target.setdefault(normalized, name)
         excluded = {email_normalize(email) for email in exclude_emails if email}
         cc = {email: name for email, name in cc.items() if email not in excluded}
         bcc = {email: name for email, name in bcc.items() if email not in excluded and email not in cc}
@@ -245,3 +269,39 @@ class MailTransactionCcRule(models.Model):
             "cc_normalized": set(cc),
             "bcc_normalized": set(bcc),
         }
+
+    @api.model
+    def _get_preview(self, record, document=False, partners=None):
+        """Return the default ``(cc, bcc)`` strings of the sending wizards,
+        from the rules, excluding the addresses already in "To"."""
+        if len(record) != 1 or not record.id:
+            return False, False
+        to_emails = [partner.email_normalized for partner in (partners or []) if partner.email_normalized]
+        resolved = self.with_context(mail_transaction_cc_override=False)._resolve_recipients(
+            record, document=document, exclude_emails=to_emails,
+        )
+        if not resolved:
+            return False, False
+        # plain addresses (no display names): easier to edit by hand
+        return (
+            ", ".join(email_normalize(address) for address in resolved["cc"]) or False,
+            ", ".join(email_normalize(address) for address in resolved["bcc"]) or False,
+        )
+
+    @api.model
+    def _check_wizard_emails(self, *texts):
+        """Raise if an address typed in a sending wizard is invalid."""
+        invalid = [
+            part.strip()
+            for text in texts if text and '"' not in text
+            for part in text.replace(";", ",").split(",")
+            if part.strip() and not email_normalize(part.strip())
+        ]
+        if invalid:
+            raise ValidationError(self.env._("Invalid email address: %(emails)s", emails=", ".join(invalid)))
+
+    @api.model
+    def _get_override_context(self, record, cc, bcc):
+        overrides = dict(self.env.context.get("mail_transaction_cc_override") or {})
+        overrides["%s,%s" % (record._name, record.id)] = {"cc": cc or "", "bcc": bcc or ""}
+        return {"mail_transaction_cc_override": overrides}

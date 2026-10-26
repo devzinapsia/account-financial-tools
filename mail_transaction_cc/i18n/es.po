@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 22:12+0000\n"
-"PO-Revision-Date: 2026-10-25 22:12+0000\n"
+"POT-Creation-Date: 2026-10-25 23:50+0000\n"
+"PO-Revision-Date: 2026-10-25 23:50+0000\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,6 +20,11 @@ msgstr ""
 #: model:ir.model,name:mail_transaction_cc.model_account_move_send
 msgid "Account Move Send"
 msgstr "Envío de asientos contables"
+
+#. module: mail_transaction_cc
+#: model:ir.model,name:mail_transaction_cc.model_account_move_send_wizard
+msgid "Account Move Send Wizard"
+msgstr "Asistente de envío de asientos contables"
 
 #. module: mail_transaction_cc
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__active
@@ -76,6 +81,8 @@ msgid "Base domain"
 msgstr "Dominio base"
 
 #. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send_wizard__transaction_bcc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_compose_message__transaction_bcc
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_mail__email_bcc
 msgid "Bcc"
 msgstr "Cco"
@@ -99,6 +106,12 @@ msgstr "Usuarios en Cco"
 #: model:ir.model.fields,help:mail_transaction_cc.field_mail_mail__email_bcc
 msgid "Blind carbon copy message recipients"
 msgstr "Destinatarios en copia oculta del mensaje"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send_wizard__transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_compose_message__transaction_cc
+msgid "Cc"
+msgstr "Cc"
 
 #. module: mail_transaction_cc
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__cc_emails
@@ -150,6 +163,7 @@ msgstr "Factura de cliente"
 
 #. module: mail_transaction_cc
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send__display_name
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send_wizard__display_name
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_account_payment__display_name
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_compose_message__display_name
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_mail__display_name
@@ -180,6 +194,12 @@ msgid "Email copies"
 msgstr "Correos en copia"
 
 #. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send_wizard__transaction_cc_available
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_compose_message__transaction_cc_available
+msgid "Email copies available"
+msgstr "Correos en copia disponibles"
+
+#. module: mail_transaction_cc
 #: model:ir.model,name:mail_transaction_cc.model_mail_transaction_cc_rule
 msgid "Email copy rule"
 msgstr "Regla de correos en copia"
@@ -200,7 +220,16 @@ msgid "Hidden copy (Bcc)"
 msgstr "Copia oculta (Cco)"
 
 #. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_account_move_send_wizard__transaction_bcc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_compose_message__transaction_bcc
+msgid ""
+"Hidden copy, filled in by the email copy rules: the recipients do not see "
+"these addresses. It can be changed for this sending."
+msgstr "Copia oculta, completada por las reglas de correos en copia: los destinatarios no ven estas direcciones. Se puede modificar para este envío."
+
+#. module: mail_transaction_cc
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send__id
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send_wizard__id
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_account_payment__id
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_compose_message__id
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_mail__id
@@ -220,6 +249,12 @@ msgstr "Incluir al responsable"
 #: code:addons/mail_transaction_cc/models/mail_transaction_cc_rule.py:0
 msgid "Invalid email address in rule %(name)s: %(emails)s"
 msgstr "Dirección de correo inválida en la regla %(name)s: %(emails)s"
+
+#. module: mail_transaction_cc
+#. odoo-python
+#: code:addons/mail_transaction_cc/models/mail_transaction_cc_rule.py:0
+msgid "Invalid email address: %(emails)s"
+msgstr "Dirección de correo inválida: %(emails)s"
 
 #. module: mail_transaction_cc
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__write_uid
@@ -252,6 +287,18 @@ msgid "Name"
 msgstr "Nombre"
 
 #. module: mail_transaction_cc
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.account_move_send_wizard_form
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.email_compose_message_wizard_form
+msgid "No hidden copy"
+msgstr "Sin copia oculta"
+
+#. module: mail_transaction_cc
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.account_move_send_wizard_form
+#: model_terms:ir.ui.view,arch_db:mail_transaction_cc.email_compose_message_wizard_form
+msgid "No visible copy"
+msgstr "Sin copia visible"
+
+#. module: mail_transaction_cc
 #: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__domain
 msgid ""
 "Optional filter on the transaction. Leave empty to apply the rule to every "
@@ -277,6 +324,11 @@ msgstr "Pagos"
 #: model:mail.transaction.cc.type,name:mail_transaction_cc.type_purchase
 msgid "Purchase"
 msgstr "Compra"
+
+#. module: mail_transaction_cc
+#: model:mail.transaction.cc.type,name:mail_transaction_cc.type_sale
+msgid "Quotation / sales order"
+msgstr "Presupuesto / orden de venta"
 
 #. module: mail_transaction_cc
 #: model:mail.transaction.cc.type,name:mail_transaction_cc.type_receipt
@@ -366,6 +418,14 @@ msgstr "Tipo de transacción para correos en copia"
 #: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form
 msgid "Visible copy (Cc)"
 msgstr "Copia visible (Cc)"
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_account_move_send_wizard__transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_compose_message__transaction_cc
+msgid ""
+"Visible copy, filled in by the email copy rules. It can be changed for this "
+"sending; several addresses are separated by commas."
+msgstr "Copia visible, completada por las reglas de correos en copia. Se puede modificar para este envío; varias direcciones se separan con comas."
 
 #. module: mail_transaction_cc
 #: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form

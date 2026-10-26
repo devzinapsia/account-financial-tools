@@ -17,9 +17,12 @@ Supported transactions:
   included). Internal transfers are excluded.
 * **Payment order**: vendor payments, in any direction (vendor refunds
   included). Internal transfers are excluded.
-* **Purchase**: requests for quotation and purchase orders. Available
-  automatically as soon as Purchase is installed, without updating this
-  module; this module does not depend on Purchase.
+* **Quotation / sales order**: quotations and confirmed sales orders.
+* **Purchase**: requests for quotation and purchase orders.
+
+Sales and Purchase types become available automatically as soon as the
+application is installed, without updating this module; this module
+depends on neither of them.
 
 It only depends on ``account`` and ``mail``, and works with or without
 Adhoc's receiptbooks installed (their automatic receipt email is a
