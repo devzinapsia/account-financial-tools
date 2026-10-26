@@ -1,6 +1,6 @@
 {
     "name": "Correos en copia en transacciones",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.1.1",
     "summary": "Agrega direcciones internas en copia visible (Cc) y oculta (Cco) "
     "a los correos de facturas, recibos, órdenes de pago, ventas y compras.",
     "author": "Zinapsia",

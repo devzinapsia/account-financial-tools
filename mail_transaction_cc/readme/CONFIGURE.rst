@@ -2,8 +2,8 @@ Go to **Accounting ‣ Configuration ‣ Accounting ‣ Email copies** (only
 for *Accounting / Administrator* users) and create one rule per need:
 
 * **Transaction type**: customer invoice, receipt, payment order,
-  quotation / sales order or purchase (only types whose application is
-  installed are offered).
+  quotation / sales order or request for quotation / purchase order
+  (only types whose application is installed are offered).
 * **Company**: the rule applies to documents of this company, whatever
   the company the sending user is working in.
 * **Scope**:

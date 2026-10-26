@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-25 23:50+0000\n"
-"PO-Revision-Date: 2026-10-25 23:50+0000\n"
+"POT-Creation-Date: 2026-10-26 00:21+0000\n"
+"PO-Revision-Date: 2026-10-26 00:21+0000\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -321,11 +321,6 @@ msgid "Payments"
 msgstr "Pagos"
 
 #. module: mail_transaction_cc
-#: model:mail.transaction.cc.type,name:mail_transaction_cc.type_purchase
-msgid "Purchase"
-msgstr "Compra"
-
-#. module: mail_transaction_cc
 #: model:mail.transaction.cc.type,name:mail_transaction_cc.type_sale
 msgid "Quotation / sales order"
 msgstr "Presupuesto / orden de venta"
@@ -334,6 +329,11 @@ msgstr "Presupuesto / orden de venta"
 #: model:mail.transaction.cc.type,name:mail_transaction_cc.type_receipt
 msgid "Receipt"
 msgstr "Recibo"
+
+#. module: mail_transaction_cc
+#: model:mail.transaction.cc.type,name:mail_transaction_cc.type_purchase
+msgid "Request for quotation / purchase order"
+msgstr "Solicitud de cotización / orden de compra"
 
 #. module: mail_transaction_cc
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_transaction_cc_rule__responsible_label

@@ -42,7 +42,7 @@
     </record>
 
     <record id="type_purchase" model="mail.transaction.cc.type">
-        <field name="name">Purchase</field>
+        <field name="name">Request for quotation / purchase order</field>
         <field name="code">purchase</field>
         <field name="sequence">50</field>
         <field name="model_name">purchase.order</field>

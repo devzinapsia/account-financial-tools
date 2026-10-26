@@ -22,7 +22,8 @@ Supported transactions:
 * **Payment order**: vendor payments, in any direction (vendor refunds
   included). Internal transfers are excluded.
 * **Quotation / sales order**: quotations and confirmed sales orders.
-* **Purchase**: requests for quotation and purchase orders.
+* **Request for quotation / purchase order**: requests for quotation
+  and confirmed purchase orders (not vendor bills).
 
 Sales and Purchase types become available automatically as soon as the
 application is installed, without updating this module; this module
@@ -44,8 +45,8 @@ Go to **Accounting ‣ Configuration ‣ Accounting ‣ Email copies** (only
 for *Accounting / Administrator* users) and create one rule per need:
 
 * **Transaction type**: customer invoice, receipt, payment order,
-  quotation / sales order or purchase (only types whose application is
-  installed are offered).
+  quotation / sales order or request for quotation / purchase order
+  (only types whose application is installed are offered).
 * **Company**: the rule applies to documents of this company, whatever
   the company the sending user is working in.
 * **Scope**:

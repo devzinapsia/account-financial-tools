@@ -467,11 +467,21 @@ class TestMailTransactionCc(AccountTestInvoicingCommon, MockEmail):
             default_res_ids=order.ids,
             default_template_id=self.env.ref("purchase.email_template_edi_purchase").id,
         ).create({})
+        # copies shown and editable in the composer before sending
+        self.assertTrue(composer.transaction_cc_available)
+        self.assertEqual(composer.transaction_cc, "purchasing@test.example.com")
+        composer.write({
+            "transaction_cc": "purchasing@test.example.com, buyer@test.example.com",
+            "transaction_bcc": "audit@test.example.com",
+        })
         with self.mock_mail_gateway():
             composer._action_send_mail()
         sent = self._smtp_emails_to("vendor@test.example.com")
         self.assertEqual(len(sent), 1)
         self.assertIn("purchasing@test.example.com", sent[0]["msg_cc"])
+        self.assertIn("buyer@test.example.com", sent[0]["msg_cc"])
+        self.assertIn("audit@test.example.com", sent[0]["smtp_to_list"])
+        self.assertNotIn("audit@test.example.com", sent[0]["message"])
         # automatic receipt reminder (posted as a "notification" from a template)
         with self.mock_mail_gateway():
             order.message_post_with_source(
