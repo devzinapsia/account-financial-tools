@@ -390,6 +390,41 @@ class TestMailTransactionCc(AccountTestInvoicingCommon, MockEmail):
         for sent in self.emails:
             self.assertNotIn("customers@test.example.com", sent["smtp_to_list"])
 
+    def test_internal_user_as_explicit_recipient(self):
+        """A recipient chosen explicitly in "To" gets the copies even when it
+        is an internal user (e.g. a vendor contact that is also a user);
+        followers notified by Odoo on their own do not."""
+        internal_vendor = self.env["res.users"].with_context(no_reset_password=True).create({
+            "name": "Internal vendor",
+            "login": "mtcc_internal_vendor",
+            "email": "internal.vendor@test.example.com",
+            "notification_type": "email",
+            "company_id": self.company.id,
+            "company_ids": [Command.set(self.company.ids)],
+            "group_ids": [Command.set([self.env.ref("base.group_user").id])],
+        })
+        partner = internal_vendor.partner_id
+        partner.supplier_rank = 1
+        self.Rule.create({
+            "name": "Vendors",
+            "company_id": self.company.id,
+            "type_id": self.env.ref("mail_transaction_cc.type_partner_vendor").id,
+            "cc_emails": "buyers@test.example.com",
+            "bcc_emails": "audit@test.example.com",
+        })
+        self.salesman.notification_type = "email"
+        partner.message_subscribe(partner_ids=self.salesman.partner_id.ids)
+        with self.mock_mail_gateway():
+            self._post_to_customer(partner, partner)
+        sent = self._smtp_emails_to("internal.vendor@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertIn("buyers@test.example.com", sent[0]["msg_cc"])
+        self.assertIn("audit@test.example.com", sent[0]["smtp_to_list"])
+        follower = self._smtp_emails_to("salesman@test.example.com")
+        self.assertEqual(len(follower), 1)
+        self.assertFalse(follower[0]["msg_cc"])
+        self.assertNotIn("audit@test.example.com", follower[0]["smtp_to_list"])
+
     def test_chatter_copies_preview_and_override(self):
         self._create_rule(cc_emails="all@test.example.com", bcc_emails="audit@test.example.com")
         self._create_rule(name="Doc", cc_emails="doc@test.example.com", scope="document")

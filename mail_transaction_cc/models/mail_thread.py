@@ -38,20 +38,32 @@ class MailThread(models.AbstractModel):
         document = bool(self.env.context.get("mail_transaction_cc_document"))
         if not document and message_type != "comment":
             return {}
-        external = [
+        # "To" = the external recipients, plus anyone chosen explicitly as a
+        # recipient (internal users included); followers Odoo notifies on its
+        # own are not "To"
+        explicit_pids = set(
+            msg_vals["partner_ids"] if "partner_ids" in msg_vals else message_sudo.partner_ids.ids
+        )
+        to_recipients = [
             data for data in recipients_data
-            if data["notif"] == "email" and data["share"] and data["active"] and data["email_normalized"]
+            if data["notif"] == "email" and data["active"] and data["email_normalized"]
+            and (data["share"] or data["id"] in explicit_pids)
         ]
-        if not external:
+        if not to_recipients:
             return {}
         resolved = self.env["mail.transaction.cc.rule"]._resolve_recipients(
             self,
             document=document,
-            exclude_emails=[data["email_normalized"] for data in external],
+            exclude_emails=[data["email_normalized"] for data in to_recipients],
         )
         if resolved:
-            resolved["share_pids"] = {data["id"] for data in external if data["id"]}
-            resolved["email_only"] = any(not data["id"] for data in external)
+            # external recipients first: they get the copies when several
+            # "To" recipients are notified in separate emails
+            ordered = sorted(
+                (data for data in to_recipients if data["id"]), key=lambda data: not data["share"],
+            )
+            resolved["to_pids"] = [data["id"] for data in ordered]
+            resolved["email_only"] = any(not data["id"] for data in to_recipients)
             resolved["done"] = False
         return resolved
 
@@ -88,13 +100,15 @@ class MailThread(models.AbstractModel):
         holder = self.env.context.get("mail_transaction_cc_holder")
         if not holder or holder["done"]:
             return values
-        # only the email sent to the external recipients carries the copies,
-        # and only once (one copy per address, even with several chunks)
-        if set(recipient_ids) & holder["share_pids"] or (not recipient_ids and holder["email_only"]):
+        # only the email sent to a "To" recipient carries the copies, and only
+        # once (one copy per address, even with several chunks or groups)
+        main_pid = next((pid for pid in holder["to_pids"] if pid in recipient_ids), False)
+        if main_pid or (not recipient_ids and holder["email_only"]):
             values.update({
                 "email_cc": ",".join(holder["cc"]),
                 "email_bcc": ",".join(holder["bcc"]),
                 "transaction_cc": True,
+                "transaction_cc_partner_id": main_pid,
             })
             holder["done"] = True
         return values

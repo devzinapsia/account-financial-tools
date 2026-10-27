@@ -13,6 +13,13 @@ class MailMail(models.Model):
         "and travel in the same email received by the main recipient.",
     )
 
+    transaction_cc_partner_id = fields.Many2one(
+        "res.partner",
+        string="Main recipient",
+        help="Technical: the recipient whose email carries the Cc / Bcc of the "
+        "email copy rules.",
+    )
+
     @api.model_create_multi
     def create(self, vals_list):
         mails = super().create(vals_list)
@@ -48,8 +55,13 @@ class MailMail(models.Model):
             if not entry["partner_id"] and not entry["email_to"] and entry["email_cc"]
         ]
         targets = [entry for entry in results if entry not in cc_only] or results
-        # main recipient: the first external partner, else the first entry
+        # main recipient: the one chosen when the email was created, else the
+        # first external partner, else the first entry
         main = next(
+            (entry for entry in targets
+             if self.transaction_cc_partner_id and entry["partner_id"] == self.transaction_cc_partner_id),
+            None,
+        ) or next(
             (entry for entry in targets if entry["partner_id"] and entry["partner_id"].partner_share),
             targets[0],
         )

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 00:35+0000\n"
-"PO-Revision-Date: 2026-10-27 00:35+0000\n"
+"POT-Creation-Date: 2026-10-27 12:23+0000\n"
+"PO-Revision-Date: 2026-10-27 12:23+0000\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -299,6 +299,11 @@ msgid "Last Updated on"
 msgstr "Última actualización el"
 
 #. module: mail_transaction_cc
+#: model:ir.model.fields,field_description:mail_transaction_cc.field_mail_mail__transaction_cc_partner_id
+msgid "Main recipient"
+msgstr "Destinatario principal"
+
+#. module: mail_transaction_cc
 #: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__bcc_group_ids
 #: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_rule__cc_group_ids
 msgid "Members are resolved when the email is sent."
@@ -406,6 +411,13 @@ msgid ""
 "Technical: the Cc / Bcc of this email come from an email copy rule and "
 "travel in the same email received by the main recipient."
 msgstr "Técnico: el Cc / Cco de este correo proviene de una regla de correos en copia y viaja en el mismo correo que recibe el destinatario principal."
+
+#. module: mail_transaction_cc
+#: model:ir.model.fields,help:mail_transaction_cc.field_mail_mail__transaction_cc_partner_id
+msgid ""
+"Technical: the recipient whose email carries the Cc / Bcc of the email copy "
+"rules."
+msgstr "Técnico: el destinatario cuyo correo lleva el Cc / Cco de las reglas de correos en copia."
 
 #. module: mail_transaction_cc
 #: model:ir.model.constraint,message:mail_transaction_cc.constraint_mail_transaction_cc_type_code_uniq
