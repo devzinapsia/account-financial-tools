@@ -31,7 +31,8 @@
                     <group>
                         <group>
                             <field name="type_id" options="{'no_create': True, 'no_open': True}"/>
-                            <field name="scope" widget="radio"/>
+                            <field name="type_has_document" invisible="1"/>
+                            <field name="scope" widget="radio" invisible="not type_has_document"/>
                         </group>
                         <group>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>

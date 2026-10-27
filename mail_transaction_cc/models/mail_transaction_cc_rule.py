@@ -43,6 +43,7 @@ class MailTransactionCcRule(models.Model):
         help="Optional filter on the transaction. Leave empty to apply the rule "
         "to every record of the transaction type.",
     )
+    type_has_document = fields.Boolean(related="type_id.has_document")
     scope = fields.Selection(
         [
             ("all", "All communication"),
@@ -50,6 +51,10 @@ class MailTransactionCcRule(models.Model):
         ],
         required=True,
         default="all",
+        compute="_compute_scope",
+        store=True,
+        readonly=False,
+        precompute=True,
         help="All communication: document sending, messages sent to the "
         "customer or vendor from the chatter, and forwarding of incoming "
         "emails.\nDocument sending only: sending wizards, background sending "
@@ -101,6 +106,29 @@ class MailTransactionCcRule(models.Model):
         string="Bcc groups",
         help="Members are resolved when the email is sent.",
     )
+
+    @api.depends("type_id")
+    def _compute_scope(self):
+        for rule in self:
+            # without a document of its own, only the chatter communication exists
+            if not rule.scope or (rule.type_id and not rule.type_id.has_document):
+                rule.scope = "all"
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        return super().create(vals_list)._force_scope_without_document()
+
+    def write(self, vals):
+        res = super().write(vals)
+        if "scope" in vals or "type_id" in vals:
+            self._force_scope_without_document()
+        return res
+
+    def _force_scope_without_document(self):
+        without_document = self.filtered(lambda rule: not rule.type_id.has_document and rule.scope != "all")
+        if without_document:
+            super(MailTransactionCcRule, without_document).write({"scope": "all"})
+        return self
 
     @api.depends("type_id")
     def _compute_responsible_label(self):
@@ -198,7 +226,7 @@ class MailTransactionCcRule(models.Model):
         rules = self.sudo().search([
             ("type_id", "in", cc_types.ids),
             ("company_id", "=", (company or self.env.company).id),
-            ("scope", "in", list(scopes)),
+            "|", ("scope", "in", list(scopes)), ("type_id.has_document", "=", False),
         ])
         return rules.filtered(lambda rule: rule._matches(record))
 
@@ -215,7 +243,17 @@ class MailTransactionCcRule(models.Model):
         """Cc / Bcc typed by the user in a sending wizard for ``record``, which
         replace the rules for that sending. None when there is no override."""
         overrides = self.env.context.get("mail_transaction_cc_override") or {}
-        return overrides.get("%s,%s" % (record._name, record.id))
+        if not overrides or not isinstance(overrides, dict):
+            return None
+        # The chatter post route accepts a context from the browser: only
+        # internal users may choose the copies (never portal users or guests,
+        # who could otherwise relay messages to arbitrary addresses).
+        if not self.env.user._is_internal():
+            return None
+        override = overrides.get("%s,%s" % (record._name, record.id))
+        if not isinstance(override, dict):
+            return None
+        return {"cc": str(override.get("cc") or ""), "bcc": str(override.get("bcc") or "")}
 
     @api.model
     def _resolve_recipients(self, record, document=False, exclude_emails=()):
@@ -287,6 +325,20 @@ class MailTransactionCcRule(models.Model):
             ", ".join(email_normalize(address) for address in resolved["cc"]) or False,
             ", ".join(email_normalize(address) for address in resolved["bcc"]) or False,
         )
+
+    @api.model
+    def get_chatter_copies(self, model, res_id):
+        """Copies shown under "To" in the chatter's "Send message" box: the
+        rules of the "all communication" scope for that record."""
+        result = {"available": False, "cc": "", "bcc": ""}
+        if not self.env.user._is_internal() or model not in self.env or not res_id:
+            return result
+        record = self.env[model].browse(res_id).exists()
+        if not record or not self._get_transaction_types(record):
+            return result
+        record.check_access("read")
+        cc, bcc = self._get_preview(record, document=False)
+        return {"available": True, "cc": cc or "", "bcc": bcc or ""}
 
     @api.model
     def _check_wizard_emails(self, *texts):

@@ -27,6 +27,13 @@ class MailTransactionCcType(models.Model):
         help="Technical name of the Many2one field to res.users used as the "
         "record's responsible.",
     )
+    has_document = fields.Boolean(
+        string="Has document sending",
+        default=True,
+        help="The transaction has a document of its own to send (invoice, "
+        "receipt, order...). Without it, rules only apply to the messages "
+        "exchanged from the chatter.",
+    )
     available = fields.Boolean(
         compute="_compute_available",
         search="_search_available",

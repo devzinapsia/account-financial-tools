@@ -49,4 +49,28 @@
         <field name="base_domain">[]</field>
         <field name="responsible_field">user_id</field>
     </record>
+
+    <!-- Direct communication with contacts: messages sent from the chatter of
+         a customer or vendor contact (or of one of its contact persons). -->
+    <record id="type_partner_customer" model="mail.transaction.cc.type">
+        <field name="name">Customer communication</field>
+        <field name="code">partner_customer</field>
+        <field name="sequence">60</field>
+        <field name="model_name">res.partner</field>
+        <field name="base_domain">[('commercial_partner_id.customer_rank', '>', 0)]</field>
+        <field name="responsible_field">user_id</field>
+        <field name="has_document" eval="False"/>
+    </record>
+
+    <!-- buyer_id exists only when Purchase is installed; without it, the
+         responsible is simply not resolved. -->
+    <record id="type_partner_vendor" model="mail.transaction.cc.type">
+        <field name="name">Vendor communication</field>
+        <field name="code">partner_vendor</field>
+        <field name="sequence">70</field>
+        <field name="model_name">res.partner</field>
+        <field name="base_domain">[('commercial_partner_id.supplier_rank', '>', 0)]</field>
+        <field name="responsible_field">buyer_id</field>
+        <field name="has_document" eval="False"/>
+    </record>
 </odoo>

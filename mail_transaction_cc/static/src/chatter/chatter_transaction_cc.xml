@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//RecipientsInput/.." position="after">
+            <t t-if="transactionCc.available">
+                <div class="d-flex py-1 ps-3 align-items-center o-mail-TransactionCc">
+                    <span class="flex-shrink-0 text-end fw-bold px-2" style="width:46px">Cc: </span>
+                    <input type="text" class="form-control form-control-sm border-0 border-bottom rounded-0 mx-1"
+                           t-model="transactionCc.cc" placeholder="No visible copy"/>
+                </div>
+                <div class="d-flex py-1 ps-3 align-items-center o-mail-TransactionBcc">
+                    <span class="flex-shrink-0 text-end fw-bold px-2" style="width:46px">Bcc: </span>
+                    <input type="text" class="form-control form-control-sm border-0 border-bottom rounded-0 mx-1"
+                           t-model="transactionCc.bcc" placeholder="No hidden copy"/>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

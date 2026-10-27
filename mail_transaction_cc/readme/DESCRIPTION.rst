@@ -21,6 +21,12 @@ Supported transactions:
 * **Request for quotation / purchase order**: requests for quotation
   and confirmed purchase orders (not vendor bills).
 
+* **Customer communication** / **Vendor communication**: messages sent
+  from the chatter of a customer or vendor contact (or of one of its
+  contact persons), e.g. a direct email to a customer. A contact both
+  customer and vendor gets both. Internal notes, like payment follow-ups,
+  never get copies.
+
 Sales and Purchase types become available automatically as soon as the
 application is installed, without updating this module; this module
 depends on neither of them.

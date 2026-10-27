@@ -11,8 +11,15 @@ purchases show two fields under "To":
   applies. Several addresses are separated by commas. The next sending
   starts again from the rules.
 
-Emails sent without a wizard (background sending, automatic
-confirmations and reminders, chatter messages) use the rules directly.
+**In the chatter's "Send message" box.** On a transaction or on a
+customer / vendor contact, the box shows **Cc** and **Bcc** lines under
+"To", filled in with the *All communication* rules and editable for that
+message only, like in the wizards.
+
+Emails sent without a wizard or the chatter box (background sending,
+automatic confirmations and reminders) use the rules directly. Only
+internal users can change the copies: values coming from portal users
+or guests are ignored.
 
 **Outgoing emails.** When a document is sent (invoice sending wizard,
 receipt / quotation / purchase order email, background sending,

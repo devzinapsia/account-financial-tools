@@ -343,6 +343,84 @@ class TestMailTransactionCc(AccountTestInvoicingCommon, MockEmail):
         for sent in self.emails:
             self.assertNotIn("all@test.example.com", sent["smtp_to_list"])
 
+    def test_partner_communication_types(self):
+        customer_type = self.env.ref("mail_transaction_cc.type_partner_customer")
+        vendor_type = self.env.ref("mail_transaction_cc.type_partner_vendor")
+        self.vendor.supplier_rank = 1
+        self.customer.customer_rank = 1
+        customer_rule = self.Rule.create({
+            "name": "Customers",
+            "company_id": self.company.id,
+            "type_id": customer_type.id,
+            "cc_emails": "customers@test.example.com",
+            "scope": "document",
+        })
+        self.Rule.create({
+            "name": "Vendors",
+            "company_id": self.company.id,
+            "type_id": vendor_type.id,
+            "cc_emails": "vendors@test.example.com",
+        })
+        # no document of its own: the scope is always "all communication"
+        self.assertEqual(customer_rule.scope, "all")
+        contact_person = self.env["res.partner"].create({
+            "name": "Customer contact",
+            "email": "contact@test.example.com",
+            "parent_id": self.customer.id,
+        })
+        with self.mock_mail_gateway():
+            self._post_to_customer(self.customer, self.customer)
+            self._post_to_customer(contact_person, contact_person)
+            self._post_to_customer(self.vendor, self.vendor)
+        for email, expected, unexpected in (
+            ("customer@test.example.com", "customers@test.example.com", "vendors@test.example.com"),
+            ("contact@test.example.com", "customers@test.example.com", "vendors@test.example.com"),
+            ("vendor@test.example.com", "vendors@test.example.com", "customers@test.example.com"),
+        ):
+            sent = self._smtp_emails_to(email)
+            self.assertEqual(len(sent), 1)
+            self.assertIn(expected, sent[0]["msg_cc"])
+            self.assertNotIn(unexpected, sent[0]["msg_cc"])
+        # internal notes on a contact (e.g. payment follow-ups) never get copies
+        with self.mock_mail_gateway():
+            self.customer.message_post(
+                body="Note", partner_ids=self.customer.ids, message_type="comment",
+                subtype_xmlid="mail.mt_note",
+            )
+        for sent in self.emails:
+            self.assertNotIn("customers@test.example.com", sent["smtp_to_list"])
+
+    def test_chatter_copies_preview_and_override(self):
+        self._create_rule(cc_emails="all@test.example.com", bcc_emails="audit@test.example.com")
+        self._create_rule(name="Doc", cc_emails="doc@test.example.com", scope="document")
+        copies = self.Rule.get_chatter_copies("account.move", self.invoice.id)
+        # chatter messages only use the "all communication" rules
+        self.assertEqual(copies, {"available": True, "cc": "all@test.example.com", "bcc": "audit@test.example.com"})
+        bill = self.init_invoice("in_invoice", partner=self.vendor, amounts=[100], post=True)
+        self.assertFalse(self.Rule.get_chatter_copies("account.move", bill.id)["available"])
+        # values edited in the chatter box, sent by the web client as context
+        override = {"account.move,%s" % self.invoice.id: {"cc": "edited@test.example.com", "bcc": ""}}
+        with self.mock_mail_gateway():
+            self._post_to_customer(self.invoice.with_context(mail_transaction_cc_override=override), self.customer)
+        sent = self._smtp_emails_to("customer@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertIn("edited@test.example.com", sent[0]["msg_cc"])
+        self.assertNotIn("all@test.example.com", sent[0]["smtp_to_list"])
+        self.assertNotIn("audit@test.example.com", sent[0]["smtp_to_list"])
+
+    def test_override_ignored_for_portal_users(self):
+        portal = self.env["res.users"].with_context(no_reset_password=True).create({
+            "name": "Portal",
+            "login": "mtcc_portal",
+            "email": "portal@test.example.com",
+            "group_ids": [Command.set([self.env.ref("base.group_portal").id])],
+        })
+        override = {"account.move,%s" % self.invoice.id: {"cc": "spam@test.example.com"}}
+        Rule = self.Rule.with_user(portal).with_context(mail_transaction_cc_override=override)
+        self.assertIsNone(Rule._get_override(self.invoice))
+        self.assertFalse(Rule.sudo()._resolve_recipients(self.invoice, document=True))
+        self.assertFalse(self.Rule.with_user(portal).get_chatter_copies("account.move", self.invoice.id)["available"])
+
     def test_receipt_composer_template(self):
         self.Rule.create({
             "name": "Receipts",
