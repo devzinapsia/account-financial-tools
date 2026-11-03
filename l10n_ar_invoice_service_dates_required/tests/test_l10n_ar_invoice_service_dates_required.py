@@ -1,6 +1,6 @@
 from odoo import fields
 from odoo.exceptions import ValidationError
-from odoo.tests import tagged
+from odoo.tests import Form, tagged
 
 from odoo.addons.l10n_ar.tests.common import TestArCommon
 
@@ -278,3 +278,167 @@ class TestL10nArInvoiceServiceDatesRequired(TestArCommon):
         )
         invoice = self._create_service_invoice(manual_journal)
         self.assertTrue(invoice._l10n_ar_print_service_period())
+
+    # --- Duplicated invoices -------------------------------------------------
+
+    def _posted_service_invoice(self):
+        """Posted service invoice dated 2026-10-01 for the previous month's
+        service (September), as billed in arrears."""
+        invoice = self._create_service_invoice(
+            self.electronic_sale_journal,
+            invoice_date="2026-10-01",
+            l10n_ar_afip_service_start="2026-09-01",
+            l10n_ar_afip_service_end="2026-09-30",
+        )
+        self._post(invoice)
+        return invoice
+
+    def _assert_period(self, move, start, end):
+        self.assertEqual(move.l10n_ar_afip_service_start, fields.Date.to_date(start))
+        self.assertEqual(move.l10n_ar_afip_service_end, fields.Date.to_date(end))
+
+    def test_duplicate_clears_period(self):
+        """Duplicating an electronic service invoice does not carry over
+        the original's service period, and marks the copy so the journal
+        default is not proposed."""
+        duplicate = self._posted_service_invoice().copy()
+        self.assertFalse(duplicate.l10n_ar_afip_service_start)
+        self.assertFalse(duplicate.l10n_ar_afip_service_end)
+        self.assertTrue(duplicate.l10n_ar_service_period_no_default)
+
+    def test_duplicate_period_not_proposed_and_required_at_post(self):
+        """Invoice month default and required dates: setting the invoice
+        date on a duplicate does not propose the period, so confirming it
+        raises until the user enters the period."""
+        duplicate = self._posted_service_invoice().copy()
+        with Form(duplicate) as form:
+            form.invoice_date = fields.Date.to_date("2026-11-01")
+        self.assertFalse(duplicate.l10n_ar_afip_service_start)
+        self.assertFalse(duplicate.l10n_ar_afip_service_end)
+        with self.assertRaisesRegex(ValidationError, "service billing period"):
+            duplicate.with_context(lang="en_US").action_post()
+
+        with Form(duplicate) as form:
+            form.l10n_ar_afip_service_start = fields.Date.to_date("2026-10-01")
+            form.l10n_ar_afip_service_end = fields.Date.to_date("2026-10-31")
+        self._post(duplicate)
+        self._assert_period(duplicate, "2026-10-01", "2026-10-31")
+
+    def test_duplicate_not_required_filled_at_post(self):
+        """Dates not required: a duplicate left without period is still
+        filled in at posting with the invoice month, as before."""
+        original = self._posted_service_invoice()
+        self.electronic_sale_journal.l10n_ar_service_period_dates_required = False
+        duplicate = original.copy()
+        with Form(duplicate) as form:
+            form.invoice_date = fields.Date.to_date("2026-11-01")
+        self.assertFalse(duplicate.l10n_ar_afip_service_start)
+        self._post(duplicate)
+        self._assert_period(duplicate, "2026-11-01", "2026-11-30")
+
+    def test_duplicate_products_concept_untouched(self):
+        """Products concept: the duplicate is out of this module's scope and
+        is not marked."""
+        invoice = self._create_invoice_ar(
+            journal_id=self.electronic_sale_journal,
+            invoice_line_ids=[
+                self._prepare_invoice_line(product_id=self.product_iva_21)
+            ],
+        )
+        self.assertFalse(invoice.copy().l10n_ar_service_period_no_default)
+
+    def test_credit_note_keeps_period(self):
+        """Credit notes keep the original's service period (l10n_ar
+        standard) and are not marked as duplicates."""
+        invoice = self._posted_service_invoice()
+        wizard = (
+            self.env["account.move.reversal"]
+            .with_context(active_model="account.move", active_ids=invoice.ids)
+            .create({"reason": "test", "journal_id": invoice.journal_id.id})
+        )
+        wizard.refund_moves()
+        credit_note = invoice.reversal_move_ids
+        self._assert_period(credit_note, "2026-09-01", "2026-09-30")
+        self.assertFalse(credit_note.l10n_ar_service_period_no_default)
+
+    def test_reverse_and_create_invoice_not_marked(self):
+        """The corrected invoice created by "Reverse and create invoice" is
+        not a plain duplicate: it is not marked and keeps the standard
+        l10n_ar behavior (the original's period is copied)."""
+        invoice = self._posted_service_invoice()
+        wizard = (
+            self.env["account.move.reversal"]
+            .with_context(active_model="account.move", active_ids=invoice.ids)
+            .create({"reason": "test", "journal_id": invoice.journal_id.id})
+        )
+        wizard.modify_moves()
+        new_invoice = self.env["account.move"].search(
+            [
+                ("journal_id", "=", invoice.journal_id.id),
+                ("move_type", "=", "out_invoice"),
+                ("id", ">", invoice.reversal_move_ids.id),
+            ]
+        )
+        self.assertEqual(len(new_invoice), 1)
+        self.assertFalse(new_invoice.l10n_ar_service_period_no_default)
+        self._assert_period(new_invoice, "2026-09-01", "2026-09-30")
+
+    def test_debit_note_not_marked(self):
+        """Debit notes are not plain duplicates: they are not marked."""
+        invoice = self._posted_service_invoice()
+        wizard = (
+            self.env["account.debit.note"]
+            .with_context(active_model="account.move", active_ids=invoice.ids)
+            .create({"reason": "test", "copy_lines": True})
+        )
+        wizard.create_debit()
+        self.assertTrue(invoice.debit_note_ids)
+        self.assertFalse(invoice.debit_note_ids.l10n_ar_service_period_no_default)
+
+    # --- Proposed period follows the invoice date ----------------------------
+
+    def _new_invoice_form(self):
+        form = Form(
+            self.env["account.move"].with_context(default_move_type="out_invoice")
+        )
+        form.partner_id = self.partner
+        form.journal_id = self.electronic_sale_journal
+        with form.invoice_line_ids.new() as line:
+            line.product_id = self.service_iva_21
+        return form
+
+    def test_proposed_period_follows_invoice_date(self):
+        """A proposed period follows the invoice date when it is changed
+        before saving (e.g. today's date first, then corrected)."""
+        form = self._new_invoice_form()
+        form.invoice_date = fields.Date.to_date("2026-10-27")
+        self.assertEqual(
+            form.l10n_ar_afip_service_start, fields.Date.to_date("2026-10-01")
+        )
+        form.invoice_date = fields.Date.to_date("2026-11-01")
+        invoice = form.save()
+        self._assert_period(invoice, "2026-11-01", "2026-11-30")
+        self.assertTrue(invoice.l10n_ar_service_period_proposed)
+
+    def test_proposed_period_follows_invoice_date_after_save(self):
+        """A proposed period saved on the draft still follows a later
+        change of the invoice date."""
+        form = self._new_invoice_form()
+        form.invoice_date = fields.Date.to_date("2026-10-27")
+        invoice = form.save()
+        self._assert_period(invoice, "2026-10-01", "2026-10-31")
+        with Form(invoice) as form:
+            form.invoice_date = fields.Date.to_date("2026-11-01")
+        self._assert_period(invoice, "2026-11-01", "2026-11-30")
+
+    def test_user_changed_period_not_following_invoice_date(self):
+        """Once the user changes a proposed period, a later change of the
+        invoice date keeps the user's period."""
+        form = self._new_invoice_form()
+        form.invoice_date = fields.Date.to_date("2026-10-27")
+        form.l10n_ar_afip_service_start = fields.Date.to_date("2026-09-01")
+        form.l10n_ar_afip_service_end = fields.Date.to_date("2026-09-30")
+        form.invoice_date = fields.Date.to_date("2026-11-01")
+        invoice = form.save()
+        self._assert_period(invoice, "2026-09-01", "2026-09-30")
+        self.assertFalse(invoice.l10n_ar_service_period_proposed)

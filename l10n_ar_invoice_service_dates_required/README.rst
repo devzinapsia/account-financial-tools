@@ -38,12 +38,25 @@ sales journal control how the service period is proposed and printed:
     month.
   - *Invoice day*: the invoice date itself, as both start and end.
 
-  Dates already entered by the user are never overwritten. If the dates
-  are still empty when the invoice is confirmed (and their entry is not
-  required), they are filled in with the invoice day when that option is
-  selected, or with the invoice month otherwise (the standard ``l10n_ar``
-  behavior), since ARCA requires them. This happens before the CAE is
-  requested, so the dates sent to ARCA match the ones on the invoice.
+  Dates entered by the user are never overwritten. A proposed period
+  that the user has not changed follows the invoice date: if the invoice
+  date is changed afterwards, the period is proposed again for the new
+  date.
+
+  A **duplicated** invoice does not keep the original's period and gets
+  no default period either, since the original's period most likely does
+  not apply to it: the user has to enter it, and when the journal
+  requires the dates, confirming the duplicate raises the validation
+  error until they are filled in. Credit notes, debit notes, the corrected
+  invoice of *Reverse and create invoice* and recurring entries are not
+  duplicates and keep their usual behavior.
+
+  If the dates are still empty when the invoice is confirmed (and their
+  entry is not required), they are filled in with the invoice day when
+  that option is selected, or with the invoice month otherwise (the
+  standard ``l10n_ar`` behavior), since ARCA requires them. This happens
+  before the CAE is requested, so the dates sent to ARCA match the ones on
+  the invoice.
 - **Print service period on documents** (enabled by default): when
   disabled, the "Invoiced period" line is not printed on the invoice PDF.
   The period is still informed to ARCA.
@@ -83,7 +96,14 @@ point.
 When the journal proposes a default period, setting the invoice date on a
 draft service invoice fills in the **Service Date** fields with the invoice
 month or the invoice day, as configured, provided they are still empty.
-They can be changed freely before confirming.
+They can be changed freely before confirming. While the proposed dates are
+left untouched, changing the invoice date proposes them again for the new
+date; once the user changes them, they are kept.
+
+When an invoice is duplicated, the **Service Date** fields of the new
+invoice are left empty and no default period is proposed: enter the
+period of the new invoice before confirming it (required when the journal
+validates the service period dates).
 
 When the journal is set not to print the service period, the printed
 invoice omits the "Invoiced period" line.

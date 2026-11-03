@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 11:34+0000\n"
-"PO-Revision-Date: 2026-10-19 11:34+0000\n"
+"POT-Creation-Date: 2026-11-03 14:44+0000\n"
+"PO-Revision-Date: 2026-11-03 14:44+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -54,6 +54,36 @@ msgid ""
 "- Invoice month: first to last day of the invoice date's month.\n"
 "- Invoice day: the invoice date itself, as both start and end.\n"
 "If the dates are still empty when the invoice is confirmed, they are filled in with the invoice day when that option is selected, or with the invoice month otherwise, since ARCA requires them."
+msgstr ""
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_no_default
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_no_default
+msgid "Service period not proposed"
+msgstr ""
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_proposed
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_proposed
+msgid "Service period proposed"
+msgstr ""
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_no_default
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_no_default
+msgid ""
+"Technical field set on duplicated electronic service invoices: the journal's"
+" default service period is not proposed on them, so the user has to enter "
+"it."
+msgstr ""
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_proposed
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_proposed
+msgid ""
+"Technical field: the service period dates were proposed from the journal's "
+"default period and have not been changed by the user since, so they follow "
+"the invoice date when it changes."
 msgstr ""
 
 #. module: l10n_ar_invoice_service_dates_required

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-19 11:34+0000\n"
-"PO-Revision-Date: 2026-10-19 00:00+0000\n"
+"POT-Creation-Date: 2026-11-03 14:44+0000\n"
+"PO-Revision-Date: 2026-11-03 14:44+0000\n"
 "Last-Translator: Zinapsia\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -97,3 +97,39 @@ msgid ""
 msgstr ""
 "Debe completar el período correspondiente a la facturación de servicios para"
 " ARCA dentro de la solapa OTRA INFORMACIÓN"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_no_default
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_no_default
+msgid "Service period not proposed"
+msgstr "Período del servicio no propuesto"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_proposed
+#: model:ir.model.fields,field_description:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_proposed
+msgid "Service period proposed"
+msgstr "Período del servicio propuesto"
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_no_default
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_no_default
+msgid ""
+"Technical field set on duplicated electronic service invoices: the journal's"
+" default service period is not proposed on them, so the user has to enter "
+"it."
+msgstr ""
+"Campo técnico marcado en las facturas electrónicas de servicios duplicadas: "
+"no se les propone el período del servicio por defecto del diario, para que "
+"el usuario lo ingrese."
+
+#. module: l10n_ar_invoice_service_dates_required
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_bank_statement_line__l10n_ar_service_period_proposed
+#: model:ir.model.fields,help:l10n_ar_invoice_service_dates_required.field_account_move__l10n_ar_service_period_proposed
+msgid ""
+"Technical field: the service period dates were proposed from the journal's "
+"default period and have not been changed by the user since, so they follow "
+"the invoice date when it changes."
+msgstr ""
+"Campo técnico: las fechas del período del servicio se propusieron a partir "
+"del período por defecto del diario y el usuario no las modificó desde "
+"entonces, por lo que acompañan a la fecha de factura cuando esta cambia."
