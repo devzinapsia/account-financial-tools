@@ -5,15 +5,25 @@
             <t t-if="transactionCc.available">
                 <div class="d-flex py-1 ps-3 align-items-center o-mail-TransactionCc">
                     <span class="flex-shrink-0 text-end fw-bold px-2" style="width:46px">Cc: </span>
-                    <input type="text" class="form-control form-control-sm border-0 border-bottom rounded-0 mx-1"
-                           t-model="transactionCc.cc" t-on-change="onTransactionCcChange"
-                           placeholder="No visible copy" title="Emails separated by commas, or @user"/>
+                    <div class="flex-grow-1 mx-1">
+                        <TransactionCopiesInput
+                            value="transactionCc.cc"
+                            placeholder.translate="No visible copy"
+                            title.translate="Emails separated by commas, or @user"
+                            onInput="(value) => this.transactionCc.cc = value"
+                            onCommit="(value) => this.onTransactionCcCommit('cc', value)"/>
+                    </div>
                 </div>
                 <div class="d-flex py-1 ps-3 align-items-center o-mail-TransactionBcc">
                     <span class="flex-shrink-0 text-end fw-bold px-2" style="width:46px">Bcc: </span>
-                    <input type="text" class="form-control form-control-sm border-0 border-bottom rounded-0 mx-1"
-                           t-model="transactionCc.bcc" t-on-change="onTransactionCcChange"
-                           placeholder="No hidden copy" title="Emails separated by commas, or @user"/>
+                    <div class="flex-grow-1 mx-1">
+                        <TransactionCopiesInput
+                            value="transactionCc.bcc"
+                            placeholder.translate="No hidden copy"
+                            title.translate="Emails separated by commas, or @user"
+                            onInput="(value) => this.transactionCc.bcc = value"
+                            onCommit="(value) => this.onTransactionCcCommit('bcc', value)"/>
+                    </div>
                 </div>
             </t>
         </xpath>

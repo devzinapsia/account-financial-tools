@@ -3,6 +3,9 @@ import { Thread } from "@mail/core/common/thread_model";
 import { useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
+import { TransactionCopiesInput } from "../copies_input/copies_input";
+
+Object.assign(Chatter.components, { TransactionCopiesInput });
 
 /**
  * Cc / Bcc typed in the chatter's "Send message" box, by "model,id" of the
@@ -52,6 +55,11 @@ patch(Chatter.prototype, {
             copiesByThread.delete(threadKey(thread));
         }
     },
+    onTransactionCcCommit(key, value) {
+        this.transactionCc[key] = value;
+        this.onTransactionCcChange();
+    },
+
     /**
      * Replace the "@name" mentions typed in the Cc / Bcc by the users' emails.
      */

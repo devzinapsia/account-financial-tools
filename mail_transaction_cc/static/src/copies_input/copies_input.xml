@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mail_transaction_cc.TransactionCopiesInput">
+        <AutoComplete
+            value="props.value"
+            sources="sources"
+            placeholder="props.placeholder"
+            title="props.title"
+            class="props.class"
+            searchOnInputClick="false"
+            onInput="(params) => props.onInput(params.inputValue)"
+            onChange="(params) => params.isOptionSelected or props.onCommit(params.inputValue)"
+        />
+    </t>
+
+    <t t-name="mail_transaction_cc.TransactionCopiesField">
+        <span t-if="props.readonly" t-esc="value"/>
+        <TransactionCopiesInput t-else=""
+            value="value"
+            placeholder="props.placeholder"
+            title.translate="Emails separated by commas, or @user"
+            onCommit.bind="commit"/>
+    </t>
+</templates>

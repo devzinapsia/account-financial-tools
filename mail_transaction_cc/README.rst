@@ -97,10 +97,13 @@ purchases show two fields under "To":
   removed, or the field emptied so no copy is sent, even when no rule
   applies. Several addresses are separated by commas. The next sending
   starts again from the rules;
-* an internal user can be typed as ``@`` followed by their login, the
-  name part of their email or a word of their name (``@alan`` for
-  *Alan Pérez*, accents and case ignored): it is replaced by the user's
-  email when leaving the field. When no user, or several users, match,
+* typing ``@`` followed by a few letters lists the internal users whose
+  name, login or email contains them, like the mentions of the chatter;
+  picking one (click or Enter) adds the user's email;
+* a mention typed in full without picking from the list (``@alan`` for
+  *Alan Pérez*: login, name part of the email or a word of the name,
+  accents and case ignored) is replaced by the user's email when
+  leaving the field. When no user, or several users, match,
   a warning is shown and the mention stays as typed: the email cannot be
   sent until it is corrected. When several users match, those of the
   document's company take precedence.

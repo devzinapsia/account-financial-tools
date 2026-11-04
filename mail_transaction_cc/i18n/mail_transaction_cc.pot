@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-04 20:51+0000\n"
-"PO-Revision-Date: 2026-11-04 20:51+0000\n"
+"POT-Creation-Date: 2026-11-04 21:45+0000\n"
+"PO-Revision-Date: 2026-11-04 21:45+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -241,6 +241,7 @@ msgstr ""
 #. module: mail_transaction_cc
 #. odoo-javascript
 #: code:addons/mail_transaction_cc/static/src/chatter/chatter_transaction_cc.xml:0
+#: code:addons/mail_transaction_cc/static/src/copies_input/copies_input.xml:0
 msgid "Emails separated by commas, or @user"
 msgstr ""
 

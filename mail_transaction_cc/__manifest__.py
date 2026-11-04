@@ -1,6 +1,6 @@
 {
     "name": "Correos en copia en transacciones",
-    "version": "19.0.1.3.0",
+    "version": "19.0.1.4.0",
     "summary": "Agrega direcciones internas en copia visible (Cc) y oculta (Cco) "
     "a los correos de facturas, recibos, órdenes de pago, ventas y compras.",
     "author": "Zinapsia",
@@ -17,6 +17,8 @@
     ],
     "assets": {
         "web.assets_backend": [
+            "mail_transaction_cc/static/src/copies_input/copies_input.js",
+            "mail_transaction_cc/static/src/copies_input/copies_input.xml",
             "mail_transaction_cc/static/src/chatter/chatter_transaction_cc.js",
             "mail_transaction_cc/static/src/chatter/chatter_transaction_cc.xml",
         ],

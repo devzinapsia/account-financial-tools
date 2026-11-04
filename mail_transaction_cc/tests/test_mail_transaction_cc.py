@@ -466,6 +466,21 @@ class TestMailTransactionCc(AccountTestInvoicingCommon, MockEmail):
         self.assertEqual(replace("@sales")[0], "salesman@test.example.com")
         self.assertEqual(len(replace("@a")[1]), 1, "ambiguous mention is reported")
 
+    def test_search_copy_users(self):
+        """Suggestions listed while typing "@..." in a Cc / Bcc field."""
+        found = self.Rule.search_copy_users("SALES")
+        self.assertIn("salesman@test.example.com", [user["email"] for user in found])
+        self.assertNotIn("cc.user@test.example.com", [user["email"] for user in found])
+        self.assertEqual(len(self.Rule.search_copy_users("", limit=1)), 1)
+        portal = self.env["res.users"].with_context(no_reset_password=True).create({
+            "name": "Portal salesman",
+            "login": "mtcc_portal_search",
+            "email": "portal.search@test.example.com",
+            "group_ids": [Command.set([self.env.ref("base.group_portal").id])],
+        })
+        self.assertNotIn("portal.search@test.example.com", [user["email"] for user in self.Rule.search_copy_users("sales")])
+        self.assertEqual(self.Rule.with_user(portal).search_copy_users("sales"), [])
+
     def test_invoice_send_wizard_user_mentions(self):
         self._create_rule(cc_emails="admin@test.example.com")
         wizard = self._invoice_send_wizard(self.invoice)

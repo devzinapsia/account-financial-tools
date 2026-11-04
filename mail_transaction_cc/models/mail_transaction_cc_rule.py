@@ -328,6 +328,29 @@ class MailTransactionCcRule(models.Model):
         return ", ".join(resolved), errors
 
     @api.model
+    def search_copy_users(self, term, limit=8):
+        """Suggestions shown while typing "@..." in a Cc / Bcc field:
+        internal users whose name, login or email contains ``term``
+        (accents and case ignored)."""
+        if not self.env.user._is_internal():
+            return []
+        key = _simplify(term)
+        users = self.env["res.users"].sudo().search([("share", "=", False), ("email", "!=", False)])
+        if key:
+            users = users.filtered(lambda user: any(
+                key in _simplify(value) for value in (user.name, user.login, user.email_normalized)
+            ))
+        # names starting with the term first, then alphabetical order
+        users = users.sorted(lambda user: (
+            not any(word.startswith(key) for word in _simplify(user.name).split()),
+            _simplify(user.name),
+        ))
+        return [
+            {"id": user.id, "name": user.name, "email": user.email_normalized}
+            for user in users[:limit]
+        ]
+
+    @api.model
     def resolve_chatter_copies(self, model, res_id, cc, bcc):
         """Replace the "@name" mentions typed in the chatter's Cc / Bcc."""
         result = {"cc": cc or "", "bcc": bcc or "", "errors": []}

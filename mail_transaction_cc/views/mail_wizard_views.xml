@@ -7,8 +7,8 @@
         <field name="arch" type="xml">
             <xpath expr="//div[field[@name='mail_partner_ids']]" position="after">
                 <field name="transaction_cc_available" invisible="1"/>
-                <field name="transaction_cc" invisible="not transaction_cc_available" placeholder="No visible copy"/>
-                <field name="transaction_bcc" invisible="not transaction_cc_available" placeholder="No hidden copy"/>
+                <field name="transaction_cc" widget="transaction_cc_emails" invisible="not transaction_cc_available" placeholder="No visible copy"/>
+                <field name="transaction_bcc" widget="transaction_cc_emails" invisible="not transaction_cc_available" placeholder="No hidden copy"/>
             </xpath>
         </field>
     </record>
@@ -20,8 +20,8 @@
         <field name="arch" type="xml">
             <xpath expr="//div[field[@name='partner_ids']]" position="after">
                 <field name="transaction_cc_available" invisible="1"/>
-                <field name="transaction_cc" invisible="not transaction_cc_available or subtype_is_log" placeholder="No visible copy"/>
-                <field name="transaction_bcc" invisible="not transaction_cc_available or subtype_is_log" placeholder="No hidden copy"/>
+                <field name="transaction_cc" widget="transaction_cc_emails" invisible="not transaction_cc_available or subtype_is_log" placeholder="No visible copy"/>
+                <field name="transaction_bcc" widget="transaction_cc_emails" invisible="not transaction_cc_available or subtype_is_log" placeholder="No hidden copy"/>
             </xpath>
         </field>
     </record>
