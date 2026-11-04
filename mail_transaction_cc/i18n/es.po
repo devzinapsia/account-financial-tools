@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-27 12:23+0000\n"
-"PO-Revision-Date: 2026-10-27 12:23+0000\n"
+"POT-Creation-Date: 2026-11-04 20:51+0000\n"
+"PO-Revision-Date: 2026-11-04 20:51+0000\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -15,6 +15,14 @@ msgstr ""
 "Last-Translator: Zinapsia\n"
 "Language: es\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: mail_transaction_cc
+#. odoo-python
+#: code:addons/mail_transaction_cc/models/mail_transaction_cc_rule.py:0
+msgid ""
+"%(mention)s matches several users (%(users)s): type more letters or the "
+"email."
+msgstr "%(mention)s coincide con varios usuarios (%(users)s): escriba más letras o el correo."
 
 #. module: mail_transaction_cc
 #: model:ir.model,name:mail_transaction_cc.model_account_move_send
@@ -212,6 +220,9 @@ msgid "Email composition wizard"
 msgstr "Asistente de redacción de correos"
 
 #. module: mail_transaction_cc
+#. odoo-python
+#: code:addons/mail_transaction_cc/wizard/account_move_send_wizard.py:0
+#: code:addons/mail_transaction_cc/wizard/mail_compose_message.py:0
 #: model:ir.ui.menu,name:mail_transaction_cc.menu_mail_transaction_cc_rule
 msgid "Email copies"
 msgstr "Correos en copia"
@@ -231,6 +242,12 @@ msgstr "Regla de correos en copia"
 #: model:ir.actions.act_window,name:mail_transaction_cc.mail_transaction_cc_rule_action
 msgid "Email copy rules"
 msgstr "Reglas de correos en copia"
+
+#. module: mail_transaction_cc
+#. odoo-javascript
+#: code:addons/mail_transaction_cc/static/src/chatter/chatter_transaction_cc.xml:0
+msgid "Emails separated by commas, or @user"
+msgstr "Correos separados por comas, o @usuario"
 
 #. module: mail_transaction_cc
 #: model:ir.model.fields,help:mail_transaction_cc.field_mail_transaction_cc_type__base_domain
@@ -253,8 +270,9 @@ msgstr "Copia oculta (Cco)"
 #: model:ir.model.fields,help:mail_transaction_cc.field_mail_compose_message__transaction_bcc
 msgid ""
 "Hidden copy, filled in by the email copy rules: the recipients do not see "
-"these addresses. It can be changed for this sending."
-msgstr "Copia oculta, completada por las reglas de correos en copia: los destinatarios no ven estas direcciones. Se puede modificar para este envío."
+"these addresses. It can be changed for this sending. Type @ followed by the "
+"name or login of an internal user to add their email."
+msgstr "Copia oculta, completada por las reglas de correos en copia: los destinatarios no ven estas direcciones. Se puede modificar para este envío. Escriba @ seguido del nombre o usuario de un usuario interno para agregar su correo."
 
 #. module: mail_transaction_cc
 #: model:ir.model.fields,field_description:mail_transaction_cc.field_account_move_send__id
@@ -328,6 +346,12 @@ msgstr "Nombre"
 #: model_terms:ir.ui.view,arch_db:mail_transaction_cc.email_compose_message_wizard_form
 msgid "No hidden copy"
 msgstr "Sin copia oculta"
+
+#. module: mail_transaction_cc
+#. odoo-python
+#: code:addons/mail_transaction_cc/models/mail_transaction_cc_rule.py:0
+msgid "No internal user matches %(mention)s."
+msgstr "Ningún usuario interno coincide con %(mention)s."
 
 #. module: mail_transaction_cc
 #. odoo-javascript
@@ -484,8 +508,9 @@ msgstr "Copia visible (Cc)"
 #: model:ir.model.fields,help:mail_transaction_cc.field_mail_compose_message__transaction_cc
 msgid ""
 "Visible copy, filled in by the email copy rules. It can be changed for this "
-"sending; several addresses are separated by commas."
-msgstr "Copia visible, completada por las reglas de correos en copia. Se puede modificar para este envío; varias direcciones se separan con comas."
+"sending; several addresses are separated by commas. Type @ followed by the "
+"name or login of an internal user to add their email."
+msgstr "Copia visible, completada por las reglas de correos en copia. Se puede modificar para este envío; varias direcciones se separan con comas. Escriba @ seguido del nombre o usuario de un usuario interno para agregar su correo."
 
 #. module: mail_transaction_cc
 #: model_terms:ir.ui.view,arch_db:mail_transaction_cc.mail_transaction_cc_rule_view_form

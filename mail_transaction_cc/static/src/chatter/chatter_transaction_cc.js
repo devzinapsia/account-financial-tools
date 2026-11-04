@@ -19,6 +19,7 @@ patch(Chatter.prototype, {
     setup() {
         super.setup(...arguments);
         this.transactionCcOrm = useService("orm");
+        this.transactionCcNotification = useService("notification");
         this.transactionCc = useState({ available: false, cc: "", bcc: "" });
     },
 
@@ -49,6 +50,33 @@ patch(Chatter.prototype, {
             copiesByThread.set(threadKey(thread), this.transactionCc);
         } else {
             copiesByThread.delete(threadKey(thread));
+        }
+    },
+    /**
+     * Replace the "@name" mentions typed in the Cc / Bcc by the users' emails.
+     */
+    async onTransactionCcChange() {
+        const thread = this.state.thread;
+        const { cc, bcc } = this.transactionCc;
+        if (!thread?.id || !`${cc} ${bcc}`.includes("@")) {
+            return;
+        }
+        const result = await this.transactionCcOrm.call(
+            "mail.transaction.cc.rule",
+            "resolve_chatter_copies",
+            [thread.model, thread.id, cc, bcc]
+        );
+        // ignore the answer if the user switched record or kept typing
+        if (
+            this.state.thread !== thread ||
+            this.transactionCc.cc !== cc ||
+            this.transactionCc.bcc !== bcc
+        ) {
+            return;
+        }
+        Object.assign(this.transactionCc, { cc: result.cc, bcc: result.bcc });
+        for (const error of result.errors) {
+            this.transactionCcNotification.add(error, { type: "warning" });
         }
     },
 });

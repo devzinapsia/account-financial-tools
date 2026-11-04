@@ -96,7 +96,14 @@ purchases show two fields under "To":
 * both are editable for that sending only: addresses can be added,
   removed, or the field emptied so no copy is sent, even when no rule
   applies. Several addresses are separated by commas. The next sending
-  starts again from the rules.
+  starts again from the rules;
+* an internal user can be typed as ``@`` followed by their login, the
+  name part of their email or a word of their name (``@alan`` for
+  *Alan Pérez*, accents and case ignored): it is replaced by the user's
+  email when leaving the field. When no user, or several users, match,
+  a warning is shown and the mention stays as typed: the email cannot be
+  sent until it is corrected. When several users match, those of the
+  document's company take precedence.
 
 **In the chatter's "Send message" box.** On a transaction or on a
 customer / vendor contact, the box shows **Cc** and **Bcc** lines under

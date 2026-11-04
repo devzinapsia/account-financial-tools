@@ -14,7 +14,8 @@ class MailComposeMessage(models.TransientModel):
         store=True,
         readonly=False,
         help="Visible copy, filled in by the email copy rules. It can be "
-        "changed for this sending; several addresses are separated by commas.",
+        "changed for this sending; several addresses are separated by commas. "
+        "Type @ followed by the name or login of an internal user to add their email.",
     )
     transaction_bcc = fields.Char(
         string="Bcc",
@@ -22,7 +23,8 @@ class MailComposeMessage(models.TransientModel):
         store=True,
         readonly=False,
         help="Hidden copy, filled in by the email copy rules: the recipients do "
-        "not see these addresses. It can be changed for this sending.",
+        "not see these addresses. It can be changed for this sending. "
+        "Type @ followed by the name or login of an internal user to add their email.",
     )
 
     def _get_transaction_cc_record(self):
@@ -55,6 +57,24 @@ class MailComposeMessage(models.TransientModel):
                 record, document=bool(composer.template_id), partners=composer.partner_ids,
             )
 
+    @api.onchange("transaction_cc", "transaction_bcc")
+    def _onchange_transaction_cc_mentions(self):
+        """Replace the "@name" mentions by the users' emails as soon as they
+        are typed; the ones that cannot be resolved are reported."""
+        record = self._get_transaction_cc_record()
+        if record is None:
+            return
+        Rule = self.env["mail.transaction.cc.rule"]
+        company = Rule._get_record_company(record)
+        all_errors = []
+        for field_name in ("transaction_cc", "transaction_bcc"):
+            text, errors = Rule._replace_user_mentions(self[field_name], company)
+            all_errors += errors
+            if text != (self[field_name] or ""):
+                self[field_name] = text or False
+        if all_errors:
+            return {"warning": {"title": self.env._("Email copies"), "message": "\n".join(all_errors)}}
+
     def _action_send_mail_comment(self, res_ids):
         """A composer using a template sends the document itself (e.g. receipt,
         quotation, RFQ / purchase order, reminders, receiptbook automatic
@@ -65,8 +85,8 @@ class MailComposeMessage(models.TransientModel):
         record = self._get_transaction_cc_record()
         if record is not None:
             Rule = self.env["mail.transaction.cc.rule"]
-            Rule._check_wizard_emails(self.transaction_cc, self.transaction_bcc)
-            context.update(Rule._get_override_context(record, self.transaction_cc, self.transaction_bcc))
+            cc, bcc = Rule._prepare_wizard_copies(record, self.transaction_cc, self.transaction_bcc)
+            context.update(Rule._get_override_context(record, cc, bcc))
         if context:
             self = self.with_context(**context)
         return super()._action_send_mail_comment(res_ids)

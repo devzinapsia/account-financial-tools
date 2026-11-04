@@ -1,7 +1,8 @@
 import logging
+import unicodedata
 
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools import email_normalize, formataddr
 from odoo.tools.mail import email_split_tuples
 from odoo.tools.safe_eval import datetime, safe_eval, time
@@ -13,6 +14,12 @@ def _split_emails(text):
     """Split a free-text list of emails separated by commas or semicolons
     into ``(name, email)`` tuples."""
     return email_split_tuples((text or "").replace(";", ","))
+
+
+def _simplify(text):
+    """Lowercase ``text`` without accents, to compare user names."""
+    text = unicodedata.normalize("NFKD", text or "")
+    return "".join(char for char in text if not unicodedata.combining(char)).lower().strip()
 
 
 class MailTransactionCcRule(models.Model):
@@ -253,7 +260,88 @@ class MailTransactionCcRule(models.Model):
         override = overrides.get("%s,%s" % (record._name, record.id))
         if not isinstance(override, dict):
             return None
-        return {"cc": str(override.get("cc") or ""), "bcc": str(override.get("bcc") or "")}
+        company = self._get_record_company(record)
+        result = {}
+        for key in ("cc", "bcc"):
+            text, errors = self._replace_user_mentions(str(override.get(key) or ""), company)
+            if errors:
+                raise UserError("\n".join(errors))
+            result[key] = text
+        return result
+
+    @api.model
+    def _get_record_company(self, record):
+        if len(record) == 1 and "company_id" in record._fields:
+            return record.sudo().company_id
+        return self.env["res.company"]
+
+    @api.model
+    def _find_mentioned_users(self, mention, company=None):
+        """Internal users matching ``mention`` (the text typed after "@"):
+        first by login or email name (the part before "@"), then by any word
+        of the user name starting with it. Accents and case are ignored.
+        When several users match, those of ``company`` are preferred."""
+        key = _simplify(mention)
+        if not key:
+            return self.env["res.users"]
+        users = self.env["res.users"].sudo().search([("share", "=", False), ("email", "!=", False)])
+        matched = users.filtered(lambda user: key in {
+            _simplify(user.login),
+            _simplify(user.login).split("@")[0],
+            _simplify(user.email_normalized).split("@")[0],
+        })
+        if not matched:
+            matched = users.filtered(lambda user: (
+                _simplify(user.name).replace(" ", "") == key.replace(" ", "")
+                or any(word.startswith(key) for word in _simplify(user.name).split())
+            ))
+        if len(matched) > 1 and company:
+            in_company = matched.filtered(lambda user: company in user.company_ids)
+            matched = in_company or matched
+        return matched
+
+    @api.model
+    def _replace_user_mentions(self, text, company=None):
+        """Replace each "@name" of a free-text list of addresses by the email
+        of the internal user it designates.
+
+        :return: ``(text, errors)``; ``text`` keeps the mentions that could
+          not be resolved, each one explained in ``errors``.
+        """
+        parts = [part.strip() for part in (text or "").replace(";", ",").split(",") if part.strip()]
+        if not any(part.startswith("@") for part in parts):
+            return text, []
+        resolved, errors = [], []
+        for part in parts:
+            if part.startswith("@") and "@" not in part[1:]:
+                users = self._find_mentioned_users(part[1:], company)
+                if len(users) == 1:
+                    part = users.email_normalized
+                elif not users:
+                    errors.append(self.env._("No internal user matches %(mention)s.", mention=part))
+                else:
+                    errors.append(self.env._(
+                        "%(mention)s matches several users (%(users)s): type more letters or the email.",
+                        mention=part, users=", ".join(users.mapped("name")),
+                    ))
+            resolved.append(part)
+        return ", ".join(resolved), errors
+
+    @api.model
+    def resolve_chatter_copies(self, model, res_id, cc, bcc):
+        """Replace the "@name" mentions typed in the chatter's Cc / Bcc."""
+        result = {"cc": cc or "", "bcc": bcc or "", "errors": []}
+        if not self.env.user._is_internal() or model not in self.env or not res_id:
+            return result
+        record = self.env[model].browse(res_id).exists()
+        if not record:
+            return result
+        record.check_access("read")
+        company = self._get_record_company(record)
+        for key in ("cc", "bcc"):
+            result[key], errors = self._replace_user_mentions(result[key], company)
+            result["errors"] += errors
+        return result
 
     @api.model
     def _resolve_recipients(self, record, document=False, exclude_emails=()):
@@ -339,6 +427,18 @@ class MailTransactionCcRule(models.Model):
         record.check_access("read")
         cc, bcc = self._get_preview(record, document=False)
         return {"available": True, "cc": cc or "", "bcc": bcc or ""}
+
+    @api.model
+    def _prepare_wizard_copies(self, record, cc, bcc):
+        """Resolve the "@name" mentions of the Cc / Bcc typed in a sending
+        wizard and validate the result. Raise when something is wrong."""
+        company = self._get_record_company(record)
+        cc, cc_errors = self._replace_user_mentions(cc, company)
+        bcc, bcc_errors = self._replace_user_mentions(bcc, company)
+        if cc_errors or bcc_errors:
+            raise UserError("\n".join(cc_errors + bcc_errors))
+        self._check_wizard_emails(cc, bcc)
+        return cc or False, bcc or False
 
     @api.model
     def _check_wizard_emails(self, *texts):

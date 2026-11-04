@@ -1,5 +1,5 @@
 from odoo import Command
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tests import tagged
 from odoo.tools import mute_logger
 
@@ -442,6 +442,64 @@ class TestMailTransactionCc(AccountTestInvoicingCommon, MockEmail):
         self.assertIn("edited@test.example.com", sent[0]["msg_cc"])
         self.assertNotIn("all@test.example.com", sent[0]["smtp_to_list"])
         self.assertNotIn("audit@test.example.com", sent[0]["smtp_to_list"])
+
+    def test_user_mentions(self):
+        """"@name" designates an internal user by login, email name or any
+        word of the user name, ignoring accents and case."""
+        self.env["res.users"].with_context(no_reset_password=True).create({
+            "name": "Álan Pérez",
+            "login": "mtcc_alan",
+            "email": "alan@test.example.com",
+            "company_id": self.company.id,
+            "company_ids": [Command.set(self.company.ids)],
+        })
+        replace = self.Rule._replace_user_mentions
+        self.assertEqual(replace("@alan", self.company), ("alan@test.example.com", []))
+        self.assertEqual(replace("@PEREZ; x@test.example.com"), ("alan@test.example.com, x@test.example.com", []))
+        self.assertEqual(replace("@mtcc_cc_user")[0], "cc.user@test.example.com")
+        # plain addresses are left untouched
+        self.assertEqual(replace("a@test.example.com; b@test.example.com"), ("a@test.example.com; b@test.example.com", []))
+        text, errors = replace("@nobody")
+        self.assertEqual(text, "@nobody")
+        self.assertEqual(len(errors), 1)
+        # "Cc User" and "Salesman" do not share a word, "@s" only matches Salesman
+        self.assertEqual(replace("@sales")[0], "salesman@test.example.com")
+        self.assertEqual(len(replace("@a")[1]), 1, "ambiguous mention is reported")
+
+    def test_invoice_send_wizard_user_mentions(self):
+        self._create_rule(cc_emails="admin@test.example.com")
+        wizard = self._invoice_send_wizard(self.invoice)
+        wizard.write({"transaction_cc": "admin@test.example.com, @cc user", "transaction_bcc": "@salesman"})
+        with self.mock_mail_gateway():
+            wizard.action_send_and_print()
+        sent = self._smtp_emails_to("customer@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertIn("cc.user@test.example.com", sent[0]["msg_cc"])
+        self.assertIn("salesman@test.example.com", sent[0]["smtp_to_list"])
+        wizard = self._invoice_send_wizard(self.invoice)
+        # typing the mention replaces it in the field right away
+        wizard.transaction_bcc = "@cc user"
+        self.assertFalse(wizard._onchange_transaction_cc_mentions())
+        self.assertEqual(wizard.transaction_bcc, "cc.user@test.example.com")
+        wizard.transaction_cc = "@nobody"
+        self.assertIn("warning", wizard._onchange_transaction_cc_mentions())
+        self.assertEqual(wizard.transaction_cc, "@nobody")
+        with self.assertRaises(UserError):
+            wizard.action_send_and_print()
+
+    def test_chatter_user_mentions(self):
+        self._create_rule(cc_emails="all@test.example.com")
+        result = self.Rule.resolve_chatter_copies("account.move", self.invoice.id, "@cc user", "@nobody")
+        self.assertEqual(result["cc"], "cc.user@test.example.com")
+        self.assertEqual(result["bcc"], "@nobody")
+        self.assertEqual(len(result["errors"]), 1)
+        # mentions not resolved in the browser are resolved when posting
+        override = {"account.move,%s" % self.invoice.id: {"cc": "@salesman", "bcc": ""}}
+        with self.mock_mail_gateway():
+            self._post_to_customer(self.invoice.with_context(mail_transaction_cc_override=override), self.customer)
+        sent = self._smtp_emails_to("customer@test.example.com")
+        self.assertEqual(len(sent), 1)
+        self.assertIn("salesman@test.example.com", sent[0]["msg_cc"])
 
     def test_override_ignored_for_portal_users(self):
         portal = self.env["res.users"].with_context(no_reset_password=True).create({
