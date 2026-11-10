@@ -1,0 +1,2 @@
+from . import test_account_payment_email_invoices_account_payment_pro
+from . import test_l10n_ar_tax_integration
