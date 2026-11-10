@@ -1,0 +1,144 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_payment_email_invoices
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-10 14:38+0000\n"
+"PO-Revision-Date: 2026-11-10 14:38+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_company__attach_invoices_on_payment_order
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_config_settings__attach_invoices_on_payment_order
+msgid "Attach invoices when sending a payment order"
+msgstr "Adjuntar comprobantes de facturas al enviar una orden de pago"
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_company__attach_invoices_on_receipt
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_config_settings__attach_invoices_on_receipt
+msgid "Attach invoices when sending a receipt"
+msgstr "Adjuntar comprobantes de facturas al enviar un recibo"
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_mail_compose_message__payment_attachment_size_warning
+msgid "Attachment size warning"
+msgstr "Aviso de tamaño de adjuntos"
+
+#. module: account_payment_email_invoices
+#: model:ir.model,name:account_payment_email_invoices.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: account_payment_email_invoices
+#: model:ir.model,name:account_payment_email_invoices.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_account_move__display_name
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_account_payment__display_name
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_mail_compose_message__display_name
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_company__display_name
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: account_payment_email_invoices
+#: model:ir.model,name:account_payment_email_invoices.model_mail_compose_message
+msgid "Email composition wizard"
+msgstr "Asistente de redacción de correo electrónico"
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,help:account_payment_email_invoices.field_res_company__no_attachment_journal_ids
+#: model:ir.model.fields,help:account_payment_email_invoices.field_res_config_settings__no_attachment_journal_ids
+#: model_terms:ir.ui.view,arch_db:account_payment_email_invoices.res_config_settings_view_form
+msgid "Example: document adjustment journals loaded by the Go Live."
+msgstr "Ejemplo: diarios de ajuste de comprobantes cargados por el Go Live."
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_account_move__id
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_account_payment__id
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_mail_compose_message__id
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_company__id
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_config_settings__id
+msgid "ID"
+msgstr "ID"
+
+#. module: account_payment_email_invoices
+#: model:ir.model,name:account_payment_email_invoices.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_company__no_attachment_journal_ids
+#: model:ir.model.fields,field_description:account_payment_email_invoices.field_res_config_settings__no_attachment_journal_ids
+#: model_terms:ir.ui.view,arch_db:account_payment_email_invoices.res_config_settings_view_form
+msgid "Journals whose invoices are not attached"
+msgstr "Diarios cuyas facturas no se adjuntan"
+
+#. module: account_payment_email_invoices
+#. odoo-python
+#: code:addons/account_payment_email_invoices/models/res_company.py:0
+msgid ""
+"Only sales and purchase journals of company %(company)s can be excluded from"
+" payment emails: %(journals)s."
+msgstr ""
+"Solo se pueden excluir de los correos de pagos diarios de venta y de compra "
+"de la compañía %(company)s: %(journals)s."
+
+#. module: account_payment_email_invoices
+#: model_terms:ir.ui.view,arch_db:account_payment_email_invoices.res_config_settings_view_form
+msgid "Payment emails"
+msgstr "Correos de pagos"
+
+#. module: account_payment_email_invoices
+#: model:ir.model,name:account_payment_email_invoices.model_account_payment
+msgid "Payments"
+msgstr "Pagos"
+
+#. module: account_payment_email_invoices
+#. odoo-python
+#: code:addons/account_payment_email_invoices/wizard/mail_compose_message.py:0
+msgid ""
+"The attachments of this email add up to %(total)s, above the %(limit)s limit"
+" of the outgoing mail server. If the email is sent as it is, Odoo replaces "
+"its attachments with download links in the email body. Remove some "
+"attachments if you want them to travel as files."
+msgstr ""
+"Los adjuntos de este correo suman %(total)s y superan el límite de %(limit)s"
+" del servidor de correo saliente. Si se envía así, Odoo reemplaza los "
+"adjuntos por enlaces de descarga en el cuerpo del correo. Quite algunos "
+"adjuntos si quiere que viajen como archivos."
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,help:account_payment_email_invoices.field_res_company__attach_invoices_on_payment_order
+#: model:ir.model.fields,help:account_payment_email_invoices.field_res_config_settings__attach_invoices_on_payment_order
+#: model_terms:ir.ui.view,arch_db:account_payment_email_invoices.res_config_settings_view_form
+msgid ""
+"When a payment order is sent by email, also attach the PDF of the vendor "
+"bills and credit notes it settles (the PDF attached to each bill)."
+msgstr ""
+"Al enviar por correo una orden de pago, adjuntar también el PDF de las "
+"facturas y notas de crédito de proveedor que cancela (el PDF adjunto a cada "
+"comprobante)."
+
+#. module: account_payment_email_invoices
+#: model:ir.model.fields,help:account_payment_email_invoices.field_res_company__attach_invoices_on_receipt
+#: model:ir.model.fields,help:account_payment_email_invoices.field_res_config_settings__attach_invoices_on_receipt
+#: model_terms:ir.ui.view,arch_db:account_payment_email_invoices.res_config_settings_view_form
+msgid ""
+"When a receipt is sent by email, also attach the PDF of the customer "
+"invoices and credit notes it settles (the same PDF the customer receives)."
+msgstr ""
+"Al enviar por correo un recibo, adjuntar también el PDF de las facturas y "
+"notas de crédito de cliente que cancela (el mismo PDF que recibe el "
+"cliente)."
