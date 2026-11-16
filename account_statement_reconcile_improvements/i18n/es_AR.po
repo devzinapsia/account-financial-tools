@@ -402,3 +402,22 @@ msgstr ""
 "Eliminar estos extractos desconciliará y eliminará todas sus líneas, "
 "incluidas las conciliadas, volviendo a dejar pendientes las facturas/pagos "
 "asociados. Esta acción no se puede deshacer."
+
+#. module: account_statement_reconcile_improvements
+#. odoo-javascript
+#: code:addons/account_statement_reconcile_improvements/static/src/js/account_tree_delete_fix.js:0
+#: code:addons/account_statement_reconcile_improvements/static/src/js/unlink_wizard_block_ui.js:0
+msgid "Deleting bank statement(s)..."
+msgstr "Eliminando extracto(s) bancario(s)..."
+
+#. module: account_statement_reconcile_improvements
+#. odoo-javascript
+#: code:addons/account_statement_reconcile_improvements/static/src/js/import_records_statement_line_warning.js:0
+msgid "Import a bank statement"
+msgstr "Importar un extracto bancario"
+
+#. module: account_statement_reconcile_improvements
+#. odoo-javascript
+#: code:addons/account_statement_reconcile_improvements/static/src/js/import_records_statement_line_warning.js:0
+msgid "Bank statements can't be imported from this option. To do so, go to Accounting > Dashboard and, on the bank journal's card, click \"Import File\": it is the only valid option for importing transactions to use in the bank reconciliation."
+msgstr "Los extractos bancarios no se pueden importar desde esta opción. Para hacerlo ingresá a Contabilidad > Tablero y, en la tarjeta del diario del banco, hacé clic en \"Importar archivo\": es la única opción válida para importar los movimientos a utilizar en la conciliación bancaria."

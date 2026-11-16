@@ -340,6 +340,18 @@ acá para que queden trazables:
   usa Odoo para otras acciones largas, en ambos puntos, visible desde el
   instante en que se confirma el borrado (no después de una
   demora/estimación).
+- **"Importar registros" (menú ⚙) bloqueado para líneas de extracto.**
+  Esa entrada genérica de Odoo, que aparece también en el widget de
+  conciliación bancaria, abre la importación estándar sobre las líneas de
+  extracto sin la marca ``bank_stmt_import`` que sí envía el botón
+  "Importar archivo" de la tarjeta del banco en el tablero. Sin esa marca
+  no corre ninguna de las mejoras de importación de este módulo (filtro
+  de duplicados, CUIT en la leyenda, fechas día/mes, mapeo guardado por
+  diario), ni las columnas nativas de débito/crédito/saldo: un archivo
+  importado por ahí entraba con duplicados y sin contacto (visto en un
+  caso real). En lugar de sostener un segundo camino de importación, esa
+  entrada ahora muestra un aviso que indica usar "Importar archivo" desde
+  el tablero.
 - **Duplicado de línea sin grilla interactiva**: la fila 3.4 del pedido
   original pedía una grilla de previsualización con un checkbox
   "Importar" por fila. Implementar eso requiere reconstruir el componente
