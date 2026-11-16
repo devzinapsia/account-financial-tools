@@ -354,8 +354,9 @@ acá para que queden trazables:
   diario), ni las columnas nativas de débito/crédito/saldo: un archivo
   importado por ahí entraba con duplicados y sin contacto (visto en un
   caso real). En lugar de sostener un segundo camino de importación, esa
-  entrada ahora muestra un aviso que indica usar "Importar archivo" desde
-  el tablero.
+  entrada ahora muestra un aviso que indica usar el botón "Subir" del
+  propio widget o "Importar archivo" desde el tablero (ambos sí envían
+  la marca).
 - **Duplicado de línea sin grilla interactiva**: la fila 3.4 del pedido
   original pedía una grilla de previsualización con un checkbox
   "Importar" por fila. Implementar eso requiere reconstruir el componente

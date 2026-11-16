@@ -419,5 +419,5 @@ msgstr "Importar un extracto bancario"
 #. module: account_statement_reconcile_improvements
 #. odoo-javascript
 #: code:addons/account_statement_reconcile_improvements/static/src/js/import_records_statement_line_warning.js:0
-msgid "Bank statements can't be imported from this option. To do so, go to Accounting > Dashboard and, on the bank journal's card, click \"Import File\": it is the only valid option for importing transactions to use in the bank reconciliation."
-msgstr "Los extractos bancarios no se pueden importar desde esta opción. Para hacerlo ingresá a Contabilidad > Tablero y, en la tarjeta del diario del banco, hacé clic en \"Importar archivo\": es la única opción válida para importar los movimientos a utilizar en la conciliación bancaria."
+msgid "Bank statements can't be imported from this option. Use the \"Upload\" button on this screen, or go to Accounting > Dashboard and click \"Import File\" on the bank journal's card: these are the only valid options for importing transactions to use in the bank reconciliation."
+msgstr "Los extractos bancarios no se pueden importar desde esta opción. Usá el botón \"Subir\" de esta pantalla, o desde Contabilidad > Tablero hacé clic en \"Importar archivo\" en la tarjeta del diario del banco: son las únicas opciones válidas para importar los movimientos a utilizar en la conciliación bancaria."

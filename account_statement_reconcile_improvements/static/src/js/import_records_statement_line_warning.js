@@ -21,7 +21,7 @@ patch(ImportRecords.prototype, {
         this.env.services.dialog.add(AlertDialog, {
             title: _t("Import a bank statement"),
             body: _t(
-                "Bank statements can't be imported from this option. To do so, go to Accounting > Dashboard and, on the bank journal's card, click \"Import File\": it is the only valid option for importing transactions to use in the bank reconciliation."
+                "Bank statements can't be imported from this option. Use the \"Upload\" button on this screen, or go to Accounting > Dashboard and click \"Import File\" on the bank journal's card: these are the only valid options for importing transactions to use in the bank reconciliation."
             ),
         });
     },
